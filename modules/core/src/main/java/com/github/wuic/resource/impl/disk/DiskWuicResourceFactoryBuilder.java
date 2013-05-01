@@ -35,71 +35,56 @@
  * licenses."
  */
 
-package com.github.wuic.resource.impl;
 
-import com.github.wuic.FileType;
-import com.github.wuic.resource.WuicResource;
+package com.github.wuic.resource.impl.disk;
+
+import com.github.wuic.resource.WuicResourceFactory;
+import com.github.wuic.resource.WuicResourceFactoryBuilder;
+import com.github.wuic.resource.impl.AbstractWuicResourceFactory;
+import com.github.wuic.resource.impl.AbstractWuicResourceFactoryBuilder;
 
 /**
  * <p>
- * Base implementation of the {@link WuicResource} interface. A WuicResource is often represented by a name and a
- * {@link FileType}. This class already manages it.
+ * Builder for resource access on disk.
  * </p>
  *
  * @author Guillaume DROUET
  * @version 1.1
  * @since 0.3.0
  */
-public abstract class AbstractWuicResource implements WuicResource {
-
-    /**
-     * The file type.
-     */
-    private FileType fileType;
-
-    /**
-     * The file name.
-     */
-    private String fileName;
+public class DiskWuicResourceFactoryBuilder extends AbstractWuicResourceFactoryBuilder {
 
     /**
      * <p>
      * Creates a new instance.
      * </p>
+     */
+    public DiskWuicResourceFactoryBuilder() {
+        this(new AbstractWuicResourceFactory.DefaultWuicResourceFactory(new DiskWuicResourceProtocol(".")));
+    }
+
+    /**
+     * <p>
+     * Creates a new instance thanks to an already built factory.
+     * </p>
      *
-     * @param name the resource's name
-     * @param ft the resource's type
+     * @param built the already built factory.
      */
-    protected AbstractWuicResource(final String name, final FileType ft) {
-        if (ft == null) {
-            throw new IllegalArgumentException("You can't create a resource with a null FileType");
-        }
-
-        fileType = ft;
-        fileName = name;
+    public DiskWuicResourceFactoryBuilder(final WuicResourceFactory built) {
+        super(built);
     }
 
     /**
-     * {@inheritDoc}
+     * <p>
+     * Creates a new factory supporting regex.
+     * </p>
+     *
+     * @return the regex factory
      */
     @Override
-    public FileType getFileType() {
-        return fileType;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getName() {
-        return fileName;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    public String toString() {
-        return getClass().getSimpleName() + "[" + fileName + "]";
+    protected WuicResourceFactoryBuilder newRegexFactory() {
+        return new DiskWuicResourceFactoryBuilder(
+                new AbstractWuicResourceFactory.RegexWuicResourceFactory(
+                        new DiskWuicResourceProtocol(".")));
     }
 }

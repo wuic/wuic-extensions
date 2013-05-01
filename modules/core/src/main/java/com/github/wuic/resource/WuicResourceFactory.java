@@ -36,42 +36,42 @@
  */
 
 
-package com.github.wuic.helper.configuration;
-
-import com.github.wuic.FileType;
-import com.github.wuic.resource.WuicResource;
-import com.github.wuic.configuration.SourceRootProvider;
-import com.github.wuic.resource.impl.InputStreamWuicResource;
+package com.github.wuic.resource;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * <p>
- * A {@link com.github.wuic.configuration.SourceRootProvider} which takes resources exposed through the servlet context.
+ * Abstraction of a factory producing {@link WuicResource} objects.
  * </p>
  *
  * @author Guillaume DROUET
  * @version 1.0
- * @since 0.3.0
+ * @since 0.3.1
  */
-public class ClasspathSourceRootProvider implements SourceRootProvider {
+public interface WuicResourceFactory {
 
     /**
-     * {@inheritDoc}
+     * <p>
+     * Creates a list of {@link WuicResource resources} thanks to the given path.
+     * </p>
+     *
+     * @param path the path representing the location of the resource(s).
+     * @return the created resource(s)
+     * @throws IOException if an I/O error occurs when creating the resource
      */
-    @Override
-    public WuicResource getStreamResource(final String groupId, final String file) throws IOException {
-        final String ext = file.substring(file.lastIndexOf('.'));
-        final FileType type = FileType.getFileTypeForExtension(ext);
-
-        return new InputStreamWuicResource(getClass().getResourceAsStream("/" + file), file, type);
-    }
+    List<WuicResource> create(String path) throws IOException;
 
     /**
-     * {@inheritDoc}
+     * <p>
+     * Returns a list of paths depending of the behavior of the factory with the given path.
+     * In fact, the factory could consider the path as a regex, a directory, etc.
+     * </p>
+     *
+     * @param path the path access
+     * @return the resulting real paths
+     * @throws IOException if an I/O error occurs when creating the resource
      */
-    @Override
-    public Boolean hasChanged(final String groupId, final String file, final Long timestamp) {
-        return Boolean.FALSE;
-    }
+    List<String> computeRealPaths(String path) throws IOException;
 }

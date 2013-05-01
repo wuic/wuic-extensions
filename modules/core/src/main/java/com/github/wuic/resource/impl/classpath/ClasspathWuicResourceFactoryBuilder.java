@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -35,11 +35,56 @@
  * licenses."
  */
 
+
+package com.github.wuic.resource.impl.classpath;
+
+import com.github.wuic.resource.WuicResourceFactory;
+import com.github.wuic.resource.WuicResourceFactoryBuilder;
+import com.github.wuic.resource.impl.AbstractWuicResourceFactory;
+import com.github.wuic.resource.impl.AbstractWuicResourceFactoryBuilder;
+
 /**
  * <p>
- * This package defines some class helping the configuration step.
+ * Builder for resource access in classpath.
  * </p>
  *
  * @author Guillaume DROUET
+ * @version 1.1
+ * @since 0.3.0
  */
-package com.github.wuic.helper.configuration;
+public class ClasspathWuicResourceFactoryBuilder extends AbstractWuicResourceFactoryBuilder {
+
+    /**
+     * <p>
+     * Creates a new instance.
+     * </p>
+     */
+    public ClasspathWuicResourceFactoryBuilder() {
+        this(new AbstractWuicResourceFactory.DefaultWuicResourceFactory(new ClasspathWuicResourceProtocol()));
+    }
+
+    /**
+     * <p>
+     * Creates a new instance thanks to an already built factory.
+     * </p>
+     *
+     * @param built the already built factory.
+     */
+    public ClasspathWuicResourceFactoryBuilder(final WuicResourceFactory built) {
+        super(built);
+    }
+
+    /**
+     * <p>
+     * Creates a new factory supporting regex.
+     * </p>
+     *
+     * @return the regex factory
+     */
+    @Override
+    protected WuicResourceFactoryBuilder newRegexFactory() {
+        return new ClasspathWuicResourceFactoryBuilder(
+                new AbstractWuicResourceFactory.RegexWuicResourceFactory(
+                        new ClasspathWuicResourceProtocol()));
+    }
+}

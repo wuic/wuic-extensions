@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -35,71 +35,11 @@
  * licenses."
  */
 
-package com.github.wuic.resource.impl;
-
-import com.github.wuic.FileType;
-import com.github.wuic.resource.WuicResource;
-
 /**
  * <p>
- * Base implementation of the {@link WuicResource} interface. A WuicResource is often represented by a name and a
- * {@link FileType}. This class already manages it.
+ * This package defines required implementation for resource stored on the disk.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.1
- * @since 0.3.0
  */
-public abstract class AbstractWuicResource implements WuicResource {
-
-    /**
-     * The file type.
-     */
-    private FileType fileType;
-
-    /**
-     * The file name.
-     */
-    private String fileName;
-
-    /**
-     * <p>
-     * Creates a new instance.
-     * </p>
-     *
-     * @param name the resource's name
-     * @param ft the resource's type
-     */
-    protected AbstractWuicResource(final String name, final FileType ft) {
-        if (ft == null) {
-            throw new IllegalArgumentException("You can't create a resource with a null FileType");
-        }
-
-        fileType = ft;
-        fileName = name;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public FileType getFileType() {
-        return fileType;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getName() {
-        return fileName;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    public String toString() {
-        return getClass().getSimpleName() + "[" + fileName + "]";
-    }
-}
+package com.github.wuic.resource.impl.disk;

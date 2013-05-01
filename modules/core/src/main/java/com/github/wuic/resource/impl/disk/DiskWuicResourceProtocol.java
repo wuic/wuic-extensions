@@ -35,71 +35,65 @@
  * licenses."
  */
 
-package com.github.wuic.resource.impl;
+
+package com.github.wuic.resource.impl.disk;
 
 import com.github.wuic.FileType;
 import com.github.wuic.resource.WuicResource;
+import com.github.wuic.resource.WuicResourceProtocol;
+import com.github.wuic.resource.impl.FileWuicResource;
+import com.github.wuic.util.IOUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * <p>
- * Base implementation of the {@link WuicResource} interface. A WuicResource is often represented by a name and a
- * {@link FileType}. This class already manages it.
+ * A {@link com.github.wuic.resource.WuicResourceProtocol} implementation for classpath accesses.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.1
- * @since 0.3.0
+ * @version 1.0
+ * @since 0.3.1
  */
-public abstract class AbstractWuicResource implements WuicResource {
+public class DiskWuicResourceProtocol implements WuicResourceProtocol {
 
     /**
-     * The file type.
+     * Base directory where the protocol has to look up.
      */
-    private FileType fileType;
-
-    /**
-     * The file name.
-     */
-    private String fileName;
+    private File baseDirectory;
 
     /**
      * <p>
-     * Creates a new instance.
+     * Builds a new instance with a base directory. Throws an {@code IllegalArgumentException} if
+     * the given {@code String} does not represents a directory.
      * </p>
      *
-     * @param name the resource's name
-     * @param ft the resource's type
+     * @param base the directory where we have to look up
      */
-    protected AbstractWuicResource(final String name, final FileType ft) {
-        if (ft == null) {
-            throw new IllegalArgumentException("You can't create a resource with a null FileType");
+    public DiskWuicResourceProtocol(final String base) {
+        baseDirectory = new File(base);
+
+        if (!baseDirectory.isDirectory()) {
+            throw new IllegalArgumentException(base + " is not a directory");
         }
-
-        fileType = ft;
-        fileName = name;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public FileType getFileType() {
-        return fileType;
+    public List<String> listResourcesPaths(final Pattern pattern) throws IOException {
+        return IOUtils.lookupDirectoryResources(baseDirectory, pattern);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String getName() {
-        return fileName;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    public String toString() {
-        return getClass().getSimpleName() + "[" + fileName + "]";
+    public WuicResource accessFor(String realPath, String name, FileType type) throws IOException {
+        return new FileWuicResource(baseDirectory.getAbsolutePath(), name, type);
     }
 }

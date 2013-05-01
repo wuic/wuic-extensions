@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -36,46 +36,35 @@
  */
 
 
-package com.github.wuic.configuration;
-
-import com.github.wuic.resource.WuicResource;
-
-import java.io.IOException;
+package com.github.wuic.resource;
 
 /**
  * <p>
- * This interface provides access to the files configured in the 'wuic.xml'.
+ * Abstraction of a builder producing {@link WuicResourceFactory} objects.
  * </p>
- * 
+ *
  * @author Guillaume DROUET
- * @version 1.1
- * @since 0.1.0
+ * @version 1.0
+ * @since 0.3.1
  */
-public interface SourceRootProvider {
+public interface WuicResourceFactoryBuilder {
 
     /**
      * <p>
-     * Gets the {@code InputStream} which allows to read the given file of the
-     * specified group.
+     * Decorates this builder with a regular expression support.
      * </p>
-     * 
-     * @param groupId the group ID
-     * @param file the file
-     * @return the stream to use to read the file
-     * @throws IOException if an I/O error occurs
+     *
+     * @return the decorated builder with a regex support
      */
-    WuicResource getStreamResource(String groupId, String file) throws IOException;
-    
+    WuicResourceFactoryBuilder regex();
+
     /**
      * <p>
-     * Indicates if the a given file defined in a given group ID has changed since
-     * the a specified date.
+     * Builds a new {@link WuicResourceFactory} thanks to the current state
+     * of this builder.
      * </p>
-     * 
-     * @param groupId the group ID
-     * @param file the file
-     * @param since the time stamp
-     * @return {@code true} if the file has changed, {@code false otherwise}
+     *
+     * @return the new {@link WuicResourceFactory}
      */
-    Boolean hasChanged(String groupId, String file, final Long since);
+    WuicResourceFactory build();
 }

@@ -35,71 +35,46 @@
  * licenses."
  */
 
-package com.github.wuic.resource.impl;
+
+package com.github.wuic.resource;
 
 import com.github.wuic.FileType;
-import com.github.wuic.resource.WuicResource;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * <p>
- * Base implementation of the {@link WuicResource} interface. A WuicResource is often represented by a name and a
- * {@link FileType}. This class already manages it.
+ * This interface abstracts the way you can read resources through a particular protocol.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.1
- * @since 0.3.0
+ * @version 1.0
+ * @since 0.3.1
  */
-public abstract class AbstractWuicResource implements WuicResource {
-
-    /**
-     * The file type.
-     */
-    private FileType fileType;
-
-    /**
-     * The file name.
-     */
-    private String fileName;
+public interface WuicResourceProtocol {
 
     /**
      * <p>
-     * Creates a new instance.
+     * Lists all the resources path matching the given pattern.
      * </p>
      *
-     * @param name the resource's name
-     * @param ft the resource's type
+     * @param pattern the pattern
+     * @throws IOException if any I/O error occurs while reading resources
      */
-    protected AbstractWuicResource(final String name, final FileType ft) {
-        if (ft == null) {
-            throw new IllegalArgumentException("You can't create a resource with a null FileType");
-        }
-
-        fileType = ft;
-        fileName = name;
-    }
+    List<String> listResourcesPaths(Pattern pattern) throws IOException;
 
     /**
-     * {@inheritDoc}
+     * <p>
+     * Creates an access for the given parameters through a {@link WuicResource} implementation.
+     * </p>
+     *
+     * @param realPath the real path to use to access the resource
+     * @param name the name of the resource
+     * @param type the file's type
+     * @return the {@link WuicResource}
+     * @throws IOException if an I/O error occurs while creating access
      */
-    @Override
-    public FileType getFileType() {
-        return fileType;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getName() {
-        return fileName;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    public String toString() {
-        return getClass().getSimpleName() + "[" + fileName + "]";
-    }
+    WuicResource accessFor(String realPath, String name, FileType type) throws IOException;
 }
