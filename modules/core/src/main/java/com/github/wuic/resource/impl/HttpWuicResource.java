@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -35,68 +35,51 @@
  * licenses."
  */
 
+
 package com.github.wuic.resource.impl;
 
 import com.github.wuic.FileType;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 /**
  * <p>
- * Represents a resource on the file system provided or to be managed by the WUIC framework.
+ * A {@link com.github.wuic.resource.WuicResource} implementation for HTTP accesses.
  * </p>
- * 
+ *
  * @author Guillaume DROUET
- * @version 1.1
- * @since 0.1.1
+ * @version 1.0
+ * @since 0.3.1
  */
-public class FileWuicResource extends AbstractWuicResource {
+public class HttpWuicResource extends AbstractWuicResource {
 
     /**
-     * Serial version UID.
+     * The resource URL.
      */
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * The root directory that contains the files of a same group.
-     */
-    private String rootDirectory;
+    private URL resourceUrl;
 
     /**
      * <p>
-     * Builds a new {@code WuicResource} based on a given file.
+     * Builds a new instance.
      * </p>
-     * 
-     * @param rootDir the root directory
-     * @param name the source file
-     * @param ft the file type
+     *
+     * @param name the name
+     * @param url the URL
+     * @param fileType the file type
      */
-    public FileWuicResource(final String rootDir, final String name, final FileType ft) {
-        super(name, ft);
-        rootDirectory = rootDir;
+    public HttpWuicResource(final String name, final URL url, final FileType fileType) {
+        super(name, fileType);
+        resourceUrl = url;
     }
-    
+
     /**
-     * <p>
-     * Opens and returns an {@code InputStream} pointing to the resource. 
-     * </p>
-     * 
-     * @return the opened input stream
-     * @throws IOException if an I/O error occurs
+     * {@inheritDoc}
      */
+    @Override
     public InputStream openStream() throws IOException {
-        if (getName() == null) {
-            return null;
-        }
-        
-        final StringBuilder pathBuilder = new StringBuilder();
-        pathBuilder.append(rootDirectory);
-        pathBuilder.append(System.getProperty("file.separator"));
-        pathBuilder.append(getName());
-        
-        return new FileInputStream(pathBuilder.toString());
+        return resourceUrl.openStream();
     }
 
     /**
@@ -104,6 +87,6 @@ public class FileWuicResource extends AbstractWuicResource {
      */
     @Override
     public String getBaseDirectory() {
-        return rootDirectory;
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }
