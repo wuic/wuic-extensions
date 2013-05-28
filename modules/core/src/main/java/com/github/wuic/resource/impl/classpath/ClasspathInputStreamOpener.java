@@ -35,47 +35,46 @@
  * licenses."
  */
 
-package com.github.wuic.resource.impl;
 
-import com.github.wuic.FileType;
+package com.github.wuic.resource.impl.classpath;
+
 import com.github.wuic.util.InputStreamOpener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
  * <p>
- * Represents a resource based on an {@link InputStreamOpener} provided or to be managed by the WUIC framework.
+ * An {@link InputStreamOpener} which created stream access to the classpath.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.1
- * @since 0.3
+ * @version 1.0
+ * @since 0.3.3
  */
-public class InputStreamWuicResource extends AbstractWuicResource {
+public class ClasspathInputStreamOpener implements InputStreamOpener {
 
     /**
-     * Serial version UID.
+     * Logger.
      */
-    private static final long serialVersionUID = 1L;
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /**
-     * The input stream opener.
+     * Path of the classpath entry.
      */
-    private InputStreamOpener inputStreamOpener;
+    private String path;
 
     /**
      * <p>
-     * Creates a new {@link InputStreamWuicResource} based on the given {@code InputStream} object.
+     * Creates a new instance.
      * </p>
      *
-     * @param opener the input stream opener
-     * @param name the name of the associated resource
-     * @param ft the resource's type
+     * @param p the classpath entry.
      */
-    public InputStreamWuicResource(final InputStreamOpener opener, final String name, final FileType ft) {
-        super(name, ft, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
-        inputStreamOpener = opener;
+    public ClasspathInputStreamOpener(final String p) {
+        path = p;
     }
 
     /**
@@ -83,14 +82,14 @@ public class InputStreamWuicResource extends AbstractWuicResource {
      */
     @Override
     public InputStream openStream() throws IOException {
-        return inputStreamOpener.openStream();
-    }
+        final InputStream is = getClass().getResourceAsStream(path);
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getBaseDirectory() {
-        return null;
+        log.debug("Looking for {} resource in the classpath", path);
+
+        if (is == null) {
+            throw new IOException(path + " not found in the classpath");
+        }
+
+        return is;
     }
 }
