@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -35,24 +35,27 @@
  * licenses."
  */
 
-package com.github.wuic.resource.impl;
+package com.github.wuic.resource.impl.disk;
 
 import com.github.wuic.FileType;
 import com.github.wuic.exception.WuicResourceNotFoundException;
-import com.github.wuic.util.InputStreamOpener;
+import com.github.wuic.resource.impl.AbstractWuicResource;
+import com.github.wuic.util.path.FilePath;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
  * <p>
- * Represents a resource based on an {@link InputStreamOpener} provided or to be managed by the WUIC framework.
+ * Represents a resource on the path system provided or to be managed by the WUIC framework. Thanks to
+ * {@link FilePath}, the resource could also be a ZIP entry.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.2
- * @since 0.3
+ * @version 1.5
+ * @since 0.1.1
  */
-public class InputStreamWuicResource extends AbstractWuicResource {
+public class FilePathWuicResource extends AbstractWuicResource {
 
     /**
      * Serial version UID.
@@ -60,22 +63,22 @@ public class InputStreamWuicResource extends AbstractWuicResource {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The input stream opener.
+     * The root directory that contains the files of a same group.
      */
-    private InputStreamOpener inputStreamOpener;
+    private FilePath path;
 
     /**
      * <p>
-     * Creates a new {@link InputStreamWuicResource} based on the given {@code InputStream} object.
+     * Builds a new {@code WuicResource} based on a given path.
      * </p>
      *
-     * @param opener the input stream opener
-     * @param name the name of the associated resource
-     * @param ft the resource's type
+     * @param p the path
+     * @param name the resource name
+     * @param ft the path type
      */
-    public InputStreamWuicResource(final InputStreamOpener opener, final String name, final FileType ft) {
+    public FilePathWuicResource(final FilePath p, final String name, final FileType ft) {
         super(name, ft, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
-        inputStreamOpener = opener;
+        path = p;
     }
 
     /**
@@ -83,14 +86,10 @@ public class InputStreamWuicResource extends AbstractWuicResource {
      */
     @Override
     public InputStream openStream() throws WuicResourceNotFoundException {
-        return inputStreamOpener.openStream();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getBaseDirectory() {
-        return null;
+        try {
+            return path.openStream();
+        } catch (IOException ioe) {
+            throw new WuicResourceNotFoundException(ioe);
+        }
     }
 }
