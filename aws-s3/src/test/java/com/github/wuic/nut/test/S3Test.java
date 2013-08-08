@@ -36,22 +36,20 @@
  */
 
 
-package com.github.wuic.s3.test;
+package com.github.wuic.nut.test;
 
 import com.github.wuic.FileType;
-import com.github.wuic.FilesGroup;
+import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.configuration.Configuration;
 import com.github.wuic.configuration.impl.YuiConfigurationImpl;
 import com.github.wuic.configuration.impl.YuiCssConfigurationImpl;
 import com.github.wuic.engine.Engine;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.impl.ehcache.EhCacheEngine;
-import com.github.wuic.factory.EngineFactoryBuilder;
 import com.github.wuic.factory.impl.AggregationEngineFactory;
 import com.github.wuic.factory.impl.CompressionEngineFactory;
-import com.github.wuic.factory.impl.EngineFactoryBuilderImpl;
-import com.github.wuic.resource.WuicResource;
-import com.github.wuic.resource.impl.ByteArrayWuicResource;
+import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.core.ByteArrayNut;
 import com.github.wuic.util.IOUtils;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -85,12 +83,11 @@ public class S3Test {
      */
     @Test
     public void s3Test() throws Exception {
-        final EngineFactoryBuilder factoryBuilder = new EngineFactoryBuilderImpl("/wuic.xml");
-        final FilesGroup filesGroup = mock(FilesGroup.class);
+        final NutsHeap nutsHeap = mock(NutsHeap.class);
         final byte[] array = ".cloud { text-align : justify;}".getBytes();
         final Configuration config = new YuiCssConfigurationImpl(new YuiConfigurationImpl("css-id", false, true, true, -1, "UTF-8", null));
-        when(filesGroup.getConfiguration()).thenReturn(config);
-        when(filesGroup.getResources()).thenReturn(Arrays.asList((WuicResource) new ByteArrayWuicResource(array, "cloud.css", FileType.CSS)));
+        when(nutsHeap.getConfiguration()).thenReturn(config);
+        when(nutsHeap.getNuts()).thenReturn(Arrays.asList((Nut) new ByteArrayNut(array, "cloud.css", FileType.CSS)));
 
         final Engine compressor = new CompressionEngineFactory(config).create(FileType.CSS);
         final Engine cacheEngine = new EhCacheEngine(config);
@@ -98,12 +95,12 @@ public class S3Test {
         cacheEngine.setNext(compressor);
         compressor.setNext(aggregator);
 
-        final List<WuicResource> group = cacheEngine.parse(new EngineRequest("", filesGroup));
+        final List<Nut> group = cacheEngine.parse(new EngineRequest("", nutsHeap));
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;
 
-        for (WuicResource res : group) {
+        for (Nut res : group) {
             is = res.openStream();
             Assert.assertTrue(IOUtils.readString(new InputStreamReader(is)).length() > 0);
             is.close();

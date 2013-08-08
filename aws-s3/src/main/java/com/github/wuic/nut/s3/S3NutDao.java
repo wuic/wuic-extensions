@@ -36,7 +36,7 @@
  */
 
 
-package com.github.wuic.s3;
+package com.github.wuic.nut.s3;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -44,9 +44,9 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
 import com.github.wuic.FileType;
 import com.github.wuic.exception.wrapper.StreamException;
-import com.github.wuic.resource.WuicResource;
-import com.github.wuic.resource.WuicResourceProtocol;
-import com.github.wuic.resource.impl.ByteArrayWuicResource;
+import com.github.wuic.nut.AbstractNutDao;
+import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.core.ByteArrayNut;
 import com.github.wuic.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,14 +60,14 @@ import java.util.regex.Pattern;
 
 /**
  * <p>
- * A {@link com.github.wuic.resource.WuicResourceProtocol} implementation for S3 AWS Cloud accesses.
+ * A {@link com.github.wuic.nut.NutDao} implementation for S3 AWS Cloud accesses.
  * </p>
  *
  * @author Corentin AZELART
  * @version 1.2
  * @since 0.3.3
  */
-public class S3WuicResourceProtocol implements WuicResourceProtocol {
+public class S3NutDao extends AbstractNutDao {
 
     /**
      * Logger.
@@ -85,11 +85,6 @@ public class S3WuicResourceProtocol implements WuicResourceProtocol {
     private String bucketName;
 
     /**
-     * The base path where to move.
-     */
-    private String basePath;
-
-    /**
      * <p>
      * Builds a new instance.
      * </p>
@@ -98,10 +93,19 @@ public class S3WuicResourceProtocol implements WuicResourceProtocol {
      * @param accessKey the user access key
      * @param secretKey the user private key
      * @param path the root path
+     * @param basePathAsSysProp {@code true} if the base path is a system property
+     * @param pollingInterleave the interleave for polling operations in seconds (-1 to deactivate)
+     * @param proxyUris the proxies URIs in front of the resource
      */
-    public S3WuicResourceProtocol(final String bucket, final String accessKey, final String secretKey, final String path) {
+    public S3NutDao(final String path,
+                    final Boolean basePathAsSysProp,
+                    final String[] proxyUris,
+                    final Integer pollingInterleave,
+                    final String bucket,
+                    final String accessKey,
+                    final String secretKey) {
+        super(path, basePathAsSysProp, proxyUris, pollingInterleave);
         bucketName = bucket;
-        basePath = path;
 
         if (accessKey != null && secretKey != null) {
             amazonS3Client = new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey));
@@ -112,8 +116,8 @@ public class S3WuicResourceProtocol implements WuicResourceProtocol {
      * {@inheritDoc}
      */
     @Override
-    public List<String> listResourcesPaths(final Pattern pattern) throws StreamException {
-        return recursiveSearch(basePath, pattern);
+    public List<String> listResourcesPaths(final String pattern) throws StreamException {
+        return recursiveSearch(getBasePath(), Pattern.compile(pattern));
     }
 
     /**
@@ -134,7 +138,7 @@ public class S3WuicResourceProtocol implements WuicResourceProtocol {
             final String finalSuffix =  path.equals("") ? "" : "/";
             objectListing = amazonS3Client.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(path + finalSuffix).withDelimiter("/"));
         } catch (AmazonServiceException ase) {
-            throw new StreamException(new IOException(String.format("Can't get S3Object on bucket %s for resource key : %s", bucketName, path), ase));
+            throw new StreamException(new IOException(String.format("Can't get S3Object on bucket %s for nut key : %s", bucketName, path), ase));
         }
 
         final List<String> retval = new ArrayList<String>();
@@ -161,14 +165,14 @@ public class S3WuicResourceProtocol implements WuicResourceProtocol {
      * {@inheritDoc}
      */
     @Override
-    public WuicResource accessFor(final String realPath, final FileType type) throws StreamException {
+    public Nut accessFor(final String realPath, final FileType type) throws StreamException {
         // Try to get S3 object
         S3Object s3Object;
 
         try {
             s3Object = amazonS3Client.getObject(bucketName, realPath);
         } catch (AmazonServiceException ase) {
-            throw new StreamException(new IOException(String.format("Can't get S3Object on bucket %s  for resource key : %s", bucketName, realPath), ase));
+            throw new StreamException(new IOException(String.format("Can't get S3Object on bucket %s  for nut key : %s", bucketName, realPath), ase));
         }
 
         S3ObjectInputStream s3ObjectInputStream = null;
@@ -180,12 +184,20 @@ public class S3WuicResourceProtocol implements WuicResourceProtocol {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream(IOUtils.WUIC_BUFFER_LEN);
             IOUtils.copyStream(s3ObjectInputStream, baos);
 
-            // Create resource
-            return new ByteArrayWuicResource(baos.toByteArray(), realPath, type);
+            // Create nut
+            return new ByteArrayNut(baos.toByteArray(), realPath, type);
         } finally {
             // Close S3Object stream
             IOUtils.close(s3ObjectInputStream);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Long getLastUpdateTimestampFor(final String path) throws StreamException {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -208,6 +220,6 @@ public class S3WuicResourceProtocol implements WuicResourceProtocol {
      * {@inheritDoc}
      */
     public String toString() {
-        return String.format("%s with base path %s", getClass().getName(), basePath);
+        return String.format("%s with base path %s", getClass().getName(), getBasePath());
     }
 }

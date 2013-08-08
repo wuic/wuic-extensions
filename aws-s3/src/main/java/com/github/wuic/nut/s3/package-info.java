@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -35,35 +35,11 @@
  * licenses."
  */
 
-
-package com.github.wuic.ssh;
-
 /**
  * <p>
- * Implementation of the {@link SshCommandManager} for the 'cmd.exe' software.
+ * This package defines required implementation for nut stored in a S3 AWS.
  * </p>
  *
- * @author Guillaume DROUET
- * @version 1.0
- * @since 0.3.1
+ * @author Corentin AZELART
  */
-public class CmdSshCommandManager implements SshCommandManager {
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String[] searchInto(final String workingDir, final String pattern, final String file) {
-        return new String[] {
-                workingDir.substring(0, workingDir.indexOf(':') + 1),
-                "cd ".concat(workingDir),
-                new StringBuilder()
-                        .append("dir ")
-                        .append(pattern)
-                        .append(" /s /b > \"")
-                        .append(file)
-                        .append("\"")
-                        .toString(),
-        };
-    }
-}
+package com.github.wuic.nut.s3;

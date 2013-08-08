@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -35,35 +35,10 @@
  * licenses."
  */
 
-
-package com.github.wuic.ssh;
-
 /**
  * <p>
- * Implementation of the {@link SshCommandManager} for the '/bin/sh' software.
+ * This package defines required implementation for {@link com.github.wuic.nut.Nut} stored in a FTP server.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.0
- * @since 0.3.1
  */
-public class ShellSshCommandManager implements SshCommandManager {
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String[] searchInto(final String workingDirectory, final String pattern, final String file) {
-        return new String[] {
-                new StringBuilder()
-                        .append("find \"")
-                        .append(workingDirectory)
-                        .append("\" -name ")
-                        .append(pattern)
-                        .append(" > \"")
-                        .append(file)
-                        .append("\"")
-                        .toString(),
-        };
-    }
-}

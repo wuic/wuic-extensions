@@ -35,13 +35,12 @@
  * licenses."
  */
 
-
-package com.github.wuic.ssh;
-
 /**
  * <p>
- * This package defines required implementation for resource stored in a SSH server.
+ * Package where {@link com.github.wuic.nut.Nut nuts} and their {@link com.github.wuic.nut.NutDaoBuilder builers}
+ * implementations are defined for FTP module.
  * </p>
  *
  * @author Guillaume DROUET
  */
+package com.github.wuic.nut.ssh;

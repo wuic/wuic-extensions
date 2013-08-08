@@ -36,10 +36,10 @@
  */
 
 
-package com.github.wuic.ftp.test;
+package com.github.wuic.nut.test;
 
 import com.github.wuic.WuicFacade;
-import com.github.wuic.resource.WuicResource;
+import com.github.wuic.nut.Nut;
 import com.github.wuic.util.IOUtils;
 import junit.framework.Assert;
 import org.apache.ftpserver.FtpServer;
@@ -92,7 +92,7 @@ public class FtpTest {
 
         // Configure user manager
         final PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
-        userManagerFactory.setFile(File.createTempFile("wuic-ftp-test", ".properties"));
+        userManagerFactory.setFile(File.createTempFile("wuic-nut-test", ".properties"));
         userManagerFactory.setPasswordEncryptor(new SaltedPasswordEncryptor());
         final UserManager um = userManagerFactory.createUserManager();
 
@@ -134,12 +134,12 @@ public class FtpTest {
     @Test
     public void ftpTest() throws Exception {
         final WuicFacade facade = WuicFacade.newInstance("");
-        final List<WuicResource> group = facade.getGroup("css-image");
+        final List<Nut> group = facade.getGroup("css-image");
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;
 
-        for (WuicResource res : group) {
+        for (Nut res : group) {
             is = res.openStream();
             Assert.assertTrue(IOUtils.readString(new InputStreamReader(is)).length() > 0);
             is.close();

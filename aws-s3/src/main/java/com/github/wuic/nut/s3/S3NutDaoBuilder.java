@@ -36,55 +36,62 @@
  */
 
 
-package com.github.wuic.ssh.test;
+package com.github.wuic.nut.s3;
 
-import com.github.wuic.exception.wrapper.StreamException;
-import com.github.wuic.util.IOUtils;
-import org.apache.sshd.server.Environment;
-import org.apache.sshd.server.command.UnknownCommand;
+import com.github.wuic.ApplicationConfig;
+import com.github.wuic.exception.WuicRdbPropertyNotSupportedException;
 
-import java.io.*;
+import com.github.wuic.nut.NutDao;
+import com.github.wuic.nut.builder.BucketPropertySetter;
+import com.github.wuic.nut.builder.AbstractNutDaoBuilder;
+import com.github.wuic.nut.builder.ProxiesUrisPropertySetter;
+import com.github.wuic.nut.builder.PollingInterleavePropertySetter;
+import com.github.wuic.nut.builder.BasePathPropertySetter;
+import com.github.wuic.nut.builder.BasePathAsSysPropPropertySetter;
+import com.github.wuic.nut.builder.LoginPropertySetter;
+import com.github.wuic.nut.builder.PasswordPropertySetter;
 
 /**
  * <p>
- * Windows command using the 'cmd.exe' path.
+ * Builder for nut access on a S3 AWS Cloud.
  * </p>
  *
- * @author Guillaume DROUET
- * @version 1.0
- * @since 0.3.1
+ * @author Corentin AZELART
+ * @version 1.2
+ * @since 0.3.3
  */
-public class WindowsCommand extends UnknownCommand {
-
-    /**
-     * Command to run.
-     */
-    private String command;
+public class S3NutDaoBuilder extends AbstractNutDaoBuilder {
 
     /**
      * <p>
-     * Builds a new instance.
+     * Creates a new instance.
      * </p>
-     *
-     * @param c the command to execute
      */
-    public WindowsCommand(final String c) {
-        super(c);
-        command = c;
+    public S3NutDaoBuilder() {
+        super();
+        addPropertySetter(new BucketPropertySetter(this, null),
+                new ProxiesUrisPropertySetter(this),
+                new PollingInterleavePropertySetter(this),
+                new BasePathPropertySetter(this, ""),
+                new BasePathAsSysPropPropertySetter(this),
+                new LoginPropertySetter(this, null),
+                new PasswordPropertySetter(this, ""),
+                new BucketPropertySetter(this, ""));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void start(final Environment env) throws IOException {
-        try {
-            // Execute command as a .bat path
-            final File file = File.createTempFile("sshd-batch", ".bat");
-            IOUtils.copyStream(new ByteArrayInputStream(command.getBytes()), new FileOutputStream(file));
-            Runtime.getRuntime().exec("cmd.exe /k " + file.getAbsolutePath());
-        } catch (StreamException se) {
-            throw new IOException(se);
-        }
+    public NutDao internalBuild() throws WuicRdbPropertyNotSupportedException {
+        // TODO : add regex support
+        return new S3NutDao(
+                (String) property(ApplicationConfig.BASE_PATH),
+                (Boolean) property(ApplicationConfig.BASE_PATH_AS_SYS_PROP),
+                (String[]) property(ApplicationConfig.PROXIES_URIS),
+                (Integer) property(ApplicationConfig.POLLING_INTERLEAVE),
+                (String) property(ApplicationConfig.CLOUD_BUCKET),
+                (String) property(ApplicationConfig.LOGIN),
+                (String) property(ApplicationConfig.PASSWORD));
     }
 }

@@ -36,52 +36,62 @@
  */
 
 
-package com.github.wuic.ssh.test;
+package com.github.wuic.nut.gstorage;
 
-import org.apache.sshd.server.Command;
-import org.apache.sshd.server.CommandFactory;
-import org.apache.sshd.server.PasswordAuthenticator;
-import org.apache.sshd.server.PublickeyAuthenticator;
-import org.apache.sshd.server.command.ScpCommandFactory;
-import org.apache.sshd.server.command.UnknownCommand;
-import org.apache.sshd.server.session.ServerSession;
+import com.github.wuic.ApplicationConfig;
+import com.github.wuic.exception.WuicRdbPropertyNotSupportedException;
 
-import java.io.File;
-import java.security.PublicKey;
+import com.github.wuic.nut.NutDao;
+import com.github.wuic.nut.builder.BucketPropertySetter;
+import com.github.wuic.nut.builder.AbstractNutDaoBuilder;
+import com.github.wuic.nut.builder.ProxiesUrisPropertySetter;
+import com.github.wuic.nut.builder.PollingInterleavePropertySetter;
+import com.github.wuic.nut.builder.BasePathPropertySetter;
+import com.github.wuic.nut.builder.BasePathAsSysPropPropertySetter;
+import com.github.wuic.nut.builder.LoginPropertySetter;
+import com.github.wuic.nut.builder.PasswordPropertySetter;
 
 /**
  * <p>
- * Class used in unit tests as a mock for {@code PasswordAuthenticator}, {@code PublickeyAuthenticator}
- * and {@code CommandFactory}.
+ * Builder for nut access on a Google Storage Cloud.
  * </p>
  *
- * @author Guillaume DROUET
- * @version 1.0
- * @since 0.3.1
+ * @author Corentin AZELART
+ * @version 1.2
+ * @since 0.3.3
  */
-public class SShMockConfig implements CommandFactory, PasswordAuthenticator, PublickeyAuthenticator {
+public class GStorageNutDaoBuilder extends AbstractNutDaoBuilder {
 
     /**
-     * {@inheritDoc}
+     * <p>
+     * Creates a new instance.
+     * </p>
      */
-    @Override
-    public boolean authenticate(final String s, final PublicKey publicKey, final ServerSession serverSession) {
-        return Boolean.TRUE;
+    public GStorageNutDaoBuilder() {
+        super();
+        addPropertySetter(new BucketPropertySetter(this, null),
+                new ProxiesUrisPropertySetter(this),
+                new PollingInterleavePropertySetter(this),
+                new BasePathPropertySetter(this, ""),
+                new BasePathAsSysPropPropertySetter(this),
+                new LoginPropertySetter(this, null),
+                new PasswordPropertySetter(this, ""),
+                new BucketPropertySetter(this, ""));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean authenticate(final String s, final String s2, final ServerSession serverSession) {
-        return Boolean.TRUE;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Command createCommand(final String s) {
-        return new ScpCommandFactory().createCommand(s);
+    public NutDao internalBuild() throws WuicRdbPropertyNotSupportedException {
+        // TODO : add regex support
+        return new GStorageNutDao(
+                (String) property(ApplicationConfig.BASE_PATH),
+                (Boolean) property(ApplicationConfig.BASE_PATH_AS_SYS_PROP),
+                (String[]) property(ApplicationConfig.PROXIES_URIS),
+                (Integer) property(ApplicationConfig.POLLING_INTERLEAVE),
+                (String) property(ApplicationConfig.CLOUD_BUCKET),
+                (String) property(ApplicationConfig.LOGIN),
+                (String) property(ApplicationConfig.PASSWORD));
     }
 }

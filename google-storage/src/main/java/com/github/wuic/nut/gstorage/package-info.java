@@ -37,9 +37,9 @@
 
 /**
  * <p>
- * This package defines required implementation for resource stored in a S3 AWS.
+ * This package defines required implementation for nut stored in a S3 AWS.
  * </p>
  *
  * @author Corentin AZELART
  */
-package com.github.wuic.gstorage;
+package com.github.wuic.nut.gstorage;

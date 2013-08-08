@@ -36,13 +36,13 @@
  */
 
 
-package com.github.wuic.gstorage;
+package com.github.wuic.nut.gstorage;
 
 import com.github.wuic.FileType;
 import com.github.wuic.exception.wrapper.StreamException;
-import com.github.wuic.resource.WuicResource;
-import com.github.wuic.resource.WuicResourceProtocol;
-import com.github.wuic.resource.impl.ByteArrayWuicResource;
+import com.github.wuic.nut.AbstractNutDao;
+import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.core.ByteArrayNut;
 import com.github.wuic.util.IOUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -67,14 +67,14 @@ import java.util.regex.Pattern;
 
 /**
  * <p>
- * A {@link com.github.wuic.resource.WuicResourceProtocol} implementation for Google Cloud Storage accesses.
+ * A {@link com.github.wuic.nut.NutDao} implementation for Google Cloud Storage accesses.
  * </p>
  *
  * @author Corentin AZELART
  * @version 1.1
  * @since 0.3.3
  */
-public class GStorageWuicResourceProtocol implements WuicResourceProtocol {
+public class GStorageNutDao extends AbstractNutDao {
 
     /**
      * Logger.
@@ -90,11 +90,6 @@ public class GStorageWuicResourceProtocol implements WuicResourceProtocol {
      * Bucket name.
      */
     private String bucketName;
-
-    /**
-     * The base path where to move.
-     */
-    private String basePath;
 
     /**
      * Google credential for OAuth2.
@@ -119,11 +114,20 @@ public class GStorageWuicResourceProtocol implements WuicResourceProtocol {
      * @param bucket the bucket name
      * @param accountId the Google user access ID
      * @param path the root path
+     * @param basePathAsSysProp {@code true} if the base path is a system property
+     * @param pollingInterleave the interleave for polling operations in seconds (-1 to deactivate)
+     * @param proxyUris the proxies URIs in front of the resource
      * @param keyFile the private key path location
      */
-    public GStorageWuicResourceProtocol(final String bucket, final String accountId, final String path, String keyFile) {
+    public GStorageNutDao(final String path,
+                          final Boolean basePathAsSysProp,
+                          final String[] proxyUris,
+                          final Integer pollingInterleave,
+                          final String bucket,
+                          final String accountId,
+                          final String keyFile) {
+        super(path, basePathAsSysProp, proxyUris, pollingInterleave);
         bucketName = bucket;
-        basePath = path;
         privateKeyFile = keyFile;
         serviceAccountId = accountId;
     }
@@ -171,10 +175,10 @@ public class GStorageWuicResourceProtocol implements WuicResourceProtocol {
             storage = new Storage.Builder(netHttpTransport, jsonFactory, googleCredential).setApplicationName("Wuic").build();
         } catch (GeneralSecurityException gse) {
             // Security exception (local check)
-            throw new IOException("Can't build Google credential on bucket " + bucketName + " for resource key : " + basePath, gse);
+            throw new IOException("Can't build Google credential on bucket " + bucketName + " for nut key : " + getBasePath(), gse);
         } catch (IOException ioe) {
             // Private key path not found
-            throw new IOException("Can't build Google credential on bucket " + bucketName + " for resource key : " + basePath + " check your private key file", ioe);
+            throw new IOException("Can't build Google credential on bucket " + bucketName + " for nut key : " + getBasePath() + " check your private key file", ioe);
         }
     }
 
@@ -182,13 +186,13 @@ public class GStorageWuicResourceProtocol implements WuicResourceProtocol {
      * {@inheritDoc}
      */
     @Override
-    public List<String> listResourcesPaths(final Pattern pattern) throws StreamException {
+    public List<String> listResourcesPaths(final String pattern) throws StreamException {
 
         try {
             // Check if we are ready to read on Google Storage
             this.checkGoogleOAuth2();
 
-            return recursiveSearch(basePath, pattern);
+            return recursiveSearch(getBasePath(), Pattern.compile(pattern));
         } catch (IOException ioe) {
             throw new StreamException(ioe);
         }
@@ -210,7 +214,7 @@ public class GStorageWuicResourceProtocol implements WuicResourceProtocol {
         try {
             objectListing = storage.objects().list(bucketName).execute();
         } catch (IOException ioe) {
-            throw new StreamException(new IOException(String.format("Can't get Google Storage Object on bucket %s for resource key : %s", bucketName, path), ioe));
+            throw new StreamException(new IOException(String.format("Can't get Google Storage Object on bucket %s for nut key : %s", bucketName, path), ioe));
         }
 
         final List<String> retval = new ArrayList<String>();
@@ -232,7 +236,7 @@ public class GStorageWuicResourceProtocol implements WuicResourceProtocol {
      * {@inheritDoc}
      */
     @Override
-    public WuicResource accessFor(final String realPath, final FileType type) throws StreamException {
+    public Nut accessFor(final String realPath, final FileType type) throws StreamException {
         try {
             // Try to get a Storage object
             final Storage.Objects.Get storageObject = storage.objects().get(bucketName, realPath);
@@ -241,11 +245,19 @@ public class GStorageWuicResourceProtocol implements WuicResourceProtocol {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream(IOUtils.WUIC_BUFFER_LEN);
             storageObject.executeMediaAndDownloadTo(baos);
 
-            // Create resource
-            return new ByteArrayWuicResource(baos.toByteArray(), realPath, type);
+            // Create nut
+            return new ByteArrayNut(baos.toByteArray(), realPath, type);
         } catch (IOException ioe) {
             throw new StreamException(ioe);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Long getLastUpdateTimestampFor(final String path) throws StreamException {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -267,6 +279,6 @@ public class GStorageWuicResourceProtocol implements WuicResourceProtocol {
      * {@inheritDoc}
      */
     public String toString() {
-        return String.format("%s with base path %s", getClass().getName(), basePath);
+        return String.format("%s with base path %s", getClass().getName(), getBasePath());
     }
 }

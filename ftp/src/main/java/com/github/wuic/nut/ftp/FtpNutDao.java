@@ -36,13 +36,14 @@
  */
 
 
-package com.github.wuic.ftp;
+package com.github.wuic.nut.ftp;
 
 import com.github.wuic.FileType;
+import com.github.wuic.exception.PollingOperationNotSupportedException;
 import com.github.wuic.exception.wrapper.StreamException;
-import com.github.wuic.resource.WuicResource;
-import com.github.wuic.resource.WuicResourceProtocol;
-import com.github.wuic.resource.impl.ByteArrayWuicResource;
+import com.github.wuic.nut.AbstractNutDao;
+import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.core.ByteArrayNut;
 import com.github.wuic.util.IOUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -53,6 +54,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -60,14 +64,19 @@ import java.util.regex.Pattern;
 
 /**
  * <p>
- * A {@link com.github.wuic.resource.WuicResourceProtocol} implementation for FTP accesses.
+ * A {@link com.github.wuic.nut.NutDao} implementation for FTP accesses.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.2
+ * @version 1.3
  * @since 0.3.1
  */
-public class FtpWuicResourceProtocol implements WuicResourceProtocol {
+public class FtpNutDao extends AbstractNutDao {
+
+    /**
+     * Expected format when retrieved last modification date.
+     */
+    private static final DateFormat MODIFICATION_TIME_FORMAT = new SimpleDateFormat("yyyyMMddhhmmss");
 
     /**
      * Logger.
@@ -85,11 +94,6 @@ public class FtpWuicResourceProtocol implements WuicResourceProtocol {
     private String hostName;
 
     /**
-     * The base path where to move.
-     */
-    private String basePath;
-
-    /**
      * The user name.
      */
     private String userName;
@@ -105,6 +109,11 @@ public class FtpWuicResourceProtocol implements WuicResourceProtocol {
     private int port;
 
     /**
+     * Use path as regex or not.
+     */
+    private Boolean regularExpression;
+
+    /**
      * <p>
      * Builds a new instance.
      * </p>
@@ -113,29 +122,30 @@ public class FtpWuicResourceProtocol implements WuicResourceProtocol {
      * @param host the host name
      * @param p the port
      * @param path default the path
+     * @param basePathAsSysProp {@code true} if the base path is a system property
      * @param user the user name ({@code null} to skip the the authentication)
      * @param pwd the password (will be ignored if user is {@code null})
+     * @param proxies proxy URIs serving the nut
+     * @param pollingSeconds interleave in seconds for polling feature (-1 to disable)
+     * @param regex consider path as regex or not
      */
-    public FtpWuicResourceProtocol(final Boolean ftps, final String host, final int p, final String path, final String user, final String pwd) {
+    public FtpNutDao(final Boolean ftps,
+                     final String host,
+                     final int p,
+                     final String path,
+                     final Boolean basePathAsSysProp,
+                     final String user,
+                     final String pwd,
+                     final String[] proxies,
+                     final int pollingSeconds,
+                     final Boolean regex) {
+        super(path, basePathAsSysProp, proxies, pollingSeconds);
         ftpClient = ftps ? new FTPSClient(Boolean.TRUE) : new FTPClient();
         hostName = host;
         userName = user;
         password = pwd;
         port = p;
-        basePath = path;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<String> listResourcesPaths(final Pattern pattern) throws StreamException {
-        try {
-            connect();
-            return recursiveSearch(basePath, pattern);
-        } catch (IOException ioe) {
-            throw new StreamException(ioe);
-        }
+        regularExpression = regex;
     }
 
     /**
@@ -216,12 +226,12 @@ public class FtpWuicResourceProtocol implements WuicResourceProtocol {
      * {@inheritDoc}
      */
     @Override
-    public WuicResource accessFor(final String realPath, final FileType type) throws StreamException {
+    public Nut accessFor(final String realPath, final FileType type) throws StreamException {
         try {
             // Connect if necessary
             connect();
 
-            ftpClient.changeWorkingDirectory(basePath);
+            ftpClient.changeWorkingDirectory(getBasePath());
 
             // Download path into memory
             final ByteArrayOutputStream baos = new ByteArrayOutputStream(IOUtils.WUIC_BUFFER_LEN);
@@ -232,10 +242,33 @@ public class FtpWuicResourceProtocol implements WuicResourceProtocol {
                 throw new IOException("FTP command not completed correctly.");
             }
 
-            // Create resource
-            return new ByteArrayWuicResource(baos.toByteArray(), realPath, type);
+            // Create nut
+            return new ByteArrayNut(baos.toByteArray(), realPath, type);
         } catch (IOException ioe) {
             throw new StreamException(ioe);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Long getLastUpdateTimestampFor(final String path) throws StreamException {
+        try {
+            // Connect if necessary
+            connect();
+
+            log.info("Polling FTP resource '{}'", path);
+            final String response = ftpClient.getModificationTime(IOUtils.mergePath(getBasePath(), path));
+            log.info("Last modification response : {}", response);
+            log.info("Parse the response with {} date format which could be preceded by the server code and a space",
+                    MODIFICATION_TIME_FORMAT);
+
+            return MODIFICATION_TIME_FORMAT.parse(response.substring(response.indexOf(' ') + 1)).getTime();
+        } catch (IOException ioe) {
+            throw new StreamException(ioe);
+        } catch (ParseException pe) {
+            throw new PollingOperationNotSupportedException(this.getClass(), pe);
         }
     }
 
@@ -259,6 +292,31 @@ public class FtpWuicResourceProtocol implements WuicResourceProtocol {
      * {@inheritDoc}
      */
     public String toString() {
-        return String.format("%s with base path %s", getClass().getName(), basePath);
+        return String.format("%s with base path %s", getClass().getName(), getBasePath());
+    }
+
+    @Override
+    public void save(final Nut resource) {
+        // TODO : implement FTP upload
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Boolean saveSupported() {
+        // TODO : return true once save() is implemented
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected List<String> listResourcesPaths(final String pattern) throws StreamException {
+        try {
+            connect();
+            return recursiveSearch(getBasePath(), Pattern.compile(regularExpression ? pattern : Pattern.quote(pattern)));
+        } catch (IOException ioe) {
+            throw new StreamException(ioe);
+        }
     }
 }
