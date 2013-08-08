@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -35,80 +35,11 @@
  * licenses."
  */
 
-
-package com.github.wuic.engine.impl.embedded;
-
-import com.github.wuic.configuration.Configuration;
-import com.github.wuic.engine.Engine;
-import com.github.wuic.engine.EngineRequest;
-import com.github.wuic.exception.WuicException;
-import com.github.wuic.exception.wrapper.BadArgumentException;
-import com.github.wuic.nut.Nut;
-
-import java.util.List;
-
 /**
  * <p>
- * Simple composition of engines.
+ * This package defines required implementation for nut stored in a S3 AWS.
  * </p>
  *
- * @author Guillaume DROUET
- * @version 1.1
- * @since 0.3.3
+ * @author Corentin AZELART
  */
-public class CGCompositeEngine extends Engine {
-
-    /**
-     * The engines of this composition.
-     */
-    private Engine[] engines;
-
-    /**
-     * <p>
-     * Creates a new instance.
-     * </p>
-     *
-     * @param e the non-null and non-empty array of engines (should share the same configuration)
-     */
-    public CGCompositeEngine(final Engine... e) {
-        if (e == null || e.length == 0) {
-            throw new BadArgumentException(new IllegalArgumentException("A composite engine must be built with a non-null and non-empty array of engines"));
-        }
-
-        engines = e;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Nut> parse(final EngineRequest request) throws WuicException {
-         List<Nut> retval = request.getResources();
-
-        for (Engine engine : engines) {
-            retval = engine.parse(new EngineRequest(retval, request));
-        }
-
-        if (getNext() != null) {
-            retval = getNext().parse(new EngineRequest(retval, request));
-        }
-
-        return retval;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Configuration getConfiguration() {
-        return engines[0].getConfiguration();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Boolean works() {
-        return engines[0].works();
-    }
-}
+package com.github.wuic.nut.s3;

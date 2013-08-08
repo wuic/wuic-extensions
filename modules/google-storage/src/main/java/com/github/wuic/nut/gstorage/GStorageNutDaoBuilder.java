@@ -36,79 +36,62 @@
  */
 
 
-package com.github.wuic.engine.impl.embedded;
+package com.github.wuic.nut.gstorage;
 
-import com.github.wuic.configuration.Configuration;
-import com.github.wuic.engine.Engine;
-import com.github.wuic.engine.EngineRequest;
-import com.github.wuic.exception.WuicException;
-import com.github.wuic.exception.wrapper.BadArgumentException;
-import com.github.wuic.nut.Nut;
+import com.github.wuic.ApplicationConfig;
+import com.github.wuic.exception.WuicRdbPropertyNotSupportedException;
 
-import java.util.List;
+import com.github.wuic.nut.NutDao;
+import com.github.wuic.nut.builder.BucketPropertySetter;
+import com.github.wuic.nut.builder.AbstractNutDaoBuilder;
+import com.github.wuic.nut.builder.ProxiesUrisPropertySetter;
+import com.github.wuic.nut.builder.PollingInterleavePropertySetter;
+import com.github.wuic.nut.builder.BasePathPropertySetter;
+import com.github.wuic.nut.builder.BasePathAsSysPropPropertySetter;
+import com.github.wuic.nut.builder.LoginPropertySetter;
+import com.github.wuic.nut.builder.PasswordPropertySetter;
 
 /**
  * <p>
- * Simple composition of engines.
+ * Builder for nut access on a Google Storage Cloud.
  * </p>
  *
- * @author Guillaume DROUET
- * @version 1.1
+ * @author Corentin AZELART
+ * @version 1.2
  * @since 0.3.3
  */
-public class CGCompositeEngine extends Engine {
-
-    /**
-     * The engines of this composition.
-     */
-    private Engine[] engines;
+public class GStorageNutDaoBuilder extends AbstractNutDaoBuilder {
 
     /**
      * <p>
      * Creates a new instance.
      * </p>
-     *
-     * @param e the non-null and non-empty array of engines (should share the same configuration)
      */
-    public CGCompositeEngine(final Engine... e) {
-        if (e == null || e.length == 0) {
-            throw new BadArgumentException(new IllegalArgumentException("A composite engine must be built with a non-null and non-empty array of engines"));
-        }
-
-        engines = e;
+    public GStorageNutDaoBuilder() {
+        super();
+        addPropertySetter(new BucketPropertySetter(this, null),
+                new ProxiesUrisPropertySetter(this),
+                new PollingInterleavePropertySetter(this),
+                new BasePathPropertySetter(this, ""),
+                new BasePathAsSysPropPropertySetter(this),
+                new LoginPropertySetter(this, null),
+                new PasswordPropertySetter(this, ""),
+                new BucketPropertySetter(this, ""));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<Nut> parse(final EngineRequest request) throws WuicException {
-         List<Nut> retval = request.getResources();
-
-        for (Engine engine : engines) {
-            retval = engine.parse(new EngineRequest(retval, request));
-        }
-
-        if (getNext() != null) {
-            retval = getNext().parse(new EngineRequest(retval, request));
-        }
-
-        return retval;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Configuration getConfiguration() {
-        return engines[0].getConfiguration();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Boolean works() {
-        return engines[0].works();
+    public NutDao internalBuild() throws WuicRdbPropertyNotSupportedException {
+        // TODO : add regex support
+        return new GStorageNutDao(
+                (String) property(ApplicationConfig.BASE_PATH),
+                (Boolean) property(ApplicationConfig.BASE_PATH_AS_SYS_PROP),
+                (String[]) property(ApplicationConfig.PROXIES_URIS),
+                (Integer) property(ApplicationConfig.POLLING_INTERLEAVE),
+                (String) property(ApplicationConfig.CLOUD_BUCKET),
+                (String) property(ApplicationConfig.LOGIN),
+                (String) property(ApplicationConfig.PASSWORD));
     }
 }

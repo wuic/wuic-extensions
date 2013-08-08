@@ -36,79 +36,74 @@
  */
 
 
-package com.github.wuic.engine.impl.embedded;
+package com.github.wuic.nut.test;
 
+import com.github.wuic.FileType;
+import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.configuration.Configuration;
+import com.github.wuic.configuration.impl.YuiConfigurationImpl;
+import com.github.wuic.configuration.impl.YuiCssConfigurationImpl;
 import com.github.wuic.engine.Engine;
 import com.github.wuic.engine.EngineRequest;
-import com.github.wuic.exception.WuicException;
-import com.github.wuic.exception.wrapper.BadArgumentException;
+import com.github.wuic.engine.impl.ehcache.EhCacheEngine;
+import com.github.wuic.factory.impl.AggregationEngineFactory;
+import com.github.wuic.factory.impl.CompressionEngineFactory;
 import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.core.ByteArrayNut;
+import com.github.wuic.util.IOUtils;
+import junit.framework.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * <p>
- * Simple composition of engines.
+ * Tests for S3 AWS module.
  * </p>
  *
- * @author Guillaume DROUET
- * @version 1.1
+ * @author Corentin AZELART
+ * @version 1.0
  * @since 0.3.3
  */
-public class CGCompositeEngine extends Engine {
-
-    /**
-     * The engines of this composition.
-     */
-    private Engine[] engines;
+@RunWith(JUnit4.class)
+public class S3Test {
 
     /**
      * <p>
-     * Creates a new instance.
+     * Tests the S3 access.
      * </p>
-     *
-     * @param e the non-null and non-empty array of engines (should share the same configuration)
      */
-    public CGCompositeEngine(final Engine... e) {
-        if (e == null || e.length == 0) {
-            throw new BadArgumentException(new IllegalArgumentException("A composite engine must be built with a non-null and non-empty array of engines"));
+    @Test
+    public void s3Test() throws Exception {
+        final NutsHeap nutsHeap = mock(NutsHeap.class);
+        final byte[] array = ".cloud { text-align : justify;}".getBytes();
+        final Configuration config = new YuiCssConfigurationImpl(new YuiConfigurationImpl("css-id", false, true, true, -1, "UTF-8", null));
+        when(nutsHeap.getConfiguration()).thenReturn(config);
+        when(nutsHeap.getNuts()).thenReturn(Arrays.asList((Nut) new ByteArrayNut(array, "cloud.css", FileType.CSS)));
+
+        final Engine compressor = new CompressionEngineFactory(config).create(FileType.CSS);
+        final Engine cacheEngine = new EhCacheEngine(config);
+        final Engine aggregator = new AggregationEngineFactory(config).create(FileType.CSS);
+        cacheEngine.setNext(compressor);
+        compressor.setNext(aggregator);
+
+        final List<Nut> group = cacheEngine.parse(new EngineRequest("", nutsHeap));
+
+        Assert.assertFalse(group.isEmpty());
+        InputStream is;
+
+        for (Nut res : group) {
+            is = res.openStream();
+            Assert.assertTrue(IOUtils.readString(new InputStreamReader(is)).length() > 0);
+            is.close();
         }
-
-        engines = e;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Nut> parse(final EngineRequest request) throws WuicException {
-         List<Nut> retval = request.getResources();
-
-        for (Engine engine : engines) {
-            retval = engine.parse(new EngineRequest(retval, request));
-        }
-
-        if (getNext() != null) {
-            retval = getNext().parse(new EngineRequest(retval, request));
-        }
-
-        return retval;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Configuration getConfiguration() {
-        return engines[0].getConfiguration();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Boolean works() {
-        return engines[0].works();
     }
 }
