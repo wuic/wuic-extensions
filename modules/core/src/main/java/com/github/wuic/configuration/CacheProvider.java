@@ -36,34 +36,26 @@
  */
 
 
-package com.github.wuic.factory;
-
-import com.github.wuic.NutType;
-import com.github.wuic.exception.xml.WuicXmlReadException;
-import com.github.wuic.engine.Engine;
+package com.github.wuic.configuration;
 
 /**
  * <p>
- * This factory creates {@link Engine engines} according to a path {@link com.github.wuic.NutType type}.
+ * A contract to allow WUIC users to specify their own concrete cache to user.
  * </p>
  * 
  * @author Guillaume DROUET
- * @version 1.1
- * @since 0.1.0
+ * @version 1.0
+ * @since 0.4.0
+ * @param <T> the type of concrete cache
  */
-public interface EngineFactory {
+public interface CacheProvider<T> {
 
     /**
      * <p>
-     * Creates an {@link Engine} according to a {@link com.github.wuic.NutType}. If the factory
-     * is not configured properly, then a {@link com.github.wuic.exception.xml.WuicXmlReadException} should
-     * be thrown.
+     * Gets the cache.
      * </p>
      * 
-     * @param fileType the path type to be supported by the {@link Engine}
-     * @return an {@link Engine}
-     * @throws com.github.wuic.exception.xml.WuicXmlReadException if the current configuration does not allow
-     * to produce an {@link Engine} that supports the given {@link com.github.wuic.NutType}
+     * @return the cache
      */
-    Engine create(NutType fileType) throws WuicXmlReadException;
+    T getCache();
 }

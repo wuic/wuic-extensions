@@ -36,57 +36,60 @@
  */
 
 
-package com.github.wuic.nut.gstorage;
+package com.github.wuic.engine.core;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.configuration.impl.YuiConfigurationImpl;
+import com.github.wuic.configuration.impl.YuiJavascriptConfigurationImpl;
+import com.github.wuic.engine.AbstractEngineBuilder;
+import com.github.wuic.engine.Engine;
+import com.github.wuic.engine.impl.yuicompressor.JavascriptYuiCompressorEngine;
+import com.github.wuic.engine.setter.*;
 import com.github.wuic.exception.BuilderPropertyNotSupportedException;
-
-import com.github.wuic.nut.AbstractNutDaoBuilder;
-import com.github.wuic.nut.NutDao;
-import com.github.wuic.nut.setter.*;
-import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
 
 /**
  * <p>
- * Builder for nut access on a Google Storage Cloud.
+ * This builder creates engine that compresses Javascript files thanks to YUICompressor.
  * </p>
  *
- * @author Corentin AZELART
- * @version 1.2
- * @since 0.3.3
+ * @author Guillaume DROUET
+ * @version 1.0
+ * @since 0.4.0
  */
-public class GStorageNutDaoBuilder extends AbstractNutDaoBuilder {
+public class YuiCompressorJavascriptEngineBuilder extends AbstractEngineBuilder {
 
     /**
      * <p>
-     * Creates a new instance.
+     * Builds a new instance.
      * </p>
      */
-    public GStorageNutDaoBuilder() {
+    public YuiCompressorJavascriptEngineBuilder() {
         super();
-        addPropertySetter(new BucketPropertySetter(this, null),
-                new ProxyUrisPropertySetter(this),
-                new PollingInterleavePropertySetter(this),
-                new BasePathPropertySetter(this, ""),
-                new BasePathAsSysPropPropertySetter(this),
-                new LoginPropertySetter(this, null),
-                new PasswordPropertySetter(this, ""),
-                new BucketPropertySetter(this, ""));
+        addPropertySetter(new CompressPropertySetter(this),
+                new LineBreakPosPropertySetter(this),
+                new CharsetPropertySetter(this),
+                new DisableOptimizationsPropertySetter(this),
+                new ObfuscatePropertySetter(this),
+                new VerbosePropertySetter(this),
+                new PreserveSemicolonsPropertySetter(this));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public NutDao internalBuild() throws BuilderPropertyNotSupportedException {
-        // TODO : add regex support
-        return new GStorageNutDao(
-                (String) property(ApplicationConfig.BASE_PATH),
-                (Boolean) property(ApplicationConfig.BASE_PATH_AS_SYS_PROP),
-                (String[]) property(ApplicationConfig.PROXY_URIS),
-                (Integer) property(ApplicationConfig.POLLING_INTERLEAVE),
-                (String) property(ApplicationConfig.CLOUD_BUCKET),
-                (String) property(ApplicationConfig.LOGIN),
-                (String) property(ApplicationConfig.PASSWORD));
+    protected Engine internalBuild() throws BuilderPropertyNotSupportedException {
+        return new JavascriptYuiCompressorEngine(new YuiJavascriptConfigurationImpl(
+                new YuiConfigurationImpl(null,
+                        null,
+                        (Boolean) property(ApplicationConfig.COMPRESS),
+                        null,
+                        (Integer) property(ApplicationConfig.LINE_BREAK_POS),
+                        (String) property(ApplicationConfig.CHARSET),
+                        null),
+                        (Boolean) property(ApplicationConfig.OBFUSCATE),
+                        (Boolean) property(ApplicationConfig.VERBOSE),
+                        (Boolean) property(ApplicationConfig.PRESERVE_SEMICOLONS),
+                        (Boolean) property(ApplicationConfig.DISABLE_OPTIMIZATIONS)));
     }
 }

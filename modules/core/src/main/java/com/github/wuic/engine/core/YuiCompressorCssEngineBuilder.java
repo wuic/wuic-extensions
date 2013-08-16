@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -36,34 +36,52 @@
  */
 
 
-package com.github.wuic.factory;
+package com.github.wuic.engine.core;
 
-import com.github.wuic.NutType;
-import com.github.wuic.exception.xml.WuicXmlReadException;
+import com.github.wuic.ApplicationConfig;
+import com.github.wuic.configuration.impl.YuiConfigurationImpl;
+import com.github.wuic.configuration.impl.YuiCssConfigurationImpl;
+import com.github.wuic.engine.AbstractEngineBuilder;
 import com.github.wuic.engine.Engine;
+import com.github.wuic.engine.impl.yuicompressor.CssYuiCompressorEngine;
+import com.github.wuic.engine.setter.*;
+import com.github.wuic.exception.BuilderPropertyNotSupportedException;
 
 /**
  * <p>
- * This factory creates {@link Engine engines} according to a path {@link com.github.wuic.NutType type}.
+ * This builder creates engine that compresses CSS files thanks to YUICompressor.
  * </p>
- * 
+ *
  * @author Guillaume DROUET
- * @version 1.1
- * @since 0.1.0
+ * @version 1.0
+ * @since 0.4.0
  */
-public interface EngineFactory {
+public class YuiCompressorCssEngineBuilder extends AbstractEngineBuilder {
 
     /**
      * <p>
-     * Creates an {@link Engine} according to a {@link com.github.wuic.NutType}. If the factory
-     * is not configured properly, then a {@link com.github.wuic.exception.xml.WuicXmlReadException} should
-     * be thrown.
+     * Builds a new instance.
      * </p>
-     * 
-     * @param fileType the path type to be supported by the {@link Engine}
-     * @return an {@link Engine}
-     * @throws com.github.wuic.exception.xml.WuicXmlReadException if the current configuration does not allow
-     * to produce an {@link Engine} that supports the given {@link com.github.wuic.NutType}
      */
-    Engine create(NutType fileType) throws WuicXmlReadException;
+    public YuiCompressorCssEngineBuilder() {
+        super();
+        addPropertySetter(new CompressPropertySetter(this),
+                new LineBreakPosPropertySetter(this),
+                new CharsetPropertySetter(this),
+                new VerbosePropertySetter(this));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Engine internalBuild() throws BuilderPropertyNotSupportedException {
+        return new CssYuiCompressorEngine(new YuiCssConfigurationImpl(new YuiConfigurationImpl(null,
+                null,
+                (Boolean) property(ApplicationConfig.COMPRESS),
+                null,
+                (Integer) property(ApplicationConfig.LINE_BREAK_POS),
+                (String) property(ApplicationConfig.CHARSET),
+                null)));
+    }
 }

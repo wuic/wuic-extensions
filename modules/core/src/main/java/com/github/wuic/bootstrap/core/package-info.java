@@ -35,37 +35,11 @@
  * licenses."
  */
 
-
-package com.github.wuic.factory;
-
-import com.github.wuic.xml.WuicXmlLoader;
-
 /**
  * <p>
- * This interface describes a builder of {@link EngineFactory}.
+ * This package defines bootstrap components for core module, which does not require any dependency.
  * </p>
- * 
+ *
  * @author Guillaume DROUET
- * @version 1.0
- * @since 0.1.0
  */
-public interface EngineFactoryBuilder {
-    
-    /**
-     * <p>
-     * Builds a factory.
-     * </p>
-     * 
-     * @return the factory
-     */
-    EngineFactory build();
-    
-    /**
-     * <p>
-     * Returns the {@link WuicXmlLoader} used by this builder.
-     * </p>
-     * 
-     * @return the XML loader
-     */
-    WuicXmlLoader getLoader();
-}
+package com.github.wuic.bootstrap.core;

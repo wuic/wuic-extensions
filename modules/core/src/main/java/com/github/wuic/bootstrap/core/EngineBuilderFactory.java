@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -36,34 +36,60 @@
  */
 
 
-package com.github.wuic.factory;
+package com.github.wuic.bootstrap.core;
 
-import com.github.wuic.NutType;
-import com.github.wuic.exception.xml.WuicXmlReadException;
-import com.github.wuic.engine.Engine;
+import com.github.wuic.engine.core.*;
+import com.github.wuic.factory.EngineBuilder;
+import com.github.wuic.util.AbstractBuilderFactory;
 
 /**
  * <p>
- * This factory creates {@link Engine engines} according to a path {@link com.github.wuic.NutType type}.
+ * Factory for {@link com.github.wuic.factory.EngineBuilder}.
  * </p>
- * 
+ *
  * @author Guillaume DROUET
- * @version 1.1
- * @since 0.1.0
+ * @version 1.0
+ * @since 0.4.0
  */
-public interface EngineFactory {
+public final class EngineBuilderFactory extends AbstractBuilderFactory<EngineBuilder> {
+
+    /**
+     * All class names to search in classpath.
+     */
+    private static final String[] LOOKUP_CLASSES = {
+            EhCacheEngineBuilder.class.getName(),
+            YuiCompressorJavascriptEngineBuilder.class.getName(),
+            YuiCompressorCssEngineBuilder.class.getName(),
+            CssInspectorEngineBuilder.class.getName(),
+            TextAggregatorEngineBuilder.class.getName(),
+            ImageCompressorEngineBuilder.class.getName(),
+            ImageAggregatorEngineBuilder.class.getName(),
+    };
+
+    /**
+     * Unique instance.
+     */
+    private static EngineBuilderFactory instance = null;
 
     /**
      * <p>
-     * Creates an {@link Engine} according to a {@link com.github.wuic.NutType}. If the factory
-     * is not configured properly, then a {@link com.github.wuic.exception.xml.WuicXmlReadException} should
-     * be thrown.
+     * Gets the unique instance of this class.
      * </p>
-     * 
-     * @param fileType the path type to be supported by the {@link Engine}
-     * @return an {@link Engine}
-     * @throws com.github.wuic.exception.xml.WuicXmlReadException if the current configuration does not allow
-     * to produce an {@link Engine} that supports the given {@link com.github.wuic.NutType}
+     *
+     * @return the singleton
      */
-    Engine create(NutType fileType) throws WuicXmlReadException;
+    public static EngineBuilderFactory getInstance() {
+        if (instance == null) {
+            instance = new EngineBuilderFactory();
+        }
+
+        return instance;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected String[] classes() {
+        return LOOKUP_CLASSES;
+    }
 }

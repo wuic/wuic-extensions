@@ -38,32 +38,18 @@
 
 package com.github.wuic.factory;
 
-import com.github.wuic.NutType;
-import com.github.wuic.exception.xml.WuicXmlReadException;
 import com.github.wuic.engine.Engine;
+import com.github.wuic.util.GenericBuilder;
 
 /**
  * <p>
- * This factory creates {@link Engine engines} according to a path {@link com.github.wuic.NutType type}.
+ * This interface describes a builder of {@link com.github.wuic.engine.Engine engines}.
  * </p>
  * 
  * @author Guillaume DROUET
  * @version 1.1
  * @since 0.1.0
  */
-public interface EngineFactory {
+public interface EngineBuilder extends GenericBuilder<Engine> {
 
-    /**
-     * <p>
-     * Creates an {@link Engine} according to a {@link com.github.wuic.NutType}. If the factory
-     * is not configured properly, then a {@link com.github.wuic.exception.xml.WuicXmlReadException} should
-     * be thrown.
-     * </p>
-     * 
-     * @param fileType the path type to be supported by the {@link Engine}
-     * @return an {@link Engine}
-     * @throws com.github.wuic.exception.xml.WuicXmlReadException if the current configuration does not allow
-     * to produce an {@link Engine} that supports the given {@link com.github.wuic.NutType}
-     */
-    Engine create(NutType fileType) throws WuicXmlReadException;
 }
