@@ -1,33 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <parent>
-        <groupId>com.github.wuic</groupId>
-        <artifactId>web-ui-compressor</artifactId>
-        <version>0.5.0-SNAPSHOT</version>
-    </parent>
-
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.wuic</groupId>
-    <artifactId>wuic-modules</artifactId>
+    <artifactId>wuic-extensions</artifactId>
     <version>0.5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>wuic-modules</name>
-    <url>http://gdrouet.github.io/wuic/</url>
+    <name>wuic-extensions</name>
+    <url>http://wuic.github.io/wuic/</url>
 
     <modules>
-        <module>core</module>
-        <module>tag</module>
-        <module>servlet</module>
         <module>ftp</module>
         <module>ssh</module>
         <module>aws-s3</module>
         <module>google-storage</module>
         <module>thymeleaf</module>
-        <module>jee</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <!-- For engine and samples using YUICompressor -->
+            <dependency>
+                <groupId>com.yahoo.platform.yui</groupId>
+                <artifactId>yuicompressor</artifactId>
+                <version>${yuicompressor.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>rhino</groupId>
+                        <artifactId>js</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- For engine and samples using EHCache -->
+            <dependency>
+                <groupId>net.sf.ehcache</groupId>
+                <artifactId>ehcache-core</artifactId>
+                <version>${ehcache-core.version}</version>
+            </dependency>
 
             <!-- Tests -->
             <dependency>
@@ -105,6 +114,13 @@
 
             <!-- J2EE APIs are always provided -->
             <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>${servlet-api.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>javax.servlet.jsp</groupId>
                 <artifactId>jsp-api</artifactId>
                 <version>${jsp-api.version}</version>
@@ -180,4 +196,26 @@
             <artifactId>slf4j-simple</artifactId>
         </dependency>
     </dependencies>
+
+    <properties>
+        <!-- dependencies libraries -->
+        <commons-net.version>3.2</commons-net.version>
+        <servlet-api.version>2.5</servlet-api.version>
+        <junit.version>4.8.2</junit.version>
+        <mockito.version>1.9.5</mockito.version>
+        <htmlcompressor.version>1.5.2</htmlcompressor.version>
+        <yuicompressor.version>2.3.6</yuicompressor.version>
+        <ehcache-core.version>2.5.3</ehcache-core.version>
+        <thymeleaf-version>2.0.19</thymeleaf-version>
+        <google-api-services-storage.version>v1beta2-rev3-1.15.0-rc</google-api-services-storage.version>
+        <google-http-client.version>1.15.0-rc</google-http-client.version>
+        <google-http-client-jackson2.version>1.13.1-beta</google-http-client-jackson2.version>
+        <google-collections.version>1.0-rc5</google-collections.version>
+        <aws-java-sdk.version>1.4.3</aws-java-sdk.version>
+        <jsch-version>0.1.48</jsch-version>
+        <sshd-version>0.8.0</sshd-version>
+        <ftpserver.version>1.0.6</ftpserver.version>
+        <slf4j.version>1.7.5</slf4j.version>
+        <mockito.version>1.9.5</mockito.version>
+    </properties>
 </project>
