@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.github.wuic</groupId>
+    <groupId>com.github.wuic.extensions</groupId>
     <artifactId>wuic-extensions</artifactId>
     <version>0.5.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>wuic-extensions</name>
-    <url>http://wuic.github.io/wuic/</url>
 
     <modules>
         <module>ftp</module>
@@ -15,6 +12,60 @@
         <module>google-storage</module>
         <module>thymeleaf</module>
     </modules>
+
+    <packaging>pom</packaging>
+    <name>Web UI Compressor extensions</name>
+    <url>http://wuic.github.io</url>
+    <description>
+        Extensions for the Web UI Compressor project
+    </description>
+    <inceptionYear>2012</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>WUIC license</name>
+            <url>https://github.com/wuic/wuic/blob/master/LICENSE.md</url>
+            <distribution>repo</distribution>
+            <comments>MIT, Apache 2.0</comments>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/wuic/wuic-extensions.git</connection>
+        <developerConnection>scm:git:git@github.com:wuic/wuic-extensions.git</developerConnection>
+        <url>http://github.com/wuic/wuic-extensions</url>
+    </scm>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/wuic/wuic-extensions/issues</url>
+    </issueManagement>
+
+    <developers>
+        <developer>
+            <id>gdrouet</id>
+            <name>Guillaume DROUET</name>
+            <organization>Capgemini</organization>
+            <email>guidrouet@gmail.com</email>
+            <roles>
+                <role>Build engineer</role>
+                <role>Java Developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>Corentin AZELART</name>
+            <organization>Capgemini</organization>
+            <email>corentin.azelart@gmail.com</email>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </contributor>
+    </contributors>
 
     <dependencyManagement>
         <dependencies>
