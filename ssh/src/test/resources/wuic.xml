@@ -7,7 +7,7 @@
                 <property key="c.g.wuic.dao.regex">true</property>
                 <property key="c.g.wuic.dao.login">wuic</property>
                 <property key="c.g.wuic.dao.password">wuic</property>
-                <property key="c.g.wuic.dao.basePath">java.io.tmpdir</property>
+                <property key="c.g.wuic.dao.basePath">com.github.wuic.ssh.test.SshTest.basePath</property>
                 <property key="c.g.wuic.dao.basePathAsSystemProperty">true</property>
                 <property key="c.g.wuic.dao.serverPort">9876</property>
             </properties>
@@ -15,7 +15,7 @@
 	</nut-dao-builders>
 	<heaps>
 		<heap id="css-image" dao-builder-id="sshFactoryBuilder">
-            <nut-path>junit*.css</nut-path>
+            <nut-path>*.css</nut-path>
 		</heap>
 	</heaps>
     <workflow-templates>

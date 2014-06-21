@@ -62,8 +62,6 @@ import org.junit.runners.JUnit4;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -128,15 +126,12 @@ public class SshTest {
         namedFactoryList.add(new SftpSubsystem.Factory());
         sshdServer.setSubsystemFactories(namedFactoryList);
 
-
         // Run server
         sshdServer.start();
 
         // Copy nuts
-        com.github.wuic.util.IOUtils.copyStream(new FileInputStream(new File(SshTest.class.getResource("/chosen.css").getFile())),
-                new FileOutputStream(File.createTempFile("junit-chosen", ".css")));
-        com.github.wuic.util.IOUtils.copyStream(new FileInputStream(new File(SshTest.class.getResource("/style.css").getFile())),
-                new FileOutputStream(File.createTempFile("junit-style", ".css")));
+        final String basePath = SshTest.class.getResource("/chosen.css").getFile();
+        System.setProperty(SshTest.class.getName() + ".basePath", basePath.substring(0, basePath.lastIndexOf("/")));
     }
 
     /**
