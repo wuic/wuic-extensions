@@ -11,6 +11,7 @@
         <module>aws-s3</module>
         <module>google-storage</module>
         <module>thymeleaf</module>
+        <module>ehcache</module>
     </modules>
 
     <packaging>pom</packaging>
