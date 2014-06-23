@@ -62,4 +62,22 @@ dependencies. What you have simply to do is to include the extension's maven dep
             Tag
         </td>
     </tr>
+    <tr>
+        <td>wuic-ehcache</td>
+        <td>
+            Reduce response time by caching on server side with EhCache framework.
+        </td>
+        <td>
+            Engine
+        </td>
+    </tr>
+    <tr>
+        <td>wuic-yuicompressor</td>
+        <td>
+            Minify Javascript and CSS files with YUICompressor.
+        </td>
+        <td>
+            Engine
+        </td>
+    </tr>
 </table>
