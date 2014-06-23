@@ -73,7 +73,7 @@ public class SshNutDaoBuilder extends AbstractNutDaoBuilder {
                 new BasePathPropertySetter(this, "."),
                 new BasePathAsSysPropPropertySetter(this, false),
                 new ProxyUrisPropertySetter(this, null),
-                new PollingInterleavePropertySetter(this, -1),
+                new PollingIntervalPropertySetter (this, -1),
                 new ServerDomainPropertySetter(this, "localhost"),
                 new ServerPortPropertySetter(this, DEFAULT_PORT),
                 new LoginPropertySetter(this, null),
@@ -93,7 +93,7 @@ public class SshNutDaoBuilder extends AbstractNutDaoBuilder {
                 (String) property(ApplicationConfig.LOGIN),
                 (String) property(ApplicationConfig.PASSWORD),
                 (String[]) property(ApplicationConfig.PROXY_URIS),
-                (Integer) property(ApplicationConfig.POLLING_INTERLEAVE),
+                (Integer) property(ApplicationConfig.POLLING_INTERVAL),
                 (Boolean) property(ApplicationConfig.CONTENT_BASED_VERSION_NUMBER));
     }
 }

@@ -111,7 +111,7 @@ public class S3NutDao extends AbstractNutDao {
      * @param secretKey the user private key
      * @param path the root path
      * @param basePathAsSysProp {@code true} if the base path is a system property
-     * @param pollingInterleave the interleave for polling operations in seconds (-1 to deactivate)
+     * @param pollingInterval the interval for polling operations in seconds (-1 to deactivate)
      * @param proxyUris the proxies URIs in front of the nut
      * @param regex consider path as regex or not
      * @param contentBasedVersionNumber  {@code true} if version number is computed from nut content, {@code false} if based on timestamp
@@ -119,13 +119,13 @@ public class S3NutDao extends AbstractNutDao {
     public S3NutDao(final String path,
                     final Boolean basePathAsSysProp,
                     final String[] proxyUris,
-                    final Integer pollingInterleave,
+                    final Integer pollingInterval,
                     final String bucket,
                     final String accessKey,
                     final String secretKey,
                     final Boolean regex,
                     final Boolean contentBasedVersionNumber) {
-        super(path, basePathAsSysProp, proxyUris, pollingInterleave, contentBasedVersionNumber);
+        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber);
         bucketName = bucket;
         login = accessKey;
         password = secretKey;

@@ -102,7 +102,7 @@ public class SshNutDao extends AbstractNutDao {
      * @param path default the path
      * @param user the user name ({@code null} to skip the the authentication)
      * @param pwd the password (will be ignored if user is {@code null})
-     * @param pollingInterleave the interleave for polling operations in seconds (-1 to deactivate)
+     * @param pollingInterval the interval for polling operations in seconds (-1 to deactivate)
      * @param proxyUris the proxies URIs in front of the nut
      * @param contentBasedVersionNumber  {@code true} if version number is computed from nut content, {@code false} if based on timestamp
      */
@@ -114,9 +114,9 @@ public class SshNutDao extends AbstractNutDao {
                      final String user,
                      final String pwd,
                      final String[] proxyUris,
-                     final int pollingInterleave,
+                     final int pollingInterval,
                      final Boolean contentBasedVersionNumber) {
-        super(path, basePathAsSysProp, proxyUris, pollingInterleave, contentBasedVersionNumber);
+        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber);
         regularExpression = regex;
 
         final JSch jsch = new JSch();

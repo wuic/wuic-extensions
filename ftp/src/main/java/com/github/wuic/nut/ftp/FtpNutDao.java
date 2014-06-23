@@ -127,7 +127,7 @@ public class FtpNutDao extends AbstractNutDao {
      * @param user the user name ({@code null} to skip the the authentication)
      * @param pwd the password (will be ignored if user is {@code null})
      * @param proxies proxy URIs serving the nut
-     * @param pollingSeconds interleave in seconds for polling feature (-1 to disable)
+     * @param pollingSeconds interval in seconds for polling feature (-1 to disable)
      * @param regex consider path as regex or not
      * @param contentBasedVersionNumber  {@code true} if version number is computed from nut content, {@code false} if based on timestamp
 

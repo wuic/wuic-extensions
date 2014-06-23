@@ -69,7 +69,7 @@ public class FtpNutDaoBuilder extends AbstractNutDaoBuilder {
         addPropertySetter(new BasePathPropertySetter(this, "/"),
                 new BasePathAsSysPropPropertySetter(this),
                 new ProxyUrisPropertySetter(this),
-                new PollingInterleavePropertySetter(this),
+                new PollingIntervalPropertySetter(this),
                 new ServerPortPropertySetter(this, FTPClient.DEFAULT_PORT),
                 new ServerDomainPropertySetter(this),
                 new RegexPropertySetter(this),
@@ -93,7 +93,7 @@ public class FtpNutDaoBuilder extends AbstractNutDaoBuilder {
                 (String) property(ApplicationConfig.LOGIN),
                 (String) property(ApplicationConfig.PASSWORD),
                 (String[]) property(ApplicationConfig.PROXY_URIS),
-                (Integer) property(ApplicationConfig.POLLING_INTERLEAVE),
+                (Integer) property(ApplicationConfig.POLLING_INTERVAL),
                 (Boolean) property(ApplicationConfig.REGEX),
                 (Boolean) property(ApplicationConfig.CONTENT_BASED_VERSION_NUMBER));
     }

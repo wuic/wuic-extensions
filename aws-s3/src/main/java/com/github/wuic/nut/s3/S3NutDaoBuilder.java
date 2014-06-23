@@ -66,7 +66,7 @@ public class S3NutDaoBuilder extends AbstractNutDaoBuilder {
         super();
         addPropertySetter(new BucketPropertySetter(this, null),
                 new ProxyUrisPropertySetter(this),
-                new PollingInterleavePropertySetter(this),
+                new PollingIntervalPropertySetter(this),
                 new BasePathPropertySetter(this, ""),
                 new BasePathAsSysPropPropertySetter(this),
                 new LoginPropertySetter(this, null),
@@ -85,7 +85,7 @@ public class S3NutDaoBuilder extends AbstractNutDaoBuilder {
                 (String) property(ApplicationConfig.BASE_PATH),
                 (Boolean) property(ApplicationConfig.BASE_PATH_AS_SYS_PROP),
                 (String[]) property(ApplicationConfig.PROXY_URIS),
-                (Integer) property(ApplicationConfig.POLLING_INTERLEAVE),
+                (Integer) property(ApplicationConfig.POLLING_INTERVAL),
                 (String) property(ApplicationConfig.CLOUD_BUCKET),
                 (String) property(ApplicationConfig.LOGIN),
                 (String) property(ApplicationConfig.PASSWORD),

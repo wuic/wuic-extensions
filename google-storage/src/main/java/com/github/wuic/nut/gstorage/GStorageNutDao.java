@@ -116,7 +116,7 @@ public class GStorageNutDao extends AbstractNutDao {
      * @param accountId the Google user access ID
      * @param path the root path
      * @param basePathAsSysProp {@code true} if the base path is a system property
-     * @param pollingInterleave the interleave for polling operations in seconds (-1 to deactivate)
+     * @param pollingInterval the interval for polling operations in seconds (-1 to deactivate)
      * @param proxyUris the proxies URIs in front of the nut
      * @param keyFile the private key path location
      * @param contentBasedVersionNumber {@code true} if version number is computed from nut content, {@code false} if based on timestamp
@@ -124,12 +124,12 @@ public class GStorageNutDao extends AbstractNutDao {
     public GStorageNutDao(final String path,
                           final Boolean basePathAsSysProp,
                           final String[] proxyUris,
-                          final Integer pollingInterleave,
+                          final Integer pollingInterval,
                           final String bucket,
                           final String accountId,
                           final String keyFile,
                           final Boolean contentBasedVersionNumber) {
-        super(path, basePathAsSysProp, proxyUris, pollingInterleave, contentBasedVersionNumber);
+        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber);
         bucketName = bucket;
         privateKeyFile = keyFile;
         serviceAccountId = accountId;
