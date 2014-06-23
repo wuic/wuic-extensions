@@ -17,13 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>com.github.wuic</groupId>
-            <artifactId>wuic-jee</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <artifactId>wuic-core</artifactId>
         </dependency>
 
         <dependency>

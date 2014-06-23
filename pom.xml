@@ -69,6 +69,19 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Core -->
+            <dependency>
+                <groupId>com.github.wuic</groupId>
+                <artifactId>wuic-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.wuic</groupId>
+                <artifactId>wuic-jee</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- For engine and samples using YUICompressor -->
             <dependency>
                 <groupId>com.yahoo.platform.yui</groupId>
