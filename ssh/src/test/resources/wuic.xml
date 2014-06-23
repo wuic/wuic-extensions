@@ -21,7 +21,6 @@
     <workflow-templates>
         <workflow-template id="tpl">
             <engine-chain>
-                <engine-builder-id>wuicDefaultYuiCompressorCssEngineBuilder</engine-builder-id>
                 <engine-builder-id>wuicDefaultTextAggregatorEngineBuilder</engine-builder-id>
             </engine-chain>
         </workflow-template>

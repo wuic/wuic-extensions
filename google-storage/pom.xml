@@ -40,13 +40,6 @@
             <artifactId>google-collections</artifactId>
         </dependency>
 
-        <!-- JS & CSS compression -->
-        <dependency>
-            <groupId>com.yahoo.platform.yui</groupId>
-            <artifactId>yuicompressor</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- Caching -->
         <dependency>
             <groupId>net.sf.ehcache</groupId>

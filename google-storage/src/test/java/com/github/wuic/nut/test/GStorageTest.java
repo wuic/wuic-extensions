@@ -41,7 +41,6 @@ package com.github.wuic.nut.test;
 import com.github.wuic.NutType;
 import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.impl.embedded.CGTextAggregatorEngine;
-import com.github.wuic.engine.impl.yuicompressor.CssYuiCompressorEngine;
 import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.nut.Nut;
@@ -90,11 +89,9 @@ public class GStorageTest {
         nuts.add(new ByteArrayNut(array, "cloud.css", NutType.CSS, new BigInteger("1")));
         when(nutsHeap.getNuts()).thenReturn(nuts);
 
-        final NodeEngine compressor = new CssYuiCompressorEngine(true, "UTF-8", -1);
         final NodeEngine aggregator = new CGTextAggregatorEngine(true);
-        compressor.setNext(aggregator);
 
-        final List<Nut> group = compressor.parse(new EngineRequest("", "", nutsHeap, new HashMap<NutType, NodeEngine>()));
+        final List<Nut> group = aggregator.parse(new EngineRequest("", "", nutsHeap, new HashMap<NutType, NodeEngine>()));
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;

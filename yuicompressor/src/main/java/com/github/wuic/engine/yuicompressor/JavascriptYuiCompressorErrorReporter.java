@@ -36,7 +36,7 @@
  */
 
 
-package com.github.wuic.engine.impl.yuicompressor;
+package com.github.wuic.engine.yuicompressor;
 
 import org.mozilla.javascript.ErrorReporter;
 import org.mozilla.javascript.EvaluatorException;

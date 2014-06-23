@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -36,12 +36,42 @@
  */
 
 
+package com.github.wuic.yuicompressor.test;
+
+import com.github.wuic.engine.EngineBuilderFactory;
+import com.github.wuic.engine.yuicompressor.YuiCompressorCssEngineBuilder;
+import com.github.wuic.engine.yuicompressor.YuiCompressorJavascriptEngineBuilder;
+import com.github.wuic.exception.UnableToInstantiateException;
+import junit.framework.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 /**
  * <p>
- * This package contains the {@link com.github.wuic.engine.Engine engines}
- * which are based on the YUI Compressor library.
+ * {@link com.github.wuic.engine.EngineBuilderFactory} support for yuicompressor module tests.
  * </p>
- * 
+ *
  * @author Guillaume DROUET
+ * @version 1.0
+ * @since 0.5.0
  */
-package com.github.wuic.engine.impl.yuicompressor;
+@RunWith(JUnit4.class)
+public class EngineBuilderFactoryYuicompressorTest {
+
+    /**
+     * Test for CSS YUICompressor.
+     */
+    @Test
+    public void testCreateCssYuiCompressorBuilder() throws UnableToInstantiateException {
+        Assert.assertNotNull(EngineBuilderFactory.getInstance().create(YuiCompressorCssEngineBuilder.class.getSimpleName()));
+    }
+
+    /**
+     * Test for Javascript YUICompressor.
+     */
+    @Test
+    public void testCreateJavascriptYuiCompressorBuilder() throws UnableToInstantiateException {
+        Assert.assertNotNull(EngineBuilderFactory.getInstance().create(YuiCompressorJavascriptEngineBuilder.class.getSimpleName()));
+    }
+}

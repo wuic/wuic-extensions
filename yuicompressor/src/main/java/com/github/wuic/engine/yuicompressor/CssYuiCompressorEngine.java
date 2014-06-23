@@ -35,7 +35,7 @@
  * licenses."
  */
 
-package com.github.wuic.engine.impl.yuicompressor;
+package com.github.wuic.engine.yuicompressor;
 
 import com.github.wuic.NutType;
 import com.github.wuic.engine.EngineType;
