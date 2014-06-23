@@ -12,6 +12,7 @@
         <module>google-storage</module>
         <module>thymeleaf</module>
         <module>ehcache</module>
+        <module>yuicompressor</module>
     </modules>
 
     <packaging>pom</packaging>
