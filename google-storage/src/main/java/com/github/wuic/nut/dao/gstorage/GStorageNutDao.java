@@ -36,13 +36,21 @@
  */
 
 
-package com.github.wuic.nut.gstorage;
+package com.github.wuic.nut.dao.gstorage;
 
+import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.config.BooleanConfigParam;
+import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.IntegerConfigParam;
+import com.github.wuic.config.ObjectConfigParam;
+import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.Nut;
-import com.github.wuic.nut.core.ByteArrayNut;
+import com.github.wuic.nut.dao.NutDaoService;
+import com.github.wuic.nut.ByteArrayNut;
+import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
 import com.github.wuic.util.IOUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -68,14 +76,16 @@ import java.util.regex.Pattern;
 
 /**
  * <p>
- * A {@link com.github.wuic.nut.NutDao} implementation for Google Cloud Storage accesses.
+ * A {@link com.github.wuic.nut.dao.NutDao} implementation for Google Cloud Storage accesses.
  * </p>
  *
  * @author Corentin AZELART
- * @version 1.4
+ * @author Guillaume DROUET
+ * @version 1.5
  * @since 0.3.3
  */
-public class GStorageNutDao extends AbstractNutDao {
+@NutDaoService
+public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig {
 
     /**
      * Logger.
@@ -112,23 +122,24 @@ public class GStorageNutDao extends AbstractNutDao {
      * Builds a new instance.
      * </p>
      *
-     * @param bucket the bucket name
-     * @param accountId the Google user access ID
-     * @param path the root path
-     * @param basePathAsSysProp {@code true} if the base path is a system property
-     * @param pollingInterval the interval for polling operations in seconds (-1 to deactivate)
-     * @param proxyUris the proxies URIs in front of the nut
-     * @param keyFile the private key path location
+     * @param bucket                    the bucket name
+     * @param accountId                 the Google user access ID
+     * @param path                      the root path
+     * @param basePathAsSysProp         {@code true} if the base path is a system property
+     * @param pollingInterval           the interval for polling operations in seconds (-1 to deactivate)
+     * @param proxyUris                 the proxies URIs in front of the nut
+     * @param keyFile                   the private key path location
      * @param contentBasedVersionNumber {@code true} if version number is computed from nut content, {@code false} if based on timestamp
      */
-    public GStorageNutDao(final String path,
-                          final Boolean basePathAsSysProp,
-                          final String[] proxyUris,
-                          final Integer pollingInterval,
-                          final String bucket,
-                          final String accountId,
-                          final String keyFile,
-                          final Boolean contentBasedVersionNumber) {
+    @ConfigConstructor
+    public GStorageNutDao(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
+                          @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
+                          @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxyUris,
+                          @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingInterval,
+                          @StringConfigParam(defaultValue = "", propertyKey = CLOUD_BUCKET) final String bucket,
+                          @StringConfigParam(defaultValue = "", propertyKey = LOGIN) final String accountId,
+                          @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String keyFile,
+                          @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber) {
         super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber);
         bucketName = bucket;
         privateKeyFile = keyFile;
@@ -137,6 +148,7 @@ public class GStorageNutDao extends AbstractNutDao {
 
     /**
      * Check if OAuth token is always alive.
+     *
      * @throws IOException if token can't be refresh
      */
     private void checkGoogleOAuth2() throws IOException {
@@ -153,6 +165,7 @@ public class GStorageNutDao extends AbstractNutDao {
 
     /**
      * Build OAuth 2 Google Credential.
+     *
      * @throws IOException if we have a problem to build Google credential
      */
     private void buildOAuth2() throws IOException {
@@ -206,7 +219,7 @@ public class GStorageNutDao extends AbstractNutDao {
      * Searches recursively in the given path any files matching the given entry.
      * </p>
      *
-     * @param path the path
+     * @param path    the path
      * @param pattern the pattern to match
      * @return the list of matching files
      * @throws StreamException if the client can't move to a directory or any I/O error occurs

@@ -42,4 +42,4 @@
  *
  * @author Corentin AZELART
  */
-package com.github.wuic.nut.s3;
+package com.github.wuic.nut.dao.gstorage;

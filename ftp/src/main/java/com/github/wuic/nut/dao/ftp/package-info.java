@@ -15,7 +15,7 @@
  * and be construed as a breach of these Terms of Use causing significant harm to
  * Capgemini.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, PEACEFUL ENJOYMENT,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
@@ -35,50 +35,11 @@
  * licenses."
  */
 
-
-package com.github.wuic.engine.yuicompressor;
-
-import com.github.wuic.ApplicationConfig;
-import com.github.wuic.engine.AbstractEngineBuilder;
-import com.github.wuic.engine.Engine;
-
-import com.github.wuic.engine.setter.CompressPropertySetter;
-import com.github.wuic.engine.setter.LineBreakPosPropertySetter;
-import com.github.wuic.engine.setter.CharsetPropertySetter;
-
-import com.github.wuic.exception.BuilderPropertyNotSupportedException;
-
 /**
  * <p>
- * This builder creates engine that compresses CSS files thanks to YUICompressor.
+ * This package defines required implementation for {@link com.github.wuic.nut.Nut} stored in a FTP server.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.0
- * @since 0.4.0
  */
-public class YuiCompressorCssEngineBuilder extends AbstractEngineBuilder {
-
-    /**
-     * <p>
-     * Builds a new instance.
-     * </p>
-     */
-    public YuiCompressorCssEngineBuilder() {
-        super();
-        addPropertySetter(new CompressPropertySetter(this),
-                new LineBreakPosPropertySetter(this),
-                new CharsetPropertySetter(this));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected Engine internalBuild() throws BuilderPropertyNotSupportedException {
-        return new CssYuiCompressorEngine(
-                (Boolean) property(ApplicationConfig.COMPRESS),
-                (String) property(ApplicationConfig.CHARSET),
-                (Integer) property(ApplicationConfig.LINE_BREAK_POS));
-    }
-}
+package com.github.wuic.nut.dao.ftp;

@@ -37,9 +37,15 @@
 
 package com.github.wuic.engine.yuicompressor;
 
+import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.config.BooleanConfigParam;
+import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.IntegerConfigParam;
+import com.github.wuic.config.StringConfigParam;
+import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
-import com.github.wuic.engine.impl.embedded.CGAbstractCompressorEngine;
+import com.github.wuic.engine.core.AbstractCompressorEngine;
 import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.util.IOUtils;
 import com.yahoo.platform.yui.compressor.CssCompressor;
@@ -60,10 +66,11 @@ import java.util.List;
  * </p>
  * 
  * @author Guillaume DROUET
- * @version 1.5
+ * @version 1.6
  * @since 0.1.0
  */
-public class CssYuiCompressorEngine extends CGAbstractCompressorEngine {
+@EngineService(injectDefaultToWorkflow = true)
+public class YuiCompressorCssEngine extends AbstractCompressorEngine {
 
     /**
      * Charset of processed files.
@@ -84,7 +91,11 @@ public class CssYuiCompressorEngine extends CGAbstractCompressorEngine {
      * @param cs the char set
      * @param lbp the line break position
      */
-    public CssYuiCompressorEngine(final Boolean compress, final String cs, final Integer lbp) {
+    @ConfigConstructor
+    public YuiCompressorCssEngine(
+            @BooleanConfigParam(propertyKey = ApplicationConfig.COMPRESS, defaultValue = true) final Boolean compress,
+            @StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "UTF-8") final String cs,
+            @IntegerConfigParam(propertyKey = ApplicationConfig.LINE_BREAK_POS, defaultValue = -1) final Integer lbp) {
         super(compress, ".min");
         charset = cs;
         lineBreakPos = lbp;

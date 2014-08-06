@@ -40,15 +40,17 @@ package com.github.wuic.ehcache.test;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.Engine;
 import com.github.wuic.engine.EngineRequest;
+import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.ehcache.EhCacheEngine;
-import com.github.wuic.engine.ehcache.EhCacheEngineBuilder;
 import com.github.wuic.engine.ehcache.WuicEhcacheProvider;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.*;
+import com.github.wuic.config.ObjectBuilder;
 import junit.framework.Assert;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -143,7 +145,9 @@ public class EhCacheEngineTest {
      */
     @Test
     public void cacheTest() throws Exception {
-        final EhCacheEngineBuilder builder = new EhCacheEngineBuilder();
+        final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EhCacheEngine.class);
+        final ObjectBuilder<Engine> builder = factory.create("EhCacheEngineBuilder");
+        Assert.assertNotNull(builder);
         final Engine e = builder.build();
         final NodeEngine chain = mock();
         final Map<NutType, NodeEngine> map = new HashMap<NutType, NodeEngine>();
@@ -166,7 +170,9 @@ public class EhCacheEngineTest {
      */
     @Test
     public void noCacheTest() throws Exception {
-        final EhCacheEngineBuilder builder = new EhCacheEngineBuilder();
+        final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EhCacheEngine.class);
+        final ObjectBuilder<Engine> builder = factory.create("EhCacheEngineBuilder");
+        Assert.assertNotNull(builder);
         builder.property(ApplicationConfig.CACHE, false);
         final Engine chain = mock();
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
@@ -203,7 +209,9 @@ public class EhCacheEngineTest {
             }
         }).when(heap).addObserver(Mockito.any(HeapListener.class));
 
-        final EhCacheEngineBuilder builder = new EhCacheEngineBuilder();
+        final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EhCacheEngine.class);
+        final ObjectBuilder<Engine> builder = factory.create("EhCacheEngineBuilder");
+        Assert.assertNotNull(builder);
         builder.property(ApplicationConfig.CACHE_PROVIDER_CLASS, CacheFactory.class.getName());
         final EhCacheEngine cache = (EhCacheEngine) builder.build();
         final Map<NutType, NodeEngine> map = new HashMap<NutType, NodeEngine>();

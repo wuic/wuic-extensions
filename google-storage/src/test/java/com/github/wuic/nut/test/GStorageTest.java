@@ -38,13 +38,20 @@
 
 package com.github.wuic.nut.test;
 
+import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.NodeEngine;
-import com.github.wuic.engine.impl.embedded.CGTextAggregatorEngine;
+import com.github.wuic.engine.core.TextAggregatorEngine;
+import com.github.wuic.exception.BuilderPropertyNotSupportedException;
+import com.github.wuic.nut.dao.NutDao;
+import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.nut.Nut;
-import com.github.wuic.nut.core.ByteArrayNut;
+import com.github.wuic.nut.ByteArrayNut;
+import com.github.wuic.nut.dao.gstorage.GStorageNutDao;
+import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.util.IOUtils;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -69,11 +76,45 @@ import static org.mockito.Mockito.when;
  * </p>
  *
  * @author Corentin AZELART
- * @version 1.4
+ * @version 1.5
  * @since 0.3.3
  */
 @RunWith(JUnit4.class)
 public class GStorageTest {
+
+
+    /**
+     * <p>
+     * Test builder.
+     * </p>
+     *
+     * @throws Exception if test fails
+     */
+    @Test
+    public void builderTest() throws Exception {
+        final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, NutDaoService.DEFAULT_SCAN_PACKAGE);
+        final ObjectBuilder<NutDao> builder = factory.create("GStorageNutDaoBuilder");
+        Assert.assertNotNull(builder);
+
+        builder.property(ApplicationConfig.CLOUD_BUCKET, "bucket")
+                .property(ApplicationConfig.LOGIN, "login")
+                .property(ApplicationConfig.PASSWORD, "password")
+                .build();
+    }
+
+    /**
+     * <p>
+     * Test builder.
+     * </p>
+     *
+     */
+    @Test(expected = BuilderPropertyNotSupportedException.class)
+    public void builderWithBadPropertyTest() throws BuilderPropertyNotSupportedException {
+        final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, GStorageNutDao.class);
+        final ObjectBuilder<NutDao> builder = factory.create("GStorageNutDaoBuilder");
+        Assert.assertNotNull(builder);
+        builder.property("foo", "value");
+    }
 
     /**
      * <p>
@@ -89,7 +130,7 @@ public class GStorageTest {
         nuts.add(new ByteArrayNut(array, "cloud.css", NutType.CSS, new BigInteger("1")));
         when(nutsHeap.getNuts()).thenReturn(nuts);
 
-        final NodeEngine aggregator = new CGTextAggregatorEngine(true);
+        final NodeEngine aggregator = new TextAggregatorEngine(true);
 
         final List<Nut> group = aggregator.parse(new EngineRequest("", "", nutsHeap, new HashMap<NutType, NodeEngine>()));
 

@@ -39,8 +39,8 @@
 package com.github.wuic.engine.ehcache;
 
 import com.github.wuic.ApplicationConfig;
-import com.github.wuic.engine.AbstractEngineBuilder;
 import com.github.wuic.config.PropertySetter;
+import com.github.wuic.exception.wrapper.BadArgumentException;
 
 /**
  * <p>
@@ -51,29 +51,36 @@ import com.github.wuic.config.PropertySetter;
  * @version 1.0
  * @since 0.4.0
  */
-public class CacheProviderClassPropertySetter extends PropertySetter.PropertySetterOfString {
+public class CacheProviderClassPropertySetter extends PropertySetter.PropertySetterOfObject {
 
     /**
-     * <p>
-     * Creates a new instance with a specific default value.
-     * </p>
-     *
-     * @param b the {@link com.github.wuic.engine.AbstractEngineBuilder} which needs to be configured
-     * @param defaultValue the default value
+     * {@inheritDoc}
      */
-    public CacheProviderClassPropertySetter(final AbstractEngineBuilder b, final Object defaultValue) {
-        super(b, defaultValue);
-    }
+    @Override
+    protected void set(final Object value) {
+        if (value == null) {
+            put(getPropertyKey(), value);
+        } else if (value instanceof String) {
+            try {
+                final Class<?> clazz = Class.forName(value.toString());
 
-    /**
-     * <p>
-     * Creates a new instance.
-     * </p>
-     *
-     * @param b the {@link com.github.wuic.engine.AbstractEngineBuilder} which needs to be configured
-     */
-    public CacheProviderClassPropertySetter(final AbstractEngineBuilder b) {
-        this(b, DefaultEhCacheProvider.class.getName());
+                if (WuicEhcacheProvider.class.isAssignableFrom(clazz)) {
+                    put(getPropertyKey(), WuicEhcacheProvider.class.cast(clazz.newInstance()).getCache());
+                } else {
+                    throw new BadArgumentException(new IllegalArgumentException(
+                            String.format("'%s' must be a '%s'", value.toString(), WuicEhcacheProvider.class.getName())));
+                }
+            } catch (ClassNotFoundException cnfe) {
+                 throw new BadArgumentException(new IllegalArgumentException(cnfe));
+            } catch (InstantiationException ie) {
+                throw new BadArgumentException(new IllegalArgumentException(ie));
+            } catch (IllegalAccessException iae) {
+                throw new BadArgumentException(new IllegalArgumentException(iae));
+            }
+        } else {
+            throw new BadArgumentException(new IllegalArgumentException(
+                    String.format("Value '%s' associated to key '%s' must be a String", value, getPropertyKey())));
+        }
     }
 
     /**

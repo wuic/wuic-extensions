@@ -36,14 +36,22 @@
  */
 
 
-package com.github.wuic.nut.ftp;
+package com.github.wuic.nut.dao.ftp;
 
+import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.config.BooleanConfigParam;
+import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.IntegerConfigParam;
+import com.github.wuic.config.ObjectConfigParam;
+import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.exception.PollingOperationNotSupportedException;
 import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.Nut;
-import com.github.wuic.nut.core.ByteArrayNut;
+import com.github.wuic.nut.dao.NutDaoService;
+import com.github.wuic.nut.ByteArrayNut;
+import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
 import com.github.wuic.util.IOUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -65,14 +73,15 @@ import java.util.regex.Pattern;
 
 /**
  * <p>
- * A {@link com.github.wuic.nut.NutDao} implementation for FTP accesses.
+ * A {@link com.github.wuic.nut.dao.NutDao} implementation for FTP accesses.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.4
+ * @version 1.5
  * @since 0.3.1
  */
-public class FtpNutDao extends AbstractNutDao {
+@NutDaoService
+public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
 
     /**
      * Expected format when retrieved last modification date.
@@ -130,19 +139,19 @@ public class FtpNutDao extends AbstractNutDao {
      * @param pollingSeconds interval in seconds for polling feature (-1 to disable)
      * @param regex consider path as regex or not
      * @param contentBasedVersionNumber  {@code true} if version number is computed from nut content, {@code false} if based on timestamp
-
      */
-    public FtpNutDao(final Boolean ftps,
-                     final String host,
-                     final int p,
-                     final String path,
-                     final Boolean basePathAsSysProp,
-                     final String user,
-                     final String pwd,
-                     final String[] proxies,
-                     final int pollingSeconds,
-                     final Boolean regex,
-                     final Boolean contentBasedVersionNumber) {
+    @ConfigConstructor
+    public FtpNutDao(@BooleanConfigParam(defaultValue = false, propertyKey = SECRET_PROTOCOL) final Boolean ftps,
+                     @StringConfigParam(defaultValue = "localhost", propertyKey = SERVER_DOMAIN) final String host,
+                     @IntegerConfigParam(defaultValue = FTPClient.DEFAULT_PORT, propertyKey = SERVER_PORT) final int p,
+                     @StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
+                     @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
+                     @StringConfigParam(defaultValue = "", propertyKey = LOGIN) final String user,
+                     @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String pwd,
+                     @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxies,
+                     @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingSeconds,
+                     @BooleanConfigParam(defaultValue = false, propertyKey = REGEX) final Boolean regex,
+                     @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber) {
         super(path, basePathAsSysProp, proxies, pollingSeconds, contentBasedVersionNumber);
         ftpClient = ftps ? new FTPSClient(Boolean.TRUE) : new FTPClient();
         hostName = host;

@@ -38,9 +38,9 @@
 
 package com.github.wuic.yuicompressor.test;
 
-import com.github.wuic.engine.EngineBuilderFactory;
-import com.github.wuic.engine.yuicompressor.YuiCompressorCssEngineBuilder;
-import com.github.wuic.engine.yuicompressor.YuiCompressorJavascriptEngineBuilder;
+import com.github.wuic.config.ObjectBuilderFactory;
+import com.github.wuic.engine.Engine;
+import com.github.wuic.engine.EngineService;
 import com.github.wuic.exception.UnableToInstantiateException;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -49,11 +49,12 @@ import org.junit.runners.JUnit4;
 
 /**
  * <p>
- * {@link com.github.wuic.engine.EngineBuilderFactory} support for yuicompressor module tests.
+ * {@link com.github.wuic.engine.yuicompressor.YuiCompressorCssEngine} and {@link com.github.wuic.engine.yuicompressor.YuiCompressorJavascriptEngine}
+ * builder factory support tests.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.0
+ * @version 1.1
  * @since 0.5.0
  */
 @RunWith(JUnit4.class)
@@ -64,7 +65,8 @@ public class EngineBuilderFactoryYuicompressorTest {
      */
     @Test
     public void testCreateCssYuiCompressorBuilder() throws UnableToInstantiateException {
-        Assert.assertNotNull(EngineBuilderFactory.getInstance().create(YuiCompressorCssEngineBuilder.class.getSimpleName()));
+        final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EngineService.DEFAULT_SCAN_PACKAGE);
+        Assert.assertNotNull(factory.create("YuiCompressorCssEngineBuilder"));
     }
 
     /**
@@ -72,6 +74,7 @@ public class EngineBuilderFactoryYuicompressorTest {
      */
     @Test
     public void testCreateJavascriptYuiCompressorBuilder() throws UnableToInstantiateException {
-        Assert.assertNotNull(EngineBuilderFactory.getInstance().create(YuiCompressorJavascriptEngineBuilder.class.getSimpleName()));
+        final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EngineService.DEFAULT_SCAN_PACKAGE);
+        Assert.assertNotNull(factory.create("YuiCompressorJavascriptEngineBuilder"));
     }
 }

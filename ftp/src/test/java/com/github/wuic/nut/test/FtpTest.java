@@ -39,7 +39,6 @@
 package com.github.wuic.nut.test;
 
 import com.github.wuic.ContextBuilder;
-import com.github.wuic.engine.EngineBuilderFactory;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.xml.FileXmlContextBuilderConfigurator;
@@ -135,8 +134,7 @@ public class FtpTest {
      */
     @Test
     public void ftpTest() throws Exception {
-        final ContextBuilder builder = new ContextBuilder();
-        EngineBuilderFactory.getInstance().newContextBuilderConfigurator().configure(builder);
+        final ContextBuilder builder = new ContextBuilder().configureDefault();
         new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")).configure(builder);
         final List<Nut> group = builder.build().process("", "css-imagecss-image");
 

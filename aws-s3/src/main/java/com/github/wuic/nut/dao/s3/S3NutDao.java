@@ -36,18 +36,26 @@
  */
 
 
-package com.github.wuic.nut.s3;
+package com.github.wuic.nut.dao.s3;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
+import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.config.BooleanConfigParam;
+import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.IntegerConfigParam;
+import com.github.wuic.config.ObjectConfigParam;
+import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.Nut;
-import com.github.wuic.nut.core.ByteArrayNut;
+import com.github.wuic.nut.dao.NutDaoService;
+import com.github.wuic.nut.ByteArrayNut;
+import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
 import com.github.wuic.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,14 +70,16 @@ import java.util.regex.Pattern;
 
 /**
  * <p>
- * A {@link com.github.wuic.nut.NutDao} implementation for S3 AWS Cloud accesses.
+ * A {@link com.github.wuic.nut.dao.NutDao} implementation for S3 AWS Cloud accesses.
  * </p>
  *
  * @author Corentin AZELART
- * @version 1.6
+ * @author Guillaume DROUET
+ * @version 1.7
  * @since 0.3.3
  */
-public class S3NutDao extends AbstractNutDao {
+@NutDaoService
+public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
 
     /**
      * Logger.
@@ -116,15 +126,16 @@ public class S3NutDao extends AbstractNutDao {
      * @param regex consider path as regex or not
      * @param contentBasedVersionNumber  {@code true} if version number is computed from nut content, {@code false} if based on timestamp
      */
-    public S3NutDao(final String path,
-                    final Boolean basePathAsSysProp,
-                    final String[] proxyUris,
-                    final Integer pollingInterval,
-                    final String bucket,
-                    final String accessKey,
-                    final String secretKey,
-                    final Boolean regex,
-                    final Boolean contentBasedVersionNumber) {
+    @ConfigConstructor
+    public S3NutDao(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
+                    @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
+                    @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxyUris,
+                    @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingInterval,
+                    @StringConfigParam(defaultValue = "", propertyKey = CLOUD_BUCKET) final String bucket,
+                    @StringConfigParam(defaultValue = "", propertyKey = LOGIN)final String accessKey,
+                    @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String secretKey,
+                    @BooleanConfigParam(defaultValue = false, propertyKey = REGEX) final Boolean regex,
+                    @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber) {
         super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber);
         bucketName = bucket;
         login = accessKey;

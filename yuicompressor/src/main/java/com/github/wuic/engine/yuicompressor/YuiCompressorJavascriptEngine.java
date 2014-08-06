@@ -38,9 +38,15 @@
 
 package com.github.wuic.engine.yuicompressor;
 
+import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.config.BooleanConfigParam;
+import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.IntegerConfigParam;
+import com.github.wuic.config.StringConfigParam;
+import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
-import com.github.wuic.engine.impl.embedded.CGAbstractCompressorEngine;
+import com.github.wuic.engine.core.AbstractCompressorEngine;
 import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.util.IOUtils;
 import com.yahoo.platform.yui.compressor.JavaScriptCompressor;
@@ -67,7 +73,8 @@ import java.util.List;
  * @version 1.8
  * @since 0.1.0
  */
-public class JavascriptYuiCompressorEngine extends CGAbstractCompressorEngine {
+@EngineService(injectDefaultToWorkflow = true)
+public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
     
     /**
      * Marker that identifies zones where characters are escaped.
@@ -122,13 +129,15 @@ public class JavascriptYuiCompressorEngine extends CGAbstractCompressorEngine {
      * @param keepSemiColons keep unnecessary semicolons
      * @param obfuscate obfuscate the code or not
      */
-    public JavascriptYuiCompressorEngine(final Boolean compress,
-                                         final String cs,
-                                         final Integer lbp,
-                                         final Boolean disableOptim,
-                                         final Boolean verb,
-                                         final Boolean keepSemiColons,
-                                         final Boolean obfuscate) {
+    @ConfigConstructor
+    public YuiCompressorJavascriptEngine(
+            @BooleanConfigParam(propertyKey = ApplicationConfig.COMPRESS, defaultValue = true) final Boolean compress,
+            @StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "UTF-8") final String cs,
+            @IntegerConfigParam(propertyKey = ApplicationConfig.LINE_BREAK_POS, defaultValue = -1) final Integer lbp,
+            @BooleanConfigParam(propertyKey = ApplicationConfig.DISABLE_OPTIMIZATIONS, defaultValue = true) final Boolean disableOptim,
+            @BooleanConfigParam(propertyKey = ApplicationConfig.VERBOSE, defaultValue = false) final Boolean verb,
+            @BooleanConfigParam(propertyKey = ApplicationConfig.PRESERVE_SEMICOLONS, defaultValue = true) final Boolean keepSemiColons,
+            @BooleanConfigParam(propertyKey = ApplicationConfig.OBFUSCATE, defaultValue = true) final Boolean obfuscate) {
         super(compress, ".min");
         charset = cs;
         lineBreakPos = lbp;

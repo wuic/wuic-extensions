@@ -37,9 +37,10 @@
 
 /**
  * <p>
- * This package defines required implementation for {@link com.github.wuic.nut.Nut} stored in a FTP server.
+ * Package where {@link com.github.wuic.nut.Nut nuts} and their {@link com.github.wuic.nut.dao.NutDao} builders
+ * implementations are defined for FTP module.
  * </p>
  *
  * @author Guillaume DROUET
  */
-package com.github.wuic.nut.ftp;
+package com.github.wuic.nut.dao.ssh;

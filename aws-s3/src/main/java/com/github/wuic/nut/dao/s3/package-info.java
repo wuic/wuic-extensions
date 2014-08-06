@@ -37,10 +37,9 @@
 
 /**
  * <p>
- * Package where {@link com.github.wuic.nut.Nut nuts} and their {@link com.github.wuic.nut.NutDaoBuilder builers}
- * implementations are defined for FTP module.
+ * This package defines required implementation for nut stored in a S3 AWS.
  * </p>
  *
- * @author Guillaume DROUET
+ * @author Corentin AZELART
  */
-package com.github.wuic.nut.ssh;
+package com.github.wuic.nut.dao.s3;

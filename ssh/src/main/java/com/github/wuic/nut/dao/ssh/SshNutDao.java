@@ -36,13 +36,21 @@
  */
 
 
-package com.github.wuic.nut.ssh;
+package com.github.wuic.nut.dao.ssh;
 
+import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.config.BooleanConfigParam;
+import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.IntegerConfigParam;
+import com.github.wuic.config.ObjectConfigParam;
+import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.nut.AbstractNutDao;
-import com.github.wuic.nut.core.ByteArrayNut;
+import com.github.wuic.nut.dao.NutDaoService;
+import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
 import com.github.wuic.util.IOUtils;
 
 import java.io.IOException;
@@ -62,14 +70,20 @@ import com.jcraft.jsch.SftpException;
 
 /**
  * <p>
- * A {@link com.github.wuic.nut.NutDao} implementation for SSH accesses.
+ * A {@link com.github.wuic.nut.dao.NutDao} implementation for SSH accesses.
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.5
+ * @version 1.6
  * @since 0.3.1
  */
-public class SshNutDao extends AbstractNutDao {
+@NutDaoService
+public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
+
+    /**
+     * Default SSH port.
+     */
+    private static final int DEFAULT_PORT = 22;
 
     /**
      * SFTP channel usage.
@@ -96,26 +110,27 @@ public class SshNutDao extends AbstractNutDao {
      * Builds a new instance.
      * </p>
      *
-     * @param regex consider paths as regex or not
-     * @param host the host name
-     * @param p the port
-     * @param path default the path
-     * @param user the user name ({@code null} to skip the the authentication)
-     * @param pwd the password (will be ignored if user is {@code null})
-     * @param pollingInterval the interval for polling operations in seconds (-1 to deactivate)
-     * @param proxyUris the proxies URIs in front of the nut
-     * @param contentBasedVersionNumber  {@code true} if version number is computed from nut content, {@code false} if based on timestamp
+     * @param regex                     consider paths as regex or not
+     * @param host                      the host name
+     * @param p                         the port
+     * @param path                      default the path
+     * @param user                      the user name ({@code null} to skip the the authentication)
+     * @param pwd                       the password (will be ignored if user is {@code null})
+     * @param pollingInterval           the interval for polling operations in seconds (-1 to deactivate)
+     * @param proxyUris                 the proxies URIs in front of the nut
+     * @param contentBasedVersionNumber {@code true} if version number is computed from nut content, {@code false} if based on timestamp
      */
-    public SshNutDao(final Boolean regex,
-                     final String host,
-                     final Integer p,
-                     final String path,
-                     final Boolean basePathAsSysProp,
-                     final String user,
-                     final String pwd,
-                     final String[] proxyUris,
-                     final int pollingInterval,
-                     final Boolean contentBasedVersionNumber) {
+    @ConfigConstructor
+    public SshNutDao(@BooleanConfigParam(defaultValue = false, propertyKey = REGEX) final Boolean regex,
+                     @StringConfigParam(defaultValue = "localhost", propertyKey = SERVER_DOMAIN) final String host,
+                     @IntegerConfigParam(defaultValue = DEFAULT_PORT, propertyKey = SERVER_PORT) final int p,
+                     @StringConfigParam(propertyKey = BASE_PATH, defaultValue = ".") final String path,
+                     @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
+                     @StringConfigParam(defaultValue = "", propertyKey = LOGIN) final String user,
+                     @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String pwd,
+                     @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxyUris,
+                     @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingInterval,
+                     @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber) {
         super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber);
         regularExpression = regex;
 

@@ -42,13 +42,17 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.NodeEngine;
-import com.github.wuic.engine.impl.embedded.CGTextAggregatorEngine;
+import com.github.wuic.engine.core.TextAggregatorEngine;
+import com.github.wuic.exception.BuilderPropertyNotSupportedException;
+import com.github.wuic.nut.dao.NutDao;
+import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.nut.Nut;
-import com.github.wuic.nut.s3.S3NutDao;
-import com.github.wuic.nut.s3.S3NutDaoBuilder;
+import com.github.wuic.nut.dao.s3.S3NutDao;
+import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.util.IOUtils;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -90,18 +94,28 @@ public class S3Test {
      */
     @Test
     public void builderTest() throws Exception {
-        new S3NutDaoBuilder()
-                .property(ApplicationConfig.CLOUD_BUCKET, "bucket")
+        final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, NutDaoService.DEFAULT_SCAN_PACKAGE);
+        final ObjectBuilder<NutDao> builder = factory.create("S3NutDaoBuilder");
+        Assert.assertNotNull(builder);
+
+        builder.property(ApplicationConfig.CLOUD_BUCKET, "bucket")
                 .property(ApplicationConfig.LOGIN, "login")
                 .property(ApplicationConfig.PASSWORD, "password")
                 .build();
+    }
 
-        try {
-            new S3NutDaoBuilder().property("foo", "value");
-            Assert.fail();
-        } catch (Exception e) {
-            // Normal behavior : property not supported
-        }
+    /**
+     * <p>
+     * Test builder.
+     * </p>
+     *
+     */
+    @Test(expected = BuilderPropertyNotSupportedException.class)
+    public void builderWithBadPropertyTest() throws BuilderPropertyNotSupportedException {
+        final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, S3NutDao.class);
+        final ObjectBuilder<NutDao> builder = factory.create("S3NutDaoBuilder");
+        Assert.assertNotNull(builder);
+        builder.property("foo", "value");
     }
 
     /**
@@ -142,7 +156,7 @@ public class S3Test {
         final NutsHeap nutsHeap = new NutsHeap(Arrays.asList("[cloud].css"), dao, "heap");
         Assert.assertEquals(nutsHeap.getNuts().size(), 1);
 
-        final NodeEngine aggregator = new CGTextAggregatorEngine(true);
+        final NodeEngine aggregator = new TextAggregatorEngine(true);
         final List<Nut> group = aggregator.parse(new EngineRequest("", "", nutsHeap, new HashMap<NutType, NodeEngine>()));
 
         Assert.assertFalse(group.isEmpty());

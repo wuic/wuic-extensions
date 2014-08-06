@@ -38,8 +38,13 @@
 
 package com.github.wuic.engine.ehcache;
 
+import com.github.wuic.ApplicationConfig;
+import com.github.wuic.config.BooleanConfigParam;
+import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.ObjectConfigParam;
 import com.github.wuic.engine.EngineRequest;
-import com.github.wuic.engine.impl.embedded.AbstractCacheEngine;
+import com.github.wuic.engine.EngineService;
+import com.github.wuic.engine.core.AbstractCacheEngine;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
@@ -51,10 +56,11 @@ import net.sf.ehcache.Element;
  * </p>
  * 
  * @author Guillaume DROUET
- * @version 1.9
+ * @version 2.0
  * @since 0.1.1
  */
-public class EhCacheEngine extends AbstractCacheEngine {
+@EngineService(injectDefaultToWorkflow = true)
+public class EhCacheEngine extends AbstractCacheEngine implements ApplicationConfig {
 
     /**
      * The wrapped cache.
@@ -70,7 +76,16 @@ public class EhCacheEngine extends AbstractCacheEngine {
      * @param cache the cache to be wrapped
      * @param bestEffort enable best effort mode or not
      */
-    public EhCacheEngine(final Boolean work, final Cache cache, final Boolean bestEffort) {
+    @ConfigConstructor
+    public EhCacheEngine(
+            @BooleanConfigParam(propertyKey = CACHE, defaultValue = true)
+            final Boolean work,
+            @ObjectConfigParam(propertyKey = CACHE_PROVIDER_CLASS,
+                    defaultValue = "com.github.wuic.engine.ehcache.DefaultEhCacheProvider",
+                    setter = CacheProviderClassPropertySetter.class)
+            final Cache cache,
+            @BooleanConfigParam(propertyKey = BEST_EFFORT, defaultValue = false)
+            final Boolean bestEffort) {
         super(work, bestEffort);
         ehCache = cache;
     }
