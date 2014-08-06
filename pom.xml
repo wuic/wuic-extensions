@@ -97,34 +97,18 @@
                 </exclusions>
             </dependency>
 
+            <!-- For HTML compressor -->
+            <dependency>
+                <groupId>com.googlecode.htmlcompressor</groupId>
+                <artifactId>htmlcompressor</artifactId>
+                <version>${htmlcompressor.version}</version>
+            </dependency>
+
             <!-- For engine and samples using EHCache -->
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
                 <artifactId>ehcache-core</artifactId>
                 <version>${ehcache-core.version}</version>
-            </dependency>
-
-            <!-- Tests -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${mockito.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- In module, use the slf4j-simple artifact only in tests -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>${slf4j.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <!-- Embed FTP server for tests -->
@@ -178,10 +162,10 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- J2EE APIs are always provided -->
+            <!-- JEE APIs are always provided -->
             <dependency>
                 <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
+                <artifactId>javax.servlet-api</artifactId>
                 <version>${servlet-api.version}</version>
                 <scope>provided</scope>
             </dependency>
@@ -242,32 +226,35 @@
                 <artifactId>google-collections</artifactId>
                 <version>${google-collections.version}</version>
             </dependency>
+
+            <!-- Testing library -->
+            <dependency>
+                <groupId>com.github.wuic</groupId>
+                <artifactId>wuic-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.servlet</groupId>
+                        <artifactId>jboss-servlet-api_3.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <!-- Tests dependencies -->
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
+            <groupId>com.github.wuic</groupId>
+            <artifactId>wuic-test</artifactId>
         </dependency>
     </dependencies>
 
     <properties>
         <!-- dependencies libraries -->
         <commons-net.version>3.2</commons-net.version>
-        <servlet-api.version>2.5</servlet-api.version>
-        <junit.version>4.8.2</junit.version>
+        <servlet-api.version>3.1-b02</servlet-api.version>
         <mockito.version>1.9.5</mockito.version>
         <htmlcompressor.version>1.5.2</htmlcompressor.version>
         <yuicompressor.version>2.3.6</yuicompressor.version>
