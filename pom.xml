@@ -13,6 +13,7 @@
         <module>thymeleaf</module>
         <module>ehcache</module>
         <module>yuicompressor</module>
+        <module>htmlcompressor</module>
     </modules>
 
     <packaging>pom</packaging>
