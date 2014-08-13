@@ -126,8 +126,17 @@ public class HtmlCompressorEngine extends NodeEngine {
 
             try {
                 for (final Nut nut : request.getNuts()) {
-                    final String compress = compressor.compress(IOUtils.readString(new InputStreamReader(nut.openStream())));
-                    retval.add(new ByteArrayNut(compress.getBytes(), nut.getName(), NutType.HTML, Arrays.asList(nut)));
+                    final String compressString = compressor.compress(IOUtils.readString(new InputStreamReader(nut.openStream())));
+                    final Nut compress = new ByteArrayNut(compressString.getBytes(), nut.getName(), NutType.HTML, Arrays.asList(nut));
+                    retval.add(compress);
+
+                    if (nut.getReferencedNuts() != null) {
+
+                        // Also add all the referenced nuts
+                        for (final Nut ref : nut.getReferencedNuts()) {
+                            compress.addReferencedNut(ref);
+                        }
+                    }
                 }
 
                 return retval;
