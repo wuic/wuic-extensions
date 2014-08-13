@@ -53,7 +53,7 @@ import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.dao.gstorage.GStorageNutDao;
 import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.util.IOUtils;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
