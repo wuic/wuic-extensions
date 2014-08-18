@@ -139,7 +139,11 @@ public class HtmlCompressorEngine extends NodeEngine {
                     }
                 }
 
-                return retval;
+                if (getNext() != null) {
+                    return getNext().parse(new EngineRequest(retval, request));
+                } else {
+                    return retval;
+                }
             } catch (IOException ioe) {
                 throw new StreamException(ioe);
             }
