@@ -45,22 +45,22 @@ import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.IntegerConfigParam;
 import com.github.wuic.config.ObjectConfigParam;
 import com.github.wuic.config.StringConfigParam;
+import com.github.wuic.exception.NutNotFoundException;
 import com.github.wuic.exception.wrapper.StreamException;
+import com.github.wuic.nut.AbstractNut;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.dao.NutDaoService;
-import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
-import com.github.wuic.util.IOUtils;
 
 import java.io.IOException;
-import java.io.ByteArrayOutputStream;
 
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.concurrent.Future;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -166,11 +166,13 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
     @Override
     @SuppressWarnings("unchecked")
     public List<String> listNutsPaths(final String pattern) throws StreamException {
+        ChannelSftp channel = null;
+
         try {
             connect();
 
             if (regularExpression) {
-                final ChannelSftp channel = (ChannelSftp) session.openChannel(SFTP_CHANNEL);
+                channel = (ChannelSftp) session.openChannel(SFTP_CHANNEL);
                 channel.connect();
                 channel.cd(getBasePath());
                 final List<ChannelSftp.LsEntry> list = channel.ls(pattern);
@@ -188,29 +190,6 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
             throw new StreamException(new IOException(je));
         } catch (SftpException se) {
             throw new StreamException(new IOException(se));
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Nut accessFor(final String path, final NutType type) throws StreamException {
-        ChannelSftp channel = null;
-
-        try {
-            connect();
-
-            channel = (ChannelSftp) session.openChannel(SFTP_CHANNEL);
-            channel.connect();
-            channel.cd(getBasePath());
-            final ByteArrayOutputStream os = new ByteArrayOutputStream(IOUtils.WUIC_BUFFER_LEN);
-            channel.get(path, os);
-            return new ByteArrayNut(os.toByteArray(), path, type, getVersionNumber(path));
-        } catch (JSchException je) {
-            throw new StreamException(new IOException(CANNOT_LOAD_MESSAGE, je));
-        } catch (SftpException se) {
-            throw new StreamException(new IOException("An SSH FTP error prevent remote file loading", se));
         } finally {
             if (channel != null) {
                 channel.disconnect();
@@ -222,9 +201,19 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
+    public Nut accessFor(final String path, final NutType type) throws StreamException {
+        return new SshNut(path, type, getVersionNumber(path));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected Long getLastUpdateTimestampFor(final String path) throws StreamException {
+        ChannelSftp channel = null;
+
         try {
-            final ChannelSftp channel = (ChannelSftp) session.openChannel(SFTP_CHANNEL);
+            channel = (ChannelSftp) session.openChannel(SFTP_CHANNEL);
             channel.connect();
             channel.cd(getBasePath());
             return (long) channel.stat(path).getMTime();
@@ -232,6 +221,10 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
             throw new StreamException(new IOException(CANNOT_LOAD_MESSAGE, je));
         } catch (SftpException se) {
             throw new StreamException(new IOException(CANNOT_LOAD_MESSAGE, se));
+        } finally {
+            if (channel != null) {
+                channel.disconnect();
+            }
         }
     }
 
@@ -277,6 +270,52 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
         } finally {
             if (channel != null) {
                 channel.disconnect();
+            }
+        }
+    }
+
+    /**
+     * <p>
+     * Nut for SSH.
+     * </p>
+     *
+     * @author Guillaume DROUET
+     * @version 1.0
+     * @since 0.5.0
+     */
+    private final class SshNut extends AbstractNut {
+
+        /**
+         * <p>
+         * Creates a new instance.
+         * </p>
+         *
+         * @param name the name
+         * @param nt the {@link NutType}
+         * @param v the version number
+         */
+        private SshNut(final String name, final NutType nt, final Future<Long> v) {
+            super(name, nt, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, v);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public InputStream openStream() throws NutNotFoundException {
+            ChannelSftp channel;
+
+            try {
+                connect();
+
+                channel = (ChannelSftp) session.openChannel(SFTP_CHANNEL);
+                channel.connect();
+                channel.cd(getBasePath());
+                return channel.get(getName());
+            } catch (JSchException je) {
+                throw new NutNotFoundException(new IOException(CANNOT_LOAD_MESSAGE, je));
+            } catch (SftpException se) {
+                throw new NutNotFoundException(new IOException("An SSH FTP error prevent remote file loading", se));
             }
         }
     }

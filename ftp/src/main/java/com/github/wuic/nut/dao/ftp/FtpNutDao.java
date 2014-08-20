@@ -68,6 +68,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -256,9 +257,13 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
             }
 
             // Create nut
-            return new ByteArrayNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath));
+            return new ByteArrayNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath).get());
         } catch (IOException ioe) {
             throw new StreamException(ioe);
+        } catch (ExecutionException ee) {
+            throw new StreamException(new IOException(ee));
+        } catch (InterruptedException ie) {
+            throw new StreamException(new IOException(ie));
         }
     }
 

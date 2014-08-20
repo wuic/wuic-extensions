@@ -42,7 +42,12 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.config.BooleanConfigParam;
@@ -50,21 +55,22 @@ import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.IntegerConfigParam;
 import com.github.wuic.config.ObjectConfigParam;
 import com.github.wuic.config.StringConfigParam;
+import com.github.wuic.exception.NutNotFoundException;
 import com.github.wuic.exception.wrapper.StreamException;
+import com.github.wuic.nut.AbstractNut;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.NutDaoService;
-import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
 import com.github.wuic.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -220,31 +226,8 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
      */
     @Override
     public Nut accessFor(final String realPath, final NutType type) throws StreamException {
-        // Try to get S3 object
-        S3Object s3Object;
-
-        try {
-            connect();
-            s3Object = amazonS3Client.getObject(bucketName, realPath);
-        } catch (AmazonServiceException ase) {
-            throw new StreamException(new IOException(String.format("Can't get S3Object on bucket %s  for nut key : %s", bucketName, realPath), ase));
-        }
-
-        S3ObjectInputStream s3ObjectInputStream = null;
-        try {
-            // Get S3Object content
-            s3ObjectInputStream = s3Object.getObjectContent();
-
-            // Download path into memory
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream(IOUtils.WUIC_BUFFER_LEN);
-            IOUtils.copyStream(s3ObjectInputStream, baos);
-
-            // Create nut
-            return new ByteArrayNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath));
-        } finally {
-            // Close S3Object stream
-            IOUtils.close(s3ObjectInputStream);
-        }
+        // Create nut
+        return new S3Nut(realPath, type, getVersionNumber(realPath));
     }
 
     /**
@@ -313,6 +296,56 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
             }
         } finally {
             super.finalize();
+        }
+    }
+
+    /**
+     * <p>
+     * Nut for S3.
+     * </p>
+     *
+     * @author Guillaume DROUET
+     * @version 1.0
+     * @since 0.5.0
+     */
+    private final class S3Nut extends AbstractNut {
+
+        /**
+         * <p>
+         * Creates a new instance.
+         * </p>
+         *
+         * @param name the name
+         * @param nt the {@link NutType}
+         * @param v the version number
+         */
+        private S3Nut(final String name, final NutType nt, final Future<Long> v) {
+            super(name, nt, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, v);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public InputStream openStream() throws NutNotFoundException {
+            // Try to get S3 object
+            S3Object s3Object;
+
+            try {
+                connect();
+                s3Object = amazonS3Client.getObject(bucketName, getName());
+            } catch (AmazonServiceException ase) {
+                throw new NutNotFoundException(new IOException(String.format("Can't get S3Object on bucket %s  for nut key : %s", bucketName, getName()), ase));
+            }
+
+            S3ObjectInputStream s3ObjectInputStream = null;
+            try {
+                // Get S3Object content
+                return s3Object.getObjectContent();
+            } finally {
+                // Close S3Object stream
+                IOUtils.close(s3ObjectInputStream);
+            }
         }
     }
 }

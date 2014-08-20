@@ -60,7 +60,6 @@ import org.junit.runners.JUnit4;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -127,7 +126,7 @@ public class GStorageTest {
         final byte[] array = ".cloud { text-align : justify;}".getBytes();
         when(nutsHeap.getNutTypes()).thenReturn(new HashSet<NutType>(Arrays.asList(NutType.CSS)));
         final List<Nut> nuts = new ArrayList<Nut>();
-        nuts.add(new ByteArrayNut(array, "cloud.css", NutType.CSS, new BigInteger("1")));
+        nuts.add(new ByteArrayNut(array, "cloud.css", NutType.CSS, 1L));
         when(nutsHeap.getNuts()).thenReturn(nuts);
 
         final NodeEngine aggregator = new TextAggregatorEngine(true);

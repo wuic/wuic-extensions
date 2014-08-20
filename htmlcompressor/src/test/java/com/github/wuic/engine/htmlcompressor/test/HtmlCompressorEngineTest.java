@@ -49,6 +49,7 @@ import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.NutsHeap;
+import com.github.wuic.util.FutureLong;
 import com.github.wuic.util.IOUtils;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -57,7 +58,6 @@ import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -86,7 +86,7 @@ public class HtmlCompressorEngineTest {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getName()).thenReturn("index.html");
         Mockito.when(nut.openStream()).thenReturn(HtmlCompressorEngineTest.class.getResourceAsStream("/htmlcompressor/index.html"));
-        Mockito.when(nut.getVersionNumber()).thenReturn(new BigInteger("0"));
+        Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
 
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));
@@ -111,7 +111,7 @@ public class HtmlCompressorEngineTest {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getName()).thenReturn("index.html");
         Mockito.when(nut.openStream()).thenReturn(HtmlCompressorEngineTest.class.getResourceAsStream("/htmlcompressor/index.html"));
-        Mockito.when(nut.getVersionNumber()).thenReturn(new BigInteger("0"));
+        Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
 
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));

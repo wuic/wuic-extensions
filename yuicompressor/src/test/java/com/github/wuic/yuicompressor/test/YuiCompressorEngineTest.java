@@ -49,6 +49,7 @@ import com.github.wuic.engine.yuicompressor.YuiCompressorCssEngine;
 import com.github.wuic.engine.yuicompressor.YuiCompressorJavascriptEngine;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.NutsHeap;
+import com.github.wuic.util.FutureLong;
 import com.github.wuic.util.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,7 +59,6 @@ import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -86,7 +86,7 @@ public class YuiCompressorEngineTest {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getName()).thenReturn("foo.js");
         Mockito.when(nut.openStream()).thenReturn(new ByteArrayInputStream("var foo = 0; // some comments".getBytes()));
-        Mockito.when(nut.getVersionNumber()).thenReturn(new BigInteger("0"));
+        Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
         Mockito.when(nut.isTextReducible()).thenReturn(Boolean.TRUE);
         Mockito.when(nut.getNutType()).thenReturn(NutType.JAVASCRIPT);
 
@@ -111,7 +111,7 @@ public class YuiCompressorEngineTest {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getName()).thenReturn("foo.js");
         Mockito.when(nut.openStream()).thenReturn(new ByteArrayInputStream(".foo { color: black;/*some comments*/ }".getBytes()));
-        Mockito.when(nut.getVersionNumber()).thenReturn(new BigInteger("0"));
+        Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
         Mockito.when(nut.isTextReducible()).thenReturn(Boolean.TRUE);
         Mockito.when(nut.getNutType()).thenReturn(NutType.CSS);
 

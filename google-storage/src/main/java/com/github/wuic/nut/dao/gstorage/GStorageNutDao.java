@@ -45,11 +45,12 @@ import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.IntegerConfigParam;
 import com.github.wuic.config.ObjectConfigParam;
 import com.github.wuic.config.StringConfigParam;
+import com.github.wuic.exception.NutNotFoundException;
 import com.github.wuic.exception.wrapper.StreamException;
+import com.github.wuic.nut.AbstractNut;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.NutDaoService;
-import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
 import com.github.wuic.util.IOUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -63,7 +64,6 @@ import com.google.api.services.storage.model.StorageObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,6 +71,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -253,19 +254,8 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      */
     @Override
     public Nut accessFor(final String realPath, final NutType type) throws StreamException {
-        try {
-            // Try to get a Storage object
-            final Storage.Objects.Get storageObject = storage.objects().get(bucketName, realPath);
-
-            // Download path
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream(IOUtils.WUIC_BUFFER_LEN);
-            storageObject.executeMediaAndDownloadTo(baos);
-
-            // Create nut
-            return new ByteArrayNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath));
-        } catch (IOException ioe) {
-            throw new StreamException(ioe);
-        }
+        // Create nut
+        return new GStorageNut(realPath, type, getVersionNumber(realPath));
     }
 
     /**
@@ -316,6 +306,48 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
             return storage.objects().get(bucketName, path).executeMediaAsInputStream();
         } catch (IOException ioe) {
             throw new StreamException(ioe);
+        }
+    }
+
+
+    /**
+     * <p>
+     * Nut for GStorage.
+     * </p>
+     *
+     * @author Guillaume DROUET
+     * @version 1.0
+     * @since 0.5.0
+     */
+    private final class GStorageNut extends AbstractNut {
+
+        /**
+         * <p>
+         * Creates a new instance.
+         * </p>
+         *
+         * @param name the name
+         * @param nt the {@link NutType}
+         * @param v the version number
+         */
+        private GStorageNut(final String name, final NutType nt, final Future<Long> v) {
+            super(name, nt, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, v);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public InputStream openStream() throws NutNotFoundException {
+            try {
+                // Try to get a Storage object
+                final Storage.Objects.Get storageObject = storage.objects().get(bucketName, getName());
+
+                // Download path
+                return storageObject.executeMediaAsInputStream();
+            } catch (IOException ioe) {
+                throw new NutNotFoundException(ioe);
+            }
         }
     }
 }
