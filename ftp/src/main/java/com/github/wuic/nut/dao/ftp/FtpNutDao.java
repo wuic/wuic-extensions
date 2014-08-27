@@ -353,6 +353,24 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
+    public Boolean exists(final String path) throws StreamException {
+        try {
+            // Connect if necessary
+            connect();
+
+            ftpClient.changeWorkingDirectory(getBasePath());
+
+            InputStream inputStream = newInputStream(path);
+            return (inputStream == null || ftpClient.getReplyCode() == 550);
+        } catch (IOException ioe) {
+            throw new StreamException(ioe);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected List<String> listNutsPaths(final String pattern) throws StreamException {
         try {
             connect();

@@ -48,6 +48,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.sns.model.NotFoundException;
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.config.BooleanConfigParam;
@@ -278,6 +279,24 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
             return amazonS3Client.getObject(bucketName, path).getObjectContent();
         } catch (AmazonServiceException ase) {
             throw new StreamException(new IOException(String.format("Can't get S3Object on bucket %s  for nut key : %s", bucketName, path), ase));
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Boolean exists(final String path) throws StreamException {
+        try {
+            connect();
+            amazonS3Client.getObject(bucketName, path).getObjectContent().close();
+            return Boolean.TRUE;
+        } catch (NotFoundException nfe) {
+            return Boolean.FALSE;
+        } catch (AmazonServiceException ase) {
+            throw new StreamException(new IOException(String.format("Can't get S3Object on bucket %s  for nut key : %s", bucketName, path), ase));
+        } catch (IOException ioe) {
+            throw new StreamException(ioe);
         }
     }
 

@@ -67,6 +67,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -94,6 +96,11 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * Common exception message.
      */
     private static final String CANNOT_LOAD_MESSAGE = "Can't load the file remotely with SSH FTP";
+
+    /**
+     * The logger.
+     */
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
      * The SSH session.
@@ -257,18 +264,73 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
         ChannelSftp channel = null;
 
         try {
+            channel = open();
+            return channel.get(path);
+        } catch (SftpException se) {
+            throw new StreamException(new IOException("An SSH FTP error prevent remote file loading", se));
+        } finally {
+            if (channel != null) {
+                channel.disconnect();
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Boolean exists(final String path) throws StreamException {
+        ChannelSftp channel = null;
+        boolean exception = false;
+        try {
+            channel = open();
+        } catch (SftpException se) {
+            exception = true;
+            throw new StreamException(new IOException("An SSH FTP error prevent remote file loading", se));
+        } finally {
+            if (exception) {
+                channel.disconnect();
+            }
+        }
+
+        try {
+            channel.lstat(path);
+            return Boolean.TRUE;
+        } catch (SftpException se) {
+            log.debug("A path does not exists", se);
+            return Boolean.FALSE;
+        } finally {
+            if (channel != null) {
+                channel.disconnect();
+            }
+        }
+    }
+
+    /**
+     * <p>
+     * Open the returned channel and change directory to base path.
+     * </p>
+     *
+     * @throws StreamException if an I/O error occurs
+     * @throws SftpException if connection could not be opened
+     * @return the channel
+     */
+    public ChannelSftp open() throws StreamException, SftpException {
+        boolean exception = false;
+        ChannelSftp channel = null;
+
+        try {
             connect();
 
             channel = (ChannelSftp) session.openChannel(SFTP_CHANNEL);
             channel.connect();
             channel.cd(getBasePath());
-            return channel.get(path);
+            exception = true;
+            return channel;
         } catch (JSchException je) {
             throw new StreamException(new IOException(CANNOT_LOAD_MESSAGE, je));
-        } catch (SftpException se) {
-            throw new StreamException(new IOException("An SSH FTP error prevent remote file loading", se));
         } finally {
-            if (channel != null) {
+            if (exception) {
                 channel.disconnect();
             }
         }

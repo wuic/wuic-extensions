@@ -309,6 +309,19 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Boolean exists(final String path) throws StreamException {
+        try {
+            // Try to get a Storage object
+            storage.objects().get(bucketName, path).executeMediaAsInputStream().close();
+            return true;
+        } catch (IOException ioe) {
+            return false;
+        }
+    }
 
     /**
      * <p>
