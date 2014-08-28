@@ -67,19 +67,32 @@ public class WuicDialect extends AbstractDialect {
      * {@inheritDoc}
      */
     @Override
-    public boolean isLenient() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Set<IProcessor> getProcessors() {
         final Set<IProcessor> processors = new HashSet<IProcessor>();
-        processors.add(new ImportProcessor());
-        processors.add(new ConfigProcessor());
+        processors.add(importProcessor());
+        processors.add(configProcessor());
         return processors;
     }
 
+    /**
+     * <p>
+     * Creates an instance of {@link ImportProcessor}.
+     * </p>
+     *
+     * @return the new instance
+     */
+    protected ImportProcessor importProcessor() {
+        return new ImportProcessor();
+    }
+
+    /**
+     * <p>
+     * Creates an instance of {@link ConfigProcessor}.
+     * </p>
+     *
+     * @return  the new instance
+     */
+    protected ConfigProcessor configProcessor() {
+        return new ConfigProcessor();
+    }
 }

@@ -44,10 +44,13 @@ import com.github.wuic.jee.WuicJeeContext;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.HtmlUtil;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.UrlProvider;
+import com.github.wuic.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.*;
+import org.thymeleaf.dom.Macro;
+import org.thymeleaf.dom.Element;
 import org.thymeleaf.processor.ProcessorResult;
 import org.thymeleaf.processor.attr.AbstractAttrProcessor;
 
@@ -90,22 +93,22 @@ public class ImportProcessor extends AbstractAttrProcessor {
     @Override
     protected ProcessorResult processAttribute(final Arguments arguments, final Element element, final String attributeName) {
         // Get the facade
-        final WuicFacade facade = WuicJeeContext.getWuicFacade();
+        final WuicFacade facade = wuicFacade();
 
         final String workflow = element.getAttributeValue(attributeName);
 
-        if (WuicJeeContext.initParams().wuicServletMultipleConfInTagSupport()) {
+        if (wuicServletMultipleConfInTagSupport()) {
             facade.clearTag(workflow);
         }
 
         try {
             int cpt = 0;
             final List<Nut> nuts = facade.runWorkflow(workflow);
+            final UrlProvider urlProvider = urlProvider(workflow);
 
             // Insert import statements into the top
             for (final Nut nut : nuts) {
-                final String path = IOUtils.mergePath(facade.getContextPath(), workflow);
-                element.insertChild(cpt++, new Macro(HtmlUtil.writeScriptImport(nut, path)));
+                element.insertChild(cpt++, new Macro(HtmlUtil.writeScriptImport(nut, urlProvider)));
             }
         } catch (WuicException we) {
             log.error("WUIC import processor has failed", we);
@@ -125,5 +128,41 @@ public class ImportProcessor extends AbstractAttrProcessor {
     @Override
     public int getPrecedence() {
         return 0;
+    }
+
+    /**
+     * <p>
+     * Indicates if the configuration for a workflow could be refreshed or if we keep the version initialized the first
+     * time the page has been loaded.
+     * </p>
+     *
+     * @return {@code true} to clear tag, {@code false} otherwise
+     */
+    protected Boolean wuicServletMultipleConfInTagSupport() {
+        return WuicJeeContext.initParams().wuicServletMultipleConfInTagSupport();
+    }
+
+    /**
+     * <p>
+     * Gets the {@link WuicFacade}.
+     * </p>
+     *
+     * @return the facade
+     */
+    protected WuicFacade wuicFacade() {
+        return WuicJeeContext.getWuicFacade();
+    }
+
+    /**
+     * <p>
+     * Returns the {@link UrlProvider} for the given workflow ID.
+     * </p>
+     *
+     * @param workflowId the workflow ID
+     * @return the {@link UrlProvider}
+     */
+    protected UrlProvider urlProvider(final String workflowId) {
+        final WuicFacade facade = WuicJeeContext.getWuicFacade();
+        return UrlUtils.urlProvider(IOUtils.mergePath(facade.getContextPath(), workflowId));
     }
 }

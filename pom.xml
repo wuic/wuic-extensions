@@ -70,6 +70,13 @@
         </contributor>
     </contributors>
 
+    <repositories>
+        <repository>
+            <id>spring</id>
+            <url>http://repo.spring.io/snapshot</url>
+        </repository>
+    </repositories>
+
     <dependencyManagement>
         <dependencies>
             <!-- Core -->
@@ -206,6 +213,12 @@
                 <version>${aws-java-sdk.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
             <!-- Google OAuth and Storage support -->
             <dependency>
                 <groupId>com.google.apis</groupId>
@@ -260,7 +273,7 @@
         <htmlcompressor.version>1.5.2</htmlcompressor.version>
         <yuicompressor.version>2.3.6</yuicompressor.version>
         <ehcache-core.version>2.5.3</ehcache-core.version>
-        <thymeleaf-version>2.0.19</thymeleaf-version>
+        <thymeleaf-version>2.1.3.RELEASE</thymeleaf-version>
         <google-api-services-storage.version>v1beta2-rev3-1.15.0-rc</google-api-services-storage.version>
         <google-http-client.version>1.15.0-rc</google-http-client.version>
         <google-http-client-jackson2.version>1.13.1-beta</google-http-client-jackson2.version>
@@ -271,5 +284,6 @@
         <ftpserver.version>1.0.6</ftpserver.version>
         <slf4j.version>1.7.5</slf4j.version>
         <mockito.version>1.9.5</mockito.version>
+        <spring.version>4.1.0.BUILD-SNAPSHOT</spring.version>
     </properties>
 </project>
