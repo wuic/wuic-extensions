@@ -14,6 +14,7 @@
         <module>ehcache</module>
         <module>yuicompressor</module>
         <module>htmlcompressor</module>
+        <module>spring</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -141,35 +142,6 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- HTTP & webapp unit tests -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-server</artifactId>
-                <version>${jetty8-version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-servlet</artifactId>
-                <version>${jetty8-version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-webapp</artifactId>
-                <version>${jetty8-version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-servlets</artifactId>
-                <version>${jetty8-version}</version>
-                <scope>test</scope>
-            </dependency>
-
             <!-- JEE APIs are always provided -->
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -242,6 +214,13 @@
             </dependency>
 
             <!-- Testing library -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring.version}</version>
+                <scope>test</scope>
+            </dependency>
+
             <dependency>
                 <groupId>com.github.wuic</groupId>
                 <artifactId>wuic-test</artifactId>
