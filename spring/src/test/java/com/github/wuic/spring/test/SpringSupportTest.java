@@ -64,6 +64,7 @@ import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 import org.springframework.web.servlet.resource.ResourceResolver;
 import org.springframework.web.servlet.resource.ResourceResolverChain;
+import org.springframework.web.servlet.resource.VersionResourceResolver;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -173,7 +174,7 @@ public class SpringSupportTest {
      */
     @Test
     public void resolverTest() throws Exception {
-        registration.addResourceLocations("classpath:/").addResolver(new WuicPathResourceResolver(wuicFacade));
+        registration.addResourceLocations("classpath:/").resourceChain(true).addResolver(new WuicPathResourceResolver(wuicFacade));
         final SimpleUrlHandlerMapping handlerMapping = (SimpleUrlHandlerMapping) this.registry.getHandlerMapping();
         Assert.assertNotNull("Expects that an handler mapping is registered", handlerMapping);
         ResourceHttpRequestHandler handler = (ResourceHttpRequestHandler) handlerMapping.getUrlMap().get(PATTERN);
@@ -195,7 +196,9 @@ public class SpringSupportTest {
         final Resource resource = new FileSystemResource(getClass().getResource("/statics/foo.js").getFile());
         Mockito.when(mock.resolveResource(Mockito.any(HttpServletRequest.class), Mockito.anyString(), Mockito.anyList(), Mockito.any(ResourceResolverChain.class)))
                 .thenReturn(resource);
-        registration.addVersionStrategy(new WuicVersionStrategy(), "/**/*").addResourceLocations("classpath:/").addResolver(mock);
+        final VersionResourceResolver versionResourceResolver = new VersionResourceResolver()
+                .addVersionStrategy(new WuicVersionStrategy(), "/**/*");
+        registration.addResourceLocations("classpath:/").resourceChain(true).addResolver(versionResourceResolver).addResolver(mock);
         final SimpleUrlHandlerMapping handlerMapping = (SimpleUrlHandlerMapping) this.registry.getHandlerMapping();
         Assert.assertNotNull("Expects that an handler mapping is registered", handlerMapping);
         ResourceHttpRequestHandler handler = (ResourceHttpRequestHandler) handlerMapping.getUrlMap().get(PATTERN);
