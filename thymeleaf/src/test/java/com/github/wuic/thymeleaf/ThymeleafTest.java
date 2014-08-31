@@ -38,7 +38,9 @@
 
 package com.github.wuic.thymeleaf;
 
-import com.github.wuic.jee.WuicServletContextListener;
+import com.github.wuic.WuicFacade;
+import com.github.wuic.WuicFacadeBuilder;
+import com.github.wuic.exception.WuicException;
 import com.github.wuic.test.Server;
 import com.github.wuic.test.WuicRunnerConfiguration;
 import com.github.wuic.util.IOUtils;
@@ -61,8 +63,21 @@ import java.io.InputStreamReader;
  * @since 0.5.0
  */
 @RunWith(JUnit4.class)
-@WuicRunnerConfiguration(installFilter = ThymeleafFilterTest.class, webApplicationPath = "/thymeleaf", installListener = WuicServletContextListener.class)
+@WuicRunnerConfiguration(installFilter = ThymeleafFilterTest.class, webApplicationPath = "/thymeleaf")
 public class ThymeleafTest {
+
+    /**
+     * The shared facade.
+     */
+    static final WuicFacade FACADE;
+
+    static {
+        try {
+            FACADE = new WuicFacadeBuilder().build();
+        } catch (WuicException we) {
+            throw new RuntimeException(we);
+        }
+    }
 
     /**
      * The server running during tests.

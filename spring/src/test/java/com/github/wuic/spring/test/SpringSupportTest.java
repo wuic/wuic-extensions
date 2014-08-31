@@ -42,6 +42,7 @@ import com.github.wuic.ApplicationConfig;
 import com.github.wuic.ContextBuilder;
 import com.github.wuic.ContextBuilderConfigurator;
 import com.github.wuic.WuicFacade;
+import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.nut.dao.core.ClasspathNutDao;
 import com.github.wuic.spring.WuicPathResourceResolver;
@@ -133,7 +134,7 @@ public class SpringSupportTest {
      */
     @Before
     public void tearUp() throws Exception {
-        wuicFacade = WuicFacade.newInstance("", true);
+        wuicFacade = new WuicFacadeBuilder().build();
         wuicFacade.configure(new ContextBuilderConfigurator() {
 
             @Override

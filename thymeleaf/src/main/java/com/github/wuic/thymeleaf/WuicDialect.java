@@ -38,9 +38,11 @@
 
 package com.github.wuic.thymeleaf;
 
+import com.github.wuic.WuicFacade;
 import org.thymeleaf.dialect.AbstractDialect;
 import org.thymeleaf.processor.IProcessor;
 
+import javax.servlet.ServletContext;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,6 +56,22 @@ import java.util.Set;
  * @since 0.4.1
  */
 public class WuicDialect extends AbstractDialect {
+
+    /**
+     * The WUIC facade.
+     */
+    private WuicFacade wuicFacade;
+
+    /**
+     * <p>
+     * Creates a new instance.
+     * </p>
+     *
+     * @param wf the WUIC facade
+     */
+    public WuicDialect(final WuicFacade wf) {
+        wuicFacade = wf;
+    }
 
     /**
      * {@inheritDoc}
@@ -82,7 +100,7 @@ public class WuicDialect extends AbstractDialect {
      * @return the new instance
      */
     protected ImportProcessor importProcessor() {
-        return new ImportProcessor();
+        return new ImportProcessor(wuicFacade);
     }
 
     /**
@@ -93,6 +111,6 @@ public class WuicDialect extends AbstractDialect {
      * @return  the new instance
      */
     protected ConfigProcessor configProcessor() {
-        return new ConfigProcessor();
+        return new ConfigProcessor(wuicFacade);
     }
 }

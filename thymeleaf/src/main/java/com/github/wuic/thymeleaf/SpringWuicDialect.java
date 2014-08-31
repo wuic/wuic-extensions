@@ -67,23 +67,17 @@ public class SpringWuicDialect extends WuicDialect {
     private final WuicFacade wuicFacade;
 
     /**
-     * Cache or not.
-     */
-    private final Boolean cache;
-
-    /**
      * <p>
      * Builds a new instance
      * </p>
      *
      * @param resourceUrlProvider the resource URL provider
      * @param wf the underlying {@link WuicFacade}
-     * @param c cache or not
      */
-    public SpringWuicDialect(final ResourceUrlProvider resourceUrlProvider, final WuicFacade wf, final Boolean c) {
+    public SpringWuicDialect(final ResourceUrlProvider resourceUrlProvider, final WuicFacade wf) {
+        super(wf);
         this.urlProvider = resourceUrlProvider;
         this.wuicFacade = wf;
-        this.cache = !c;
     }
 
     /**
@@ -91,7 +85,7 @@ public class SpringWuicDialect extends WuicDialect {
      */
     @Override
     protected ImportProcessor importProcessor() {
-        return new SpringImportProcessor();
+        return new SpringImportProcessor(wuicFacade);
     }
 
     /**
@@ -107,27 +101,22 @@ public class SpringWuicDialect extends WuicDialect {
     public final class SpringImportProcessor extends ImportProcessor {
 
         /**
+         * <p>
+         * Creates a new instance.
+         * </p>
+         *
+         * @param wuicFacade the facade
+         */
+        public SpringImportProcessor(final WuicFacade wuicFacade) {
+            super(wuicFacade);
+        }
+
+        /**
          * {@inheritDoc}
          */
         @Override
-        protected UrlProvider urlProvider(String workflowId) {
+        protected UrlProvider urlProvider(final String workflowId) {
             return new SpringUrlProvider(workflowId);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        protected WuicFacade wuicFacade() {
-            return wuicFacade;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        protected Boolean wuicServletMultipleConfInTagSupport() {
-            return cache;
         }
     }
 

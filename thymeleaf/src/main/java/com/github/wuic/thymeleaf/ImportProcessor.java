@@ -40,7 +40,6 @@ package com.github.wuic.thymeleaf;
 
 import com.github.wuic.WuicFacade;
 import com.github.wuic.exception.WuicException;
-import com.github.wuic.jee.WuicJeeContext;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.HtmlUtil;
 import com.github.wuic.util.IOUtils;
@@ -79,12 +78,20 @@ public class ImportProcessor extends AbstractAttrProcessor {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
+     * The WUIC facade.
+     */
+    private WuicFacade wuicFacade;
+
+    /**
      * <p>
      * Builds a new instance.
      * </p>
+     *
+     * @param wf the WUIC facade
      */
-    public ImportProcessor() {
+    public ImportProcessor(final WuicFacade wf) {
         super("import");
+        wuicFacade = wf;
     }
 
     /**
@@ -92,18 +99,15 @@ public class ImportProcessor extends AbstractAttrProcessor {
      */
     @Override
     protected ProcessorResult processAttribute(final Arguments arguments, final Element element, final String attributeName) {
-        // Get the facade
-        final WuicFacade facade = wuicFacade();
-
         final String workflow = element.getAttributeValue(attributeName);
 
-        if (wuicServletMultipleConfInTagSupport()) {
-            facade.clearTag(workflow);
+        if (wuicFacade.allowsMultipleConfigInTagSupport()) {
+            wuicFacade.clearTag(workflow);
         }
 
         try {
             int cpt = 0;
-            final List<Nut> nuts = facade.runWorkflow(workflow);
+            final List<Nut> nuts = wuicFacade.runWorkflow(workflow);
             final UrlProvider urlProvider = urlProvider(workflow);
 
             // Insert import statements into the top
@@ -132,29 +136,6 @@ public class ImportProcessor extends AbstractAttrProcessor {
 
     /**
      * <p>
-     * Indicates if the configuration for a workflow could be refreshed or if we keep the version initialized the first
-     * time the page has been loaded.
-     * </p>
-     *
-     * @return {@code true} to clear tag, {@code false} otherwise
-     */
-    protected Boolean wuicServletMultipleConfInTagSupport() {
-        return WuicJeeContext.initParams().wuicServletMultipleConfInTagSupport();
-    }
-
-    /**
-     * <p>
-     * Gets the {@link WuicFacade}.
-     * </p>
-     *
-     * @return the facade
-     */
-    protected WuicFacade wuicFacade() {
-        return WuicJeeContext.getWuicFacade();
-    }
-
-    /**
-     * <p>
      * Returns the {@link UrlProvider} for the given workflow ID.
      * </p>
      *
@@ -162,7 +143,6 @@ public class ImportProcessor extends AbstractAttrProcessor {
      * @return the {@link UrlProvider}
      */
     protected UrlProvider urlProvider(final String workflowId) {
-        final WuicFacade facade = WuicJeeContext.getWuicFacade();
-        return UrlUtils.urlProvider(IOUtils.mergePath(facade.getContextPath(), workflowId));
+        return UrlUtils.urlProvider(IOUtils.mergePath(wuicFacade.getContextPath(), workflowId));
     }
 }

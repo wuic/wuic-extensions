@@ -85,7 +85,7 @@ public class ThymeleafFilterTest implements Filter {
         servletContext = filterConfig.getServletContext();
         templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(createTemplateResolver());
-        templateEngine.setDialect(new WuicDialect());
+        templateEngine.setDialect(new WuicDialect(ThymeleafTest.FACADE));
     }
 
     /**
