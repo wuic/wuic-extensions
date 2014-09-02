@@ -49,11 +49,13 @@ import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.ehcache.EhCacheEngine;
 import com.github.wuic.engine.ehcache.WuicEhcacheProvider;
 import com.github.wuic.exception.WuicException;
-import com.github.wuic.nut.*;
 import com.github.wuic.config.ObjectBuilder;
-import junit.framework.Assert;
+import com.github.wuic.nut.HeapListener;
+import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.NutsHeap;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,7 +64,11 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
