@@ -44,7 +44,7 @@ import com.github.wuic.nut.Nut;
 import com.github.wuic.util.HtmlUtil;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.UrlProvider;
-import com.github.wuic.util.UrlUtils;
+import com.github.wuic.util.UrlProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.Arguments;
@@ -80,7 +80,12 @@ public class ImportProcessor extends AbstractAttrProcessor {
     /**
      * The WUIC facade.
      */
-    private WuicFacade wuicFacade;
+    private final WuicFacade wuicFacade;
+
+    /**
+     * The URL provider;
+     */
+    private final UrlProviderFactory urlProviderFactory;
 
     /**
      * <p>
@@ -88,10 +93,12 @@ public class ImportProcessor extends AbstractAttrProcessor {
      * </p>
      *
      * @param wf the WUIC facade
+     * @param up the URL provider
      */
-    public ImportProcessor(final WuicFacade wf) {
+    public ImportProcessor(final UrlProviderFactory up, final WuicFacade wf) {
         super("import");
         wuicFacade = wf;
+        urlProviderFactory = up;
     }
 
     /**
@@ -105,10 +112,11 @@ public class ImportProcessor extends AbstractAttrProcessor {
             wuicFacade.clearTag(workflow);
         }
 
+        final UrlProvider urlProvider = urlProviderFactory.create(IOUtils.mergePath(wuicFacade.getContextPath(), workflow));
+
         try {
             int cpt = 0;
             final List<Nut> nuts = wuicFacade.runWorkflow(workflow);
-            final UrlProvider urlProvider = urlProvider(workflow);
 
             // Insert import statements into the top
             for (final Nut nut : nuts) {
@@ -132,17 +140,5 @@ public class ImportProcessor extends AbstractAttrProcessor {
     @Override
     public int getPrecedence() {
         return 0;
-    }
-
-    /**
-     * <p>
-     * Returns the {@link UrlProvider} for the given workflow ID.
-     * </p>
-     *
-     * @param workflowId the workflow ID
-     * @return the {@link UrlProvider}
-     */
-    protected UrlProvider urlProvider(final String workflowId) {
-        return UrlUtils.urlProvider(IOUtils.mergePath(wuicFacade.getContextPath(), workflowId));
     }
 }

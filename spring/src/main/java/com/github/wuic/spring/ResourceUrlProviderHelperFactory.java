@@ -36,115 +36,87 @@
  */
 
 
-package com.github.wuic.thymeleaf;
+package com.github.wuic.spring;
 
-import com.github.wuic.WuicFacade;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.UrlProvider;
+import com.github.wuic.util.UrlProviderFactory;
 import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
 /**
  * <p>
- * This dialect can be used when thymeleaf is integrated with spring so it can rely on spring resource URL provider and
- * the {@link WuicFacade} conifigured inside the framework.
+ * The helper is a bridge between the {@code ResourceUrlProvider} from spring and the {@code UrlProvider} which helps
+ * to resolve URLs inside WUIC.
  * </p>
  *
  * @author Guillaume DROUET
  * @version 1.0
  * @since 0.5.0
  */
-public class SpringWuicDialect extends WuicDialect {
+public class ResourceUrlProviderHelperFactory implements UrlProviderFactory {
 
     /**
-     * The resource URL provider from spring.
+     * The spring provider.
      */
-    private final ResourceUrlProvider urlProvider;
-
-    /**
-     * The facade.
-     */
-    private final WuicFacade wuicFacade;
+    private ResourceUrlProvider resourceUrlProvider;
 
     /**
      * <p>
-     * Builds a new instance
+     * Builds a new instance.
      * </p>
      *
-     * @param resourceUrlProvider the resource URL provider
-     * @param wf the underlying {@link WuicFacade}
+     * @param rup the spring provider
      */
-    public SpringWuicDialect(final ResourceUrlProvider resourceUrlProvider, final WuicFacade wf) {
-        super(wf);
-        this.urlProvider = resourceUrlProvider;
-        this.wuicFacade = wf;
+    public ResourceUrlProviderHelperFactory(final ResourceUrlProvider rup) {
+        this.resourceUrlProvider = rup;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected ImportProcessor importProcessor() {
-        return new SpringImportProcessor(wuicFacade);
+    public UrlProvider create(final String workflowId) {
+        return new UrlProviderHelper(workflowId);
     }
 
     /**
      * <p>
-     * The {@link ImportProcessor} that relies on {@link WuicFacade} provided by spring framework. Should be reviewed
-     * with 'https://github.com/wuic/wuic/issues/133'.
+     * Calls spring to get the public resource.
+     * </p>
+     *
+     * @param path the path to retrieve
+     * @return retrieved value
+     */
+    public String get(final String path) {
+        return this.resourceUrlProvider.getForLookupPath(path);
+    }
+
+    /**
+     * <p>
+     * Helper implementation for {@link UrlProvider}.
      * </p>
      *
      * @author Guillaume DROUET
      * @version 1.0
      * @since 0.5.0
      */
-    public final class SpringImportProcessor extends ImportProcessor {
+    private final class UrlProviderHelper implements UrlProvider {
 
         /**
-         * <p>
-         * Creates a new instance.
-         * </p>
-         *
-         * @param wuicFacade the facade
-         */
-        public SpringImportProcessor(final WuicFacade wuicFacade) {
-            super(wuicFacade);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        protected UrlProvider urlProvider(final String workflowId) {
-            return new SpringUrlProvider(workflowId);
-        }
-    }
-
-    /**
-     * <p>
-     * The {@link UrlProvider} that relied on spring framework.
-     * </p>
-     *
-     * @author Guillaume DROUET
-     * @version 1.0
-     * @since 0.5.0
-     */
-    public final class SpringUrlProvider implements UrlProvider {
-
-        /**
-         * The base path of any resource.
+         * Workflow context path.
          */
         private final String workflowContextPath;
 
         /**
          * <p>
-         * Builds a new instance
+         * Builds a new instance.
          * </p>
          *
-         * @param wcp the workflow ID
+         * @param wcp the workflow context path
          */
-        public SpringUrlProvider(final String wcp) {
-            this.workflowContextPath = IOUtils.mergePath(wuicFacade.getContextPath(), wcp);
+        private UrlProviderHelper(final String wcp) {
+            workflowContextPath = wcp;
         }
 
         /**
@@ -152,7 +124,7 @@ public class SpringWuicDialect extends WuicDialect {
          */
         @Override
         public String getUrl(final Nut nut) {
-            return urlProvider.getForLookupPath(IOUtils.mergePath(workflowContextPath, nut.getName()));
+            return get(IOUtils.mergePath(workflowContextPath, nut.getName()));
         }
     }
 }

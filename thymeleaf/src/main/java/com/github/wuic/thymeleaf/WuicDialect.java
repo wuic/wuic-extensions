@@ -39,10 +39,11 @@
 package com.github.wuic.thymeleaf;
 
 import com.github.wuic.WuicFacade;
+import com.github.wuic.util.UrlProviderFactory;
+import com.github.wuic.util.UrlUtils;
 import org.thymeleaf.dialect.AbstractDialect;
 import org.thymeleaf.processor.IProcessor;
 
-import javax.servlet.ServletContext;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -57,20 +58,39 @@ import java.util.Set;
  */
 public class WuicDialect extends AbstractDialect {
 
+
     /**
-     * The WUIC facade.
+     * The resource URL provider from spring.
      */
-    private WuicFacade wuicFacade;
+    private final UrlProviderFactory urlProviderFactory;
+
+    /**
+     * The facade.
+     */
+    private final WuicFacade wuicFacade;
 
     /**
      * <p>
-     * Creates a new instance.
+     * Builds a new instance
      * </p>
      *
-     * @param wf the WUIC facade
+     * @param up the URL provider
+     * @param wf the underlying {@link WuicFacade}
+     */
+    public WuicDialect(final UrlProviderFactory up, final WuicFacade wf) {
+        this.urlProviderFactory = up;
+        this.wuicFacade = wf;
+    }
+
+    /**
+     * <p>
+     * Builds a new instance
+     * </p>
+     *
+     * @param wf the underlying {@link WuicFacade}
      */
     public WuicDialect(final WuicFacade wf) {
-        wuicFacade = wf;
+        this(UrlUtils.urlProviderFactory(), wf);
     }
 
     /**
@@ -87,30 +107,8 @@ public class WuicDialect extends AbstractDialect {
     @Override
     public Set<IProcessor> getProcessors() {
         final Set<IProcessor> processors = new HashSet<IProcessor>();
-        processors.add(importProcessor());
-        processors.add(configProcessor());
+        processors.add(new ImportProcessor(urlProviderFactory, wuicFacade));
+        processors.add(new ConfigProcessor(wuicFacade));
         return processors;
-    }
-
-    /**
-     * <p>
-     * Creates an instance of {@link ImportProcessor}.
-     * </p>
-     *
-     * @return the new instance
-     */
-    protected ImportProcessor importProcessor() {
-        return new ImportProcessor(wuicFacade);
-    }
-
-    /**
-     * <p>
-     * Creates an instance of {@link ConfigProcessor}.
-     * </p>
-     *
-     * @return  the new instance
-     */
-    protected ConfigProcessor configProcessor() {
-        return new ConfigProcessor(wuicFacade);
     }
 }
