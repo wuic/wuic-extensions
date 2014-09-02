@@ -38,9 +38,19 @@
 
 package com.github.wuic.nut.test;
 
+import com.github.wuic.ApplicationConfig;
 import com.github.wuic.ContextBuilder;
+import com.github.wuic.config.ObjectBuilder;
+import com.github.wuic.config.ObjectBuilderFactory;
+import com.github.wuic.exception.BuilderPropertyNotSupportedException;
+import com.github.wuic.exception.NutNotFoundException;
+import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.dao.NutDao;
+import com.github.wuic.nut.dao.NutDaoService;
+import com.github.wuic.nut.dao.ftp.FtpNutDao;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.UrlUtils;
 import com.github.wuic.xml.FileXmlContextBuilderConfigurator;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
@@ -57,6 +67,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -136,7 +147,7 @@ public class FtpTest {
     public void ftpTest() throws Exception {
         final ContextBuilder builder = new ContextBuilder().configureDefault();
         new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")).configure(builder);
-        final List<Nut> group = builder.build().process("", "css-imagecss-image");
+        final List<Nut> group = builder.build().process("", "css-imagecss-image", UrlUtils.urlProviderFactory());
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;
@@ -146,5 +157,50 @@ public class FtpTest {
             Assert.assertTrue(IOUtils.readString(new InputStreamReader(is)).length() > 0);
             is.close();
         }
+    }
+
+    /**
+     * <p>
+     * Test exists implementation.
+     * </p>
+     *
+     * @throws com.github.wuic.exception.wrapper.StreamException if test fails
+     * @throws com.github.wuic.exception.BuilderPropertyNotSupportedException if test fails
+     */
+    @Test
+    public void ftpExistsTest() throws StreamException, BuilderPropertyNotSupportedException {
+        final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, FtpNutDao.class);
+        final ObjectBuilder<NutDao> builder = factory.create(FtpNutDao.class.getSimpleName() + "Builder");
+        final NutDao dao = builder
+                .property(ApplicationConfig.SERVER_PORT, 2221)
+                .property(ApplicationConfig.LOGIN, "wuicuser")
+                .property(ApplicationConfig.PASSWORD, "wuicpassword")
+                .build();
+        Assert.assertTrue(dao.exists("style.css"));
+        Assert.assertFalse(dao.exists("unknw.css"));
+    }
+
+    /**
+     * <p>
+     * Test stream.
+     * </p>
+     *
+     * @throws StreamException if test fails
+     * @throws BuilderPropertyNotSupportedException if test fails
+     * @throws IOException if test fails
+     * @throws com.github.wuic.exception.NutNotFoundException if test fails
+     */
+    @Test
+    public void ftpReadTest() throws StreamException, BuilderPropertyNotSupportedException, NutNotFoundException, IOException {
+        final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, FtpNutDao.class);
+        final ObjectBuilder<NutDao> builder = factory.create(FtpNutDao.class.getSimpleName() + "Builder");
+        final NutDao dao = builder
+                .property(ApplicationConfig.SERVER_PORT, 2221)
+                .property(ApplicationConfig.LOGIN, "wuicuser")
+                .property(ApplicationConfig.PASSWORD, "wuicpassword")
+                .build();
+        final InputStream is = dao.create("style.css").get(0).openStream();
+        IOUtils.copyStream(is, new ByteArrayOutputStream());
+        is.close();
     }
 }

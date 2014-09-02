@@ -85,6 +85,11 @@ import java.util.regex.Pattern;
 public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
 
     /**
+     * Reply code that indicates the file is unavailable.
+     */
+    public static int FILE_UNAVAILABLE_CODE = 550;
+
+    /**
      * Expected format when retrieved last modification date.
      */
     private static final DateFormat MODIFICATION_TIME_FORMAT = new SimpleDateFormat("yyyyMMddhhmmss");
@@ -361,7 +366,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
             ftpClient.changeWorkingDirectory(getBasePath());
 
             InputStream inputStream = newInputStream(path);
-            return (inputStream == null || ftpClient.getReplyCode() == 550);
+            return inputStream != null && ftpClient.getReplyCode() != FILE_UNAVAILABLE_CODE;
         } catch (IOException ioe) {
             throw new StreamException(ioe);
         }
