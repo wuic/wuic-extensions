@@ -175,7 +175,7 @@ public class SpringSupportTest {
      */
     @Test
     public void resolverTest() throws Exception {
-        registration.addResourceLocations("classpath:/").resourceChain(true).addResolver(new WuicPathResourceResolver(wuicFacade));
+        registration.resourceChain(true).addResolver(new WuicPathResourceResolver(wuicFacade));
         final SimpleUrlHandlerMapping handlerMapping = (SimpleUrlHandlerMapping) this.registry.getHandlerMapping();
         Assert.assertNotNull("Expects that an handler mapping is registered", handlerMapping);
         ResourceHttpRequestHandler handler = (ResourceHttpRequestHandler) handlerMapping.getUrlMap().get(PATTERN);
