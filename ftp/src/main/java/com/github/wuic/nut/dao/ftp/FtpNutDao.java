@@ -87,7 +87,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
     /**
      * Reply code that indicates the file is unavailable.
      */
-    public static int FILE_UNAVAILABLE_CODE = 550;
+    public static final int FILE_UNAVAILABLE_CODE = 550;
 
     /**
      * Expected format when retrieved last modification date.
