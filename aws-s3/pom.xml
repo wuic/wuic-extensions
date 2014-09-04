@@ -26,13 +26,6 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
         </dependency>
-
-        <!-- Caching -->
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-core</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>

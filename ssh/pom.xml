@@ -21,13 +21,6 @@
             <artifactId>wuic-core</artifactId>
         </dependency>
 
-        <!-- Caching -->
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- SSH client -->
         <dependency>
             <groupId>com.jcraft</groupId>
@@ -39,6 +32,5 @@
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-core</artifactId>
         </dependency>
-
     </dependencies>
 </project>

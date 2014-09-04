@@ -22,13 +22,6 @@
             <artifactId>wuic-core</artifactId>
         </dependency>
 
-        <!-- Caching -->
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- FTP client -->
         <dependency>
             <groupId>commons-net</groupId>

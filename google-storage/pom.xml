@@ -38,13 +38,6 @@
             <groupId>com.google.collections</groupId>
             <artifactId>google-collections</artifactId>
         </dependency>
-
-        <!-- Caching -->
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-core</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>
