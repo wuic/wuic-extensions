@@ -352,9 +352,9 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
 
             try {
                 connect();
-                s3Object = amazonS3Client.getObject(bucketName, getName());
+                s3Object = amazonS3Client.getObject(bucketName, getInitialName());
             } catch (AmazonServiceException ase) {
-                throw new NutNotFoundException(new IOException(String.format("Can't get S3Object on bucket %s  for nut key : %s", bucketName, getName()), ase));
+                throw new NutNotFoundException(new IOException(String.format("Can't get S3Object on bucket %s  for nut key : %s", bucketName, getInitialName()), ase));
             }
 
             S3ObjectInputStream s3ObjectInputStream = null;

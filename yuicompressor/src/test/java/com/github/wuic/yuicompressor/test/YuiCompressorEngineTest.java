@@ -47,10 +47,10 @@ import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.yuicompressor.YuiCompressorCssEngine;
 import com.github.wuic.engine.yuicompressor.YuiCompressorJavascriptEngine;
+import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.util.FutureLong;
-import com.github.wuic.util.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,7 +58,7 @@ import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -84,7 +84,7 @@ public class YuiCompressorEngineTest {
     @Test
     public void javascriptTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
-        Mockito.when(nut.getName()).thenReturn("foo.js");
+        Mockito.when(nut.getInitialName()).thenReturn("foo.js");
         Mockito.when(nut.openStream()).thenReturn(new ByteArrayInputStream("var foo = 0; // some comments".getBytes()));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
         Mockito.when(nut.isTextReducible()).thenReturn(Boolean.TRUE);
@@ -97,8 +97,10 @@ public class YuiCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("YuiCompressorJavascriptEngineBuilder");
         final Engine engine = builder.build();
 
-        final List<Nut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
-        Assert.assertEquals("var foo=0;", IOUtils.readString(new InputStreamReader(res.get(0).openStream())));
+        final List<ConvertibleNut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        res.get(0).transform(bos);
+        Assert.assertEquals("var foo=0;", new String(bos.toByteArray()));
     }
 
     /**
@@ -109,7 +111,7 @@ public class YuiCompressorEngineTest {
     @Test
     public void cssTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
-        Mockito.when(nut.getName()).thenReturn("foo.js");
+        Mockito.when(nut.getInitialName()).thenReturn("foo.js");
         Mockito.when(nut.openStream()).thenReturn(new ByteArrayInputStream(".foo { color: black;/*some comments*/ }".getBytes()));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
         Mockito.when(nut.isTextReducible()).thenReturn(Boolean.TRUE);
@@ -122,7 +124,9 @@ public class YuiCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("YuiCompressorCssEngineBuilder");
         final Engine engine = builder.build();
 
-        final List<Nut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
-        Assert.assertEquals(".foo{color:black;}", IOUtils.readString(new InputStreamReader(res.get(0).openStream())));
+        final List<ConvertibleNut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        res.get(0).transform(bos);
+        Assert.assertEquals(".foo{color:black;}", new String(bos.toByteArray()));
     }
 }

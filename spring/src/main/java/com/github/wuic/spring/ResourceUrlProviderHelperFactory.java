@@ -38,7 +38,7 @@
 
 package com.github.wuic.spring;
 
-import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.UrlProvider;
 import com.github.wuic.util.UrlProviderFactory;
@@ -123,7 +123,7 @@ public class ResourceUrlProviderHelperFactory implements UrlProviderFactory {
          * {@inheritDoc}
          */
         @Override
-        public String getUrl(final Nut nut) {
+        public String getUrl(final ConvertibleNut nut) {
             return get(IOUtils.mergePath(workflowContextPath, nut.getName()));
         }
     }

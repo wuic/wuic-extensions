@@ -78,7 +78,7 @@ public class WuicResource extends AbstractResource {
      */
     @Override
     public String getDescription() {
-        return nut.getName();
+        return nut.getInitialName();
     }
 
     /**
@@ -98,7 +98,7 @@ public class WuicResource extends AbstractResource {
      */
     @Override
     public String getFilename() {
-        return nut.getName();
+        return nut.getInitialName();
     }
 
     /**

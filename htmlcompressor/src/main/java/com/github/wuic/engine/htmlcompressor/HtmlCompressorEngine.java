@@ -49,7 +49,7 @@ import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.nut.ByteArrayNut;
-import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
 import com.googlecode.htmlcompressor.compressor.HtmlCompressor;
 
@@ -118,22 +118,22 @@ public class HtmlCompressorEngine extends NodeEngine {
      * {@inheritDoc}
      */
     @Override
-    protected List<Nut> internalParse(final EngineRequest request) throws WuicException {
+    protected List<ConvertibleNut> internalParse(final EngineRequest request) throws WuicException {
         if (!works()) {
             return request.getNuts();
         } else {
-            final List<Nut> retval = new ArrayList<Nut>(request.getNuts().size());
+            final List<ConvertibleNut> retval = new ArrayList<ConvertibleNut>(request.getNuts().size());
 
             try {
-                for (final Nut nut : request.getNuts()) {
+                for (final ConvertibleNut nut : request.getNuts()) {
                     final String compressString = compressor.compress(IOUtils.readString(new InputStreamReader(nut.openStream())));
-                    final Nut compress = new ByteArrayNut(compressString.getBytes(), nut.getName(), NutType.HTML, nut);
+                    final ConvertibleNut compress = new ByteArrayNut(compressString.getBytes(), nut.getName(), NutType.HTML, nut);
                     retval.add(compress);
 
                     if (nut.getReferencedNuts() != null) {
 
                         // Also add all the referenced nuts
-                        for (final Nut ref : nut.getReferencedNuts()) {
+                        for (final ConvertibleNut ref : nut.getReferencedNuts()) {
                             compress.addReferencedNut(ref);
                         }
                     }

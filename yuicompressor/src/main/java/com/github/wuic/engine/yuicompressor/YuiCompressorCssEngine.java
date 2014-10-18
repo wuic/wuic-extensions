@@ -46,7 +46,7 @@ import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
-import com.github.wuic.exception.wrapper.StreamException;
+import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
 import com.yahoo.platform.yui.compressor.CssCompressor;
 
@@ -105,8 +105,8 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    protected void compress(final InputStream source, final OutputStream target)
-            throws StreamException {
+    public void transform(final InputStream source, final OutputStream target, final ConvertibleNut convertibleNut)
+            throws IOException {
         Reader in = null;
         Writer out = null;
         
@@ -126,8 +126,6 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
             
             // Compress the script into the output target
             compressor.compress(out, lineBreakPos);
-        } catch (IOException ioe) {
-            throw new StreamException(ioe);
         } finally {
             IOUtils.close(in);
             IOUtils.close(out);

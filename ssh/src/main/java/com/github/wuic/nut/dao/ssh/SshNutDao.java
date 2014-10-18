@@ -373,7 +373,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
                 channel = (ChannelSftp) session.openChannel(SFTP_CHANNEL);
                 channel.connect();
                 channel.cd(getBasePath());
-                return channel.get(getName());
+                return channel.get(getInitialName());
             } catch (JSchException je) {
                 throw new NutNotFoundException(new IOException(CANNOT_LOAD_MESSAGE, je));
             } catch (SftpException se) {

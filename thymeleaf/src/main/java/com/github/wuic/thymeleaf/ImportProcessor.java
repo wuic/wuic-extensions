@@ -40,7 +40,7 @@ package com.github.wuic.thymeleaf;
 
 import com.github.wuic.WuicFacade;
 import com.github.wuic.exception.WuicException;
-import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.HtmlUtil;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.UrlProvider;
@@ -116,10 +116,10 @@ public class ImportProcessor extends AbstractAttrProcessor {
 
         try {
             int cpt = 0;
-            final List<Nut> nuts = wuicFacade.runWorkflow(workflow);
+            final List<ConvertibleNut> nuts = wuicFacade.runWorkflow(workflow);
 
             // Insert import statements into the top
-            for (final Nut nut : nuts) {
+            for (final ConvertibleNut nut : nuts) {
                 element.insertChild(cpt++, new Macro(HtmlUtil.writeScriptImport(nut, urlProvider)));
             }
         } catch (WuicException we) {

@@ -44,6 +44,7 @@ import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.core.TextAggregatorEngine;
 import com.github.wuic.exception.BuilderPropertyNotSupportedException;
+import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.dao.NutDao;
 import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.NutsHeap;
@@ -131,7 +132,7 @@ public class GStorageTest {
 
         final NodeEngine aggregator = new TextAggregatorEngine(true);
 
-        final List<Nut> group = aggregator.parse(new EngineRequest("", "", nutsHeap, new HashMap<NutType, NodeEngine>()));
+        final List<ConvertibleNut> group = aggregator.parse(new EngineRequest("", "", nutsHeap, new HashMap<NutType, NodeEngine>()));
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;

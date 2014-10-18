@@ -45,6 +45,7 @@ import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.exception.BuilderPropertyNotSupportedException;
 import com.github.wuic.exception.NutNotFoundException;
 import com.github.wuic.exception.wrapper.StreamException;
+import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.NutDao;
 import com.github.wuic.nut.dao.NutDaoService;
@@ -147,7 +148,7 @@ public class FtpTest {
     public void ftpTest() throws Exception {
         final ContextBuilder builder = new ContextBuilder().configureDefault();
         new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")).configure(builder);
-        final List<Nut> group = builder.build().process("", "css-imagecss-image", UrlUtils.urlProviderFactory());
+        final List<ConvertibleNut> group = builder.build().process("", "css-imagecss-image", UrlUtils.urlProviderFactory());
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;

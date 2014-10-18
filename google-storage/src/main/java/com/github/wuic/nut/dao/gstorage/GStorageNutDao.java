@@ -354,7 +354,7 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
         public InputStream openStream() throws NutNotFoundException {
             try {
                 // Try to get a Storage object
-                final Storage.Objects.Get storageObject = storage.objects().get(bucketName, getName());
+                final Storage.Objects.Get storageObject = storage.objects().get(bucketName, getInitialName());
 
                 // Download path
                 return storageObject.executeMediaAsInputStream();
