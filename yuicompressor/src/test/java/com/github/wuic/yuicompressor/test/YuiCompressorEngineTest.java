@@ -51,6 +51,7 @@ import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.util.FutureLong;
+import com.github.wuic.util.Pipe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,6 +60,7 @@ import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -99,7 +101,12 @@ public class YuiCompressorEngineTest {
 
         final List<ConvertibleNut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        res.get(0).transform(bos);
+        res.get(0).transform(new Pipe.OnReady() {
+            @Override
+            public void ready(final Pipe.Execution e) throws IOException {
+                e.writeResultTo(bos);
+            }
+        });
         Assert.assertEquals("var foo=0;", new String(bos.toByteArray()));
     }
 
@@ -126,7 +133,12 @@ public class YuiCompressorEngineTest {
 
         final List<ConvertibleNut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        res.get(0).transform(bos);
+        res.get(0).transform(new Pipe.OnReady() {
+            @Override
+            public void ready(final Pipe.Execution e) throws IOException {
+                e.writeResultTo(bos);
+            }
+        });
         Assert.assertEquals(".foo{color:black;}", new String(bos.toByteArray()));
     }
 }
