@@ -229,6 +229,6 @@
         <jsch-version>0.1.48</jsch-version>
         <sshd-version>0.8.0</sshd-version>
         <ftpserver.version>1.0.6</ftpserver.version>
-        <spring.version>4.1.0.BUILD-SNAPSHOT</spring.version>
+        <spring.version>4.1.1.RELEASE</spring.version>
     </properties>
 </project>
