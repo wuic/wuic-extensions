@@ -50,6 +50,7 @@ import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.NutDao;
 import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.dao.ftp.FtpNutDao;
+import com.github.wuic.test.TestHelper;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.UrlUtils;
 import com.github.wuic.xml.FileXmlContextBuilderConfigurator;
@@ -73,6 +74,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -203,5 +205,50 @@ public class FtpTest {
         final InputStream is = dao.create("style.css").get(0).openStream();
         IOUtils.copyStream(is, new ByteArrayOutputStream());
         is.close();
+    }
+
+    /**
+     * <p>
+     * Test stream download on disk.
+     * </p>
+     *
+     * @throws StreamException if test fails
+     * @throws BuilderPropertyNotSupportedException if test fails
+     * @throws IOException if test fails
+     * @throws com.github.wuic.exception.NutNotFoundException if test fails
+     */
+    @Test
+    public void ftpReadDiskTest() throws StreamException, BuilderPropertyNotSupportedException, NutNotFoundException, IOException {
+        final String tmp = System.getProperty("java.io.tmpdir");
+        final String tmpTest = IOUtils.mergePath(tmp, "ftptest");
+        final File tmpDir = new File(tmpTest);
+        tmpDir.mkdirs();
+        System.setProperty("java.io.tmpdir", tmpTest);
+
+        final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, FtpNutDao.class);
+        final ObjectBuilder<NutDao> builder = factory.create(FtpNutDao.class.getSimpleName() + "Builder");
+        final NutDao dao = builder
+                .property(ApplicationConfig.SERVER_PORT, 2221)
+                .property(ApplicationConfig.LOGIN, "wuicuser")
+                .property(ApplicationConfig.PASSWORD, "wuicpassword")
+                .property(ApplicationConfig.DOWNLOAD_TO_DISK, "true")
+                .build();
+
+        // Raed existing file
+        final Nut nut = dao.create("style.css").get(0);
+        InputStream is = nut.openStream();
+        OutputStream bos = new ByteArrayOutputStream();
+        IOUtils.copyStream(is, bos);
+        is.close();
+        bos.close();
+
+        // Read deleted file
+        TestHelper.delete(tmpDir);
+        tmpDir.mkdir();
+        is = nut.openStream();
+        bos = new ByteArrayOutputStream();
+        IOUtils.copyStream(is, bos);
+        is.close();
+        bos.close();
     }
 }
