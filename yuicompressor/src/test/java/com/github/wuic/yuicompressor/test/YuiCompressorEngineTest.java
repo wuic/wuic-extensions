@@ -60,7 +60,6 @@ import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -101,12 +100,7 @@ public class YuiCompressorEngineTest {
 
         final List<ConvertibleNut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        res.get(0).transform(new Pipe.OnReady() {
-            @Override
-            public void ready(final Pipe.Execution e) throws IOException {
-                e.writeResultTo(bos);
-            }
-        });
+        res.get(0).transform(new Pipe.DefaultOnReady(bos));
         Assert.assertEquals("var foo=0;", new String(bos.toByteArray()));
     }
 
@@ -133,12 +127,7 @@ public class YuiCompressorEngineTest {
 
         final List<ConvertibleNut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        res.get(0).transform(new Pipe.OnReady() {
-            @Override
-            public void ready(final Pipe.Execution e) throws IOException {
-                e.writeResultTo(bos);
-            }
-        });
+        res.get(0).transform(new Pipe.DefaultOnReady(bos));
         Assert.assertEquals(".foo{color:black;}", new String(bos.toByteArray()));
     }
 }
