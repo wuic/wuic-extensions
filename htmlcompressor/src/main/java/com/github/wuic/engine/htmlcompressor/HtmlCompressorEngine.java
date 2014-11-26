@@ -42,20 +42,17 @@ import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.ConfigConstructor;
-import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
-import com.github.wuic.engine.NodeEngine;
-import com.github.wuic.exception.WuicException;
-import com.github.wuic.exception.wrapper.StreamException;
-import com.github.wuic.nut.ByteArrayNut;
+import com.github.wuic.engine.core.AbstractCompressorEngine;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
 import com.googlecode.htmlcompressor.compressor.HtmlCompressor;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -69,12 +66,8 @@ import java.util.List;
  * @since 0.5.0
  */
 @EngineService(injectDefaultToWorkflow = true)
-public class HtmlCompressorEngine extends NodeEngine {
+public class HtmlCompressorEngine extends AbstractCompressorEngine {
 
-    /**
-     * Do compression or not.
-     */
-    private final Boolean work;
 
     /**
      * Compressor.
@@ -93,7 +86,7 @@ public class HtmlCompressorEngine extends NodeEngine {
     public HtmlCompressorEngine(
             @BooleanConfigParam(propertyKey = ApplicationConfig.COMPRESS, defaultValue = true) Boolean compress,
             @BooleanConfigParam(propertyKey = ApplicationConfig.PRESERVE_LINE_BREAK, defaultValue = false) Boolean preserveLb) {
-        work = compress;
+        super(compress, null);
         compressor = new HtmlCompressor();
         compressor.setPreserveLineBreaks(preserveLb);
     }
@@ -118,43 +111,7 @@ public class HtmlCompressorEngine extends NodeEngine {
      * {@inheritDoc}
      */
     @Override
-    protected List<ConvertibleNut> internalParse(final EngineRequest request) throws WuicException {
-        if (!works()) {
-            return request.getNuts();
-        } else {
-            final List<ConvertibleNut> retval = new ArrayList<ConvertibleNut>(request.getNuts().size());
-
-            try {
-                for (final ConvertibleNut nut : request.getNuts()) {
-                    final String compressString = compressor.compress(IOUtils.readString(new InputStreamReader(nut.openStream())));
-                    final ConvertibleNut compress = new ByteArrayNut(compressString.getBytes(), nut.getName(), NutType.HTML, nut);
-                    retval.add(compress);
-
-                    if (nut.getReferencedNuts() != null) {
-
-                        // Also add all the referenced nuts
-                        for (final ConvertibleNut ref : nut.getReferencedNuts()) {
-                            compress.addReferencedNut(ref);
-                        }
-                    }
-                }
-
-                if (getNext() != null) {
-                    return getNext().parse(new EngineRequest(retval, request));
-                } else {
-                    return retval;
-                }
-            } catch (IOException ioe) {
-                throw new StreamException(ioe);
-            }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Boolean works() {
-        return work;
+    public void transform(final InputStream is, final OutputStream os, final ConvertibleNut convertible) throws IOException {
+        os.write(compressor.compress(IOUtils.readString(new InputStreamReader(is))).getBytes());
     }
 }

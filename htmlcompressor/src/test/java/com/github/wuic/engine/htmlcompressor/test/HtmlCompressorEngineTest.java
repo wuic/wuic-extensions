@@ -52,6 +52,7 @@ import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.util.FutureLong;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.NutUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,6 +87,7 @@ public class HtmlCompressorEngineTest {
     public void htmlCompressTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getNutType()).thenReturn(NutType.HTML);
+        Mockito.when(nut.isTextReducible()).thenReturn(true);
         Mockito.when(nut.getInitialName()).thenReturn("index.html");
         Mockito.when(nut.openStream()).thenReturn(HtmlCompressorEngineTest.class.getResourceAsStream("/htmlcompressor/index.html"));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
@@ -98,7 +100,7 @@ public class HtmlCompressorEngineTest {
         final Engine engine = builder.build();
 
         final List<ConvertibleNut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
-        Assert.assertEquals(-1, IOUtils.readString(new InputStreamReader(res.get(0).openStream())).indexOf('\n'));
+        Assert.assertEquals(-1, NutUtils.readTransform(res.get(0)).indexOf('\n'));
     }
 
     /**
