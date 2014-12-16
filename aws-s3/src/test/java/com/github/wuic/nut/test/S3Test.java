@@ -134,7 +134,7 @@ public class S3Test {
     @Test
     public void s3Test() throws Exception {
         // Create a real object and mock its initClient method
-        final S3NutDao dao = spy(new S3NutDao("/path", false, null, -1, "wuic", "login", "pwd", false, false));
+        final S3NutDao dao = spy(new S3NutDao("/path", false, null, -1, "wuic", "login", "pwd", false, false, true));
 
         // Build client mock
         final AmazonS3Client client = mock(AmazonS3Client.class);
@@ -162,7 +162,7 @@ public class S3Test {
         final NutsHeap nutsHeap = new NutsHeap(Arrays.asList("[cloud].css"), dao, "heap");
         Assert.assertEquals(nutsHeap.getNuts().size(), 1);
 
-        final NodeEngine aggregator = new TextAggregatorEngine(true);
+        final NodeEngine aggregator = new TextAggregatorEngine(true, true);
         final List<ConvertibleNut> group = aggregator.parse(new EngineRequest("", "", nutsHeap, new HashMap<NutType, NodeEngine>()));
 
         Assert.assertFalse(group.isEmpty());

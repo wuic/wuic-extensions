@@ -159,6 +159,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * @param regex consider path as regex or not
      * @param contentBasedVersionNumber {@code true} if version number is computed from nut content, {@code false} if based on timestamp
      * @param dtd {@code true} if the resources should be download from the FTP to the disk and not stored in memory
+     * @param computeVersionAsynchronously (@code true} if version number can be computed asynchronously, {@code false} otherwise
      */
     @ConfigConstructor
     public FtpNutDao(@BooleanConfigParam(defaultValue = false, propertyKey = SECRET_PROTOCOL) final Boolean ftps,
@@ -172,8 +173,9 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
                      @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingSeconds,
                      @BooleanConfigParam(defaultValue = false, propertyKey = REGEX) final Boolean regex,
                      @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber,
-                     @BooleanConfigParam(defaultValue = false, propertyKey = DOWNLOAD_TO_DISK) final Boolean dtd) {
-        super(path, basePathAsSysProp, proxies, pollingSeconds, contentBasedVersionNumber);
+                     @BooleanConfigParam(defaultValue = false, propertyKey = DOWNLOAD_TO_DISK) final Boolean dtd,
+                     @BooleanConfigParam(defaultValue = true, propertyKey = COMPUTE_VERSION_ASYNCHRONOUSLY) final Boolean computeVersionAsynchronously) {
+        super(path, basePathAsSysProp, proxies, pollingSeconds, contentBasedVersionNumber, computeVersionAsynchronously);
         ftpClient = ftps ? new FTPSClient(Boolean.TRUE) : new FTPClient();
         hostName = host;
         userName = user;

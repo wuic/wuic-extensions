@@ -131,6 +131,7 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * @param proxyUris                 the proxies URIs in front of the nut
      * @param keyFile                   the private key path location
      * @param contentBasedVersionNumber {@code true} if version number is computed from nut content, {@code false} if based on timestamp
+     * @param computeVersionAsynchronously (@code true} if version number can be computed asynchronously, {@code false} otherwise
      */
     @ConfigConstructor
     public GStorageNutDao(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
@@ -140,8 +141,9 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
                           @StringConfigParam(defaultValue = "", propertyKey = CLOUD_BUCKET) final String bucket,
                           @StringConfigParam(defaultValue = "", propertyKey = LOGIN) final String accountId,
                           @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String keyFile,
-                          @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber) {
-        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber);
+                          @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber,
+                          @BooleanConfigParam(defaultValue = true, propertyKey = COMPUTE_VERSION_ASYNCHRONOUSLY) final Boolean computeVersionAsynchronously) {
+        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber, computeVersionAsynchronously);
         bucketName = bucket;
         privateKeyFile = keyFile;
         serviceAccountId = accountId;

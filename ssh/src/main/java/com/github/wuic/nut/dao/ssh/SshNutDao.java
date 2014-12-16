@@ -126,6 +126,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * @param pollingInterval           the interval for polling operations in seconds (-1 to deactivate)
      * @param proxyUris                 the proxies URIs in front of the nut
      * @param contentBasedVersionNumber {@code true} if version number is computed from nut content, {@code false} if based on timestamp
+     * @param computeVersionAsynchronously (@code true} if version number can be computed asynchronously, {@code false} otherwise
      */
     @ConfigConstructor
     public SshNutDao(@BooleanConfigParam(defaultValue = false, propertyKey = REGEX) final Boolean regex,
@@ -137,8 +138,9 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
                      @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String pwd,
                      @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxyUris,
                      @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingInterval,
-                     @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber) {
-        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber);
+                     @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber,
+                     @BooleanConfigParam(defaultValue = true, propertyKey = COMPUTE_VERSION_ASYNCHRONOUSLY) final Boolean computeVersionAsynchronously) {
+        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber, computeVersionAsynchronously);
         regularExpression = regex;
 
         final JSch jsch = new JSch();

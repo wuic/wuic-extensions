@@ -130,7 +130,7 @@ public class GStorageTest {
         nuts.add(new ByteArrayNut(array, "cloud.css", NutType.CSS, 1L));
         when(nutsHeap.getNuts()).thenReturn(nuts);
 
-        final NodeEngine aggregator = new TextAggregatorEngine(true);
+        final NodeEngine aggregator = new TextAggregatorEngine(true, true);
 
         final List<ConvertibleNut> group = aggregator.parse(new EngineRequest("", "", nutsHeap, new HashMap<NutType, NodeEngine>()));
 

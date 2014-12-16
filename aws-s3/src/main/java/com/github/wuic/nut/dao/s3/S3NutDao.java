@@ -132,6 +132,7 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
      * @param proxyUris the proxies URIs in front of the nut
      * @param regex consider path as regex or not
      * @param contentBasedVersionNumber  {@code true} if version number is computed from nut content, {@code false} if based on timestamp
+     * @param computeVersionAsynchronously (@code true} if version number can be computed asynchronously, {@code false} otherwise
      */
     @ConfigConstructor
     public S3NutDao(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
@@ -142,8 +143,9 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
                     @StringConfigParam(defaultValue = "", propertyKey = LOGIN)final String accessKey,
                     @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String secretKey,
                     @BooleanConfigParam(defaultValue = false, propertyKey = REGEX) final Boolean regex,
-                    @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber) {
-        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber);
+                    @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber,
+                    @BooleanConfigParam(defaultValue = true, propertyKey = COMPUTE_VERSION_ASYNCHRONOUSLY) final Boolean computeVersionAsynchronously) {
+        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber, computeVersionAsynchronously);
         bucketName = bucket;
         login = accessKey;
         password = secretKey;
