@@ -53,6 +53,7 @@ import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.nut.HeapListener;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.NutsHeap;
+import com.github.wuic.util.FutureLong;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import org.junit.Assert;
@@ -163,6 +164,7 @@ public class EhCacheEngineTest {
         Mockito.when(nut.getInitialName()).thenReturn("foo.css");
         Mockito.when(nut.getNutType()).thenReturn(NutType.CSS);
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));
+        Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(1L));
         e.parse(new EngineRequest("", "", heap, map));
         Assert.assertEquals(1, count.get());
         e.parse(new EngineRequest("", "", heap, map));
@@ -199,6 +201,7 @@ public class EhCacheEngineTest {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getNutType()).thenReturn(NutType.JAVASCRIPT);
         Mockito.when(nut.getInitialName()).thenReturn("foo.js");
+        Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(1L));
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));
         final List<HeapListener> listeners = new ArrayList<HeapListener>();
