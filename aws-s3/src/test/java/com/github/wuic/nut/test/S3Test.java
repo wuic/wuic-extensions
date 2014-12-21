@@ -46,8 +46,8 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.github.wuic.ApplicationConfig;
-import com.github.wuic.NutType;
 import com.github.wuic.config.ObjectBuilderFactory;
+import com.github.wuic.engine.EngineRequestBuilder;
 import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.core.TextAggregatorEngine;
 import com.github.wuic.exception.BuilderPropertyNotSupportedException;
@@ -55,7 +55,6 @@ import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.dao.NutDao;
 import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.NutsHeap;
-import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.s3.S3NutDao;
 import com.github.wuic.config.ObjectBuilder;
@@ -70,7 +69,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.Matchers.any;
@@ -163,12 +161,12 @@ public class S3Test {
         Assert.assertEquals(nutsHeap.getNuts().size(), 1);
 
         final NodeEngine aggregator = new TextAggregatorEngine(true, true);
-        final List<ConvertibleNut> group = aggregator.parse(new EngineRequest("", "", nutsHeap, new HashMap<NutType, NodeEngine>()));
+        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap).build());
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;
 
-        for (Nut res : group) {
+        for (final Nut res : group) {
             is = res.openStream();
             Assert.assertTrue(IOUtils.readString(new InputStreamReader(is)).length() > 0);
             is.close();

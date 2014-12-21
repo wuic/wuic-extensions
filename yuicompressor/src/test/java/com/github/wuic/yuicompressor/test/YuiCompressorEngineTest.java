@@ -42,9 +42,8 @@ import com.github.wuic.NutType;
 import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.Engine;
-import com.github.wuic.engine.EngineRequest;
+import com.github.wuic.engine.EngineRequestBuilder;
 import com.github.wuic.engine.EngineService;
-import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.yuicompressor.YuiCompressorCssEngine;
 import com.github.wuic.engine.yuicompressor.YuiCompressorJavascriptEngine;
 import com.github.wuic.nut.ConvertibleNut;
@@ -61,7 +60,6 @@ import org.mockito.Mockito;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -98,7 +96,7 @@ public class YuiCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("YuiCompressorJavascriptEngineBuilder");
         final Engine engine = builder.build();
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap).contextPath("cp").build());
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
         Assert.assertEquals("var foo=0;", new String(bos.toByteArray()));
@@ -125,7 +123,7 @@ public class YuiCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("YuiCompressorCssEngineBuilder");
         final Engine engine = builder.build();
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequest("wid", "cp", heap, new HashMap<NutType, NodeEngine>()));
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap).contextPath("cp").build());
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
         Assert.assertEquals(".foo{color:black;}", new String(bos.toByteArray()));

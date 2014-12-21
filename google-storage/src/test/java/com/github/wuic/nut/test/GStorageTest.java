@@ -41,6 +41,7 @@ package com.github.wuic.nut.test;
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.config.ObjectBuilderFactory;
+import com.github.wuic.engine.EngineRequestBuilder;
 import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.core.TextAggregatorEngine;
 import com.github.wuic.exception.BuilderPropertyNotSupportedException;
@@ -48,7 +49,6 @@ import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.dao.NutDao;
 import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.NutsHeap;
-import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.dao.gstorage.GStorageNutDao;
@@ -65,7 +65,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Arrays;
-import java.util.HashMap;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -81,7 +80,6 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(JUnit4.class)
 public class GStorageTest {
-
 
     /**
      * <p>
@@ -132,7 +130,7 @@ public class GStorageTest {
 
         final NodeEngine aggregator = new TextAggregatorEngine(true, true);
 
-        final List<ConvertibleNut> group = aggregator.parse(new EngineRequest("", "", nutsHeap, new HashMap<NutType, NodeEngine>()));
+        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap).build());
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;
