@@ -87,7 +87,7 @@ public class YuiCompressorEngineTest {
         Mockito.when(nut.openStream()).thenReturn(new ByteArrayInputStream("var foo = 0; // some comments".getBytes()));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
         Mockito.when(nut.isTextReducible()).thenReturn(Boolean.TRUE);
-        Mockito.when(nut.getNutType()).thenReturn(NutType.JAVASCRIPT);
+        Mockito.when(nut.getInitialNutType()).thenReturn(NutType.JAVASCRIPT);
 
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));
@@ -114,7 +114,7 @@ public class YuiCompressorEngineTest {
         Mockito.when(nut.openStream()).thenReturn(new ByteArrayInputStream(".foo { color: black;/*some comments*/ }".getBytes()));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
         Mockito.when(nut.isTextReducible()).thenReturn(Boolean.TRUE);
-        Mockito.when(nut.getNutType()).thenReturn(NutType.CSS);
+        Mockito.when(nut.getInitialNutType()).thenReturn(NutType.CSS);
 
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));

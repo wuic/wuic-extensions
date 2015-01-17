@@ -163,7 +163,7 @@ public class EhCacheEngineTest {
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialName()).thenReturn("foo.css");
-        Mockito.when(nut.getNutType()).thenReturn(NutType.CSS);
+        Mockito.when(nut.getInitialNutType()).thenReturn(NutType.CSS);
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(1L));
         e.parse(new EngineRequestBuilder("", heap).chains(map).build());
@@ -200,7 +200,7 @@ public class EhCacheEngineTest {
     @Test
     public void invalidateCacheTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
-        Mockito.when(nut.getNutType()).thenReturn(NutType.JAVASCRIPT);
+        Mockito.when(nut.getInitialNutType()).thenReturn(NutType.JAVASCRIPT);
         Mockito.when(nut.getInitialName()).thenReturn("foo.js");
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(1L));
         final NutsHeap heap = Mockito.mock(NutsHeap.class);

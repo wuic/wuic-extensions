@@ -467,7 +467,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
         public InputStream openStream() throws NutNotFoundException {
             if (!file.exists()) {
                 try {
-                    final DownloadNut dn = DownloadNut.class.cast(accessFor(getInitialName(), getNutType()));
+                    final DownloadNut dn = DownloadNut.class.cast(accessFor(getInitialName(), getInitialNutType()));
                     file = dn.file;
                     return dn.openStream();
                 } catch (StreamException se) {
