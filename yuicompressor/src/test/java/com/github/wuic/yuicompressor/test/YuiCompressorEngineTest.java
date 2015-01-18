@@ -126,6 +126,6 @@ public class YuiCompressorEngineTest {
         final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap).contextPath("cp").build());
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
-        Assert.assertEquals(".foo{color:black;}", new String(bos.toByteArray()));
+        Assert.assertEquals(".foo{color:black}", new String(bos.toByteArray()));
     }
 }
