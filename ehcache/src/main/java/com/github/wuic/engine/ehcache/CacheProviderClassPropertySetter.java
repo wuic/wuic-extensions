@@ -40,7 +40,7 @@ package com.github.wuic.engine.ehcache;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.config.PropertySetter;
-import com.github.wuic.exception.wrapper.BadArgumentException;
+import com.github.wuic.exception.WuicException;
 
 /**
  * <p>
@@ -67,18 +67,18 @@ public class CacheProviderClassPropertySetter extends PropertySetter.PropertySet
                 if (WuicEhcacheProvider.class.isAssignableFrom(clazz)) {
                     put(getPropertyKey(), WuicEhcacheProvider.class.cast(clazz.newInstance()).getCache());
                 } else {
-                    throw new BadArgumentException(new IllegalArgumentException(
+                    WuicException.throwBadArgumentException(new IllegalArgumentException(
                             String.format("'%s' must be a '%s'", value.toString(), WuicEhcacheProvider.class.getName())));
                 }
             } catch (ClassNotFoundException cnfe) {
-                 throw new BadArgumentException(new IllegalArgumentException(cnfe));
+                WuicException.throwBadArgumentException(new IllegalArgumentException(cnfe));
             } catch (InstantiationException ie) {
-                throw new BadArgumentException(new IllegalArgumentException(ie));
+                WuicException.throwBadArgumentException(new IllegalArgumentException(ie));
             } catch (IllegalAccessException iae) {
-                throw new BadArgumentException(new IllegalArgumentException(iae));
+                WuicException.throwBadArgumentException(new IllegalArgumentException(iae));
             }
         } else {
-            throw new BadArgumentException(new IllegalArgumentException(
+            WuicException.throwBadArgumentException(new IllegalArgumentException(
                     String.format("Value '%s' associated to key '%s' must be a String", value, getPropertyKey())));
         }
     }

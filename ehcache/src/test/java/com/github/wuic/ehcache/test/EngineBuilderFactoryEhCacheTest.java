@@ -41,8 +41,7 @@ package com.github.wuic.ehcache.test;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.Engine;
 import com.github.wuic.engine.EngineService;
-import com.github.wuic.exception.UnableToInstantiateException;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -63,7 +62,7 @@ public class EngineBuilderFactoryEhCacheTest {
      * Test for EhCache.
      */
     @Test
-    public void testCreateEhCacheBuilder() throws UnableToInstantiateException {
+    public void testCreateEhCacheBuilder() {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EngineService.DEFAULT_SCAN_PACKAGE);
         Assert.assertNotNull(factory.create("EhCacheEngineBuilder"));
     }

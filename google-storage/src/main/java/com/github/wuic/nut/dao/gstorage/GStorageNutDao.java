@@ -45,8 +45,7 @@ import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.IntegerConfigParam;
 import com.github.wuic.config.ObjectConfigParam;
 import com.github.wuic.config.StringConfigParam;
-import com.github.wuic.exception.NutNotFoundException;
-import com.github.wuic.exception.wrapper.StreamException;
+import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.AbstractNut;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.Nut;
@@ -205,16 +204,11 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * {@inheritDoc}
      */
     @Override
-    public List<String> listNutsPaths(final String pattern) throws StreamException {
+    public List<String> listNutsPaths(final String pattern) throws IOException {
+        // Check if we are ready to read on Google Storage
+        this.checkGoogleOAuth2();
 
-        try {
-            // Check if we are ready to read on Google Storage
-            this.checkGoogleOAuth2();
-
-            return recursiveSearch(getBasePath(), Pattern.compile(pattern));
-        } catch (IOException ioe) {
-            throw new StreamException(ioe);
-        }
+        return recursiveSearch(getBasePath(), Pattern.compile(pattern));
     }
 
     /**
@@ -225,15 +219,17 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * @param path    the path
      * @param pattern the pattern to match
      * @return the list of matching files
-     * @throws StreamException if the client can't move to a directory or any I/O error occurs
+     * @throws IOException if the client can't move to a directory or any I/O error occurs
      */
-    private List<String> recursiveSearch(final String path, final Pattern pattern) throws StreamException {
+    private List<String> recursiveSearch(final String path, final Pattern pattern) throws IOException {
         Objects objectListing;
 
         try {
             objectListing = storage.objects().list(bucketName).execute();
         } catch (IOException ioe) {
-            throw new StreamException(new IOException(String.format("Can't get Google Storage Object on bucket %s for nut key : %s", bucketName, path), ioe));
+            WuicException.throwStreamException(new IOException(
+                    String.format("Can't get Google Storage Object on bucket %s for nut key : %s", bucketName, path)));
+            return null;
         }
 
         final List<String> retval = new ArrayList<String>();
@@ -255,7 +251,7 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * {@inheritDoc}
      */
     @Override
-    public Nut accessFor(final String realPath, final NutType type) throws StreamException {
+    public Nut accessFor(final String realPath, final NutType type) throws IOException {
         // Create nut
         return new GStorageNut(realPath, type, getVersionNumber(realPath));
     }
@@ -264,15 +260,11 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * {@inheritDoc}
      */
     @Override
-    protected Long getLastUpdateTimestampFor(final String path) throws StreamException {
+    protected Long getLastUpdateTimestampFor(final String path) throws IOException {
         log.info("Polling GStorage nut '{}'", path);
-        try {
-            final String response = storage.objects().get(bucketName, path).execute().getMd5Hash();
-            log.info("Last MD5 response : {}", response);
-            return storage.objects().get(bucketName, path).execute().getGeneration();
-        } catch (final IOException ioe) {
-            throw new StreamException(ioe);
-        }
+        final String response = storage.objects().get(bucketName, path).execute().getMd5Hash();
+        log.info("Last MD5 response : {}", response);
+        return storage.objects().get(bucketName, path).execute().getGeneration();
     }
 
     /**
@@ -302,20 +294,16 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path) throws StreamException {
-        try {
-            // Try to get a Storage object
-            return storage.objects().get(bucketName, path).executeMediaAsInputStream();
-        } catch (IOException ioe) {
-            throw new StreamException(ioe);
-        }
+    public InputStream newInputStream(final String path) throws IOException {
+        // Try to get a Storage object
+        return storage.objects().get(bucketName, path).executeMediaAsInputStream();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Boolean exists(final String path) throws StreamException {
+    public Boolean exists(final String path) throws IOException {
         try {
             // Try to get a Storage object
             storage.objects().get(bucketName, path).executeMediaAsInputStream().close();
@@ -353,16 +341,12 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
          * {@inheritDoc}
          */
         @Override
-        public InputStream openStream() throws NutNotFoundException {
-            try {
-                // Try to get a Storage object
-                final Storage.Objects.Get storageObject = storage.objects().get(bucketName, getInitialName());
+        public InputStream openStream() throws IOException {
+            // Try to get a Storage object
+            final Storage.Objects.Get storageObject = storage.objects().get(bucketName, getInitialName());
 
-                // Download path
-                return storageObject.executeMediaAsInputStream();
-            } catch (IOException ioe) {
-                throw new NutNotFoundException(ioe);
-            }
+            // Download path
+            return storageObject.executeMediaAsInputStream();
         }
     }
 }

@@ -41,7 +41,6 @@ package com.github.wuic.thymeleaf;
 
 import com.github.wuic.WuicFacade;
 import com.github.wuic.exception.WuicException;
-import com.github.wuic.exception.wrapper.BadArgumentException;
 import com.github.wuic.xml.ReaderXmlContextBuilderConfigurator;
 import org.thymeleaf.Arguments;
 import org.thymeleaf.dom.Element;
@@ -98,14 +97,14 @@ public class ConfigProcessor extends AbstractRemovalElementProcessor {
             // Let's load the wuic.xml file and configure the builder with it
             final Reader reader = new StringReader(DOMUtils.getHtml5For(element.getFirstElementChild()));
             wuicFacade.configure(new ReaderXmlContextBuilderConfigurator(reader, toString(), wuicFacade.allowsMultipleConfigInTagSupport()));
-
-            return false;
         } catch (WuicException we) {
-            throw new BadArgumentException(new IllegalArgumentException(we));
+            WuicException.throwBadStateException(we);
         } catch (JAXBException se) {
-            throw new BadArgumentException(new IllegalArgumentException(
+            WuicException.throwBadArgumentException(new IllegalArgumentException(
                     "First DOM element child is not a valid XML to describe WUIC configuration", se));
         }
+
+        return false;
     }
 
     /**

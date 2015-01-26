@@ -45,9 +45,7 @@ import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.IntegerConfigParam;
 import com.github.wuic.config.ObjectConfigParam;
 import com.github.wuic.config.StringConfigParam;
-import com.github.wuic.exception.NutNotFoundException;
-import com.github.wuic.exception.PollingOperationNotSupportedException;
-import com.github.wuic.exception.wrapper.StreamException;
+import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.FilePathNut;
 import com.github.wuic.nut.Nut;
@@ -263,7 +261,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public Nut accessFor(final String realPath, final NutType type) throws StreamException {
+    public Nut accessFor(final String realPath, final NutType type) throws IOException {
         try {
             // Connect if necessary
             connect();
@@ -275,7 +273,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
                 final File parent = new File(System.getProperty("java.io.tmpdir"), "wuic-ftp" + System.nanoTime());
 
                 if (!parent.mkdir()) {
-                    throw new StreamException(new IOException("Can't create temporary file to download resource from FTP."));
+                    WuicException.throwStreamException(new IOException("Can't create temporary file to download resource from FTP."));
                 } else {
                     // Download to file
                     final File file = new File(parent, realPath);
@@ -304,19 +302,21 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
                 return new ByteArrayNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath).get());
             }
         } catch (IOException ioe) {
-            throw new StreamException(ioe);
+            WuicException.throwStreamException(ioe);
         } catch (ExecutionException ee) {
-            throw new StreamException(new IOException(ee));
+            WuicException.throwStreamException(new IOException(ee));
         } catch (InterruptedException ie) {
-            throw new StreamException(new IOException(ie));
+            WuicException.throwStreamException(new IOException(ie));
         }
+
+        return null;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected Long getLastUpdateTimestampFor(final String path) throws StreamException {
+    protected Long getLastUpdateTimestampFor(final String path) throws IOException {
         try {
             // Connect if necessary
             connect();
@@ -328,10 +328,9 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
                     MODIFICATION_TIME_FORMAT);
 
             return MODIFICATION_TIME_FORMAT.parse(response.substring(response.indexOf(' ') + 1)).getTime();
-        } catch (IOException ioe) {
-            throw new StreamException(ioe);
         } catch (ParseException pe) {
-            throw new PollingOperationNotSupportedException(this.getClass(), pe);
+            WuicException.throwStreamException(new IOException(pe));
+            return null;
         }
     }
 
@@ -380,49 +379,37 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path) throws StreamException {
-        try {
-            // Connect if necessary
-            connect();
+    public InputStream newInputStream(final String path) throws IOException {
+        // Connect if necessary
+        connect();
 
-            ftpClient.changeWorkingDirectory(getBasePath());
+        ftpClient.changeWorkingDirectory(getBasePath());
 
-            // Download path
-            return ftpClient.retrieveFileStream(path);
-        } catch (IOException ioe) {
-            throw new StreamException(ioe);
-        }
+        // Download path
+        return ftpClient.retrieveFileStream(path);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Boolean exists(final String path) throws StreamException {
-        try {
-            // Connect if necessary
-            connect();
+    public Boolean exists(final String path) throws IOException {
+        // Connect if necessary
+        connect();
 
-            ftpClient.changeWorkingDirectory(getBasePath());
+        ftpClient.changeWorkingDirectory(getBasePath());
 
-            InputStream inputStream = newInputStream(path);
-            return inputStream != null && ftpClient.getReplyCode() != FILE_UNAVAILABLE_CODE;
-        } catch (IOException ioe) {
-            throw new StreamException(ioe);
-        }
+        InputStream inputStream = newInputStream(path);
+        return inputStream != null && ftpClient.getReplyCode() != FILE_UNAVAILABLE_CODE;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected List<String> listNutsPaths(final String pattern) throws StreamException {
-        try {
-            connect();
-            return recursiveSearch(getBasePath(), Pattern.compile(regularExpression ? pattern : Pattern.quote(pattern)));
-        } catch (IOException ioe) {
-            throw new StreamException(ioe);
-        }
+    protected List<String> listNutsPaths(final String pattern) throws IOException {
+        connect();
+        return recursiveSearch(getBasePath(), Pattern.compile(regularExpression ? pattern : Pattern.quote(pattern)));
     }
 
     /**
@@ -464,15 +451,11 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
          * {@inheritDoc}
          */
         @Override
-        public InputStream openStream() throws NutNotFoundException {
+        public InputStream openStream() throws IOException {
             if (!file.exists()) {
-                try {
-                    final DownloadNut dn = DownloadNut.class.cast(accessFor(getInitialName(), getInitialNutType()));
-                    file = dn.file;
-                    return dn.openStream();
-                } catch (StreamException se) {
-                    throw new NutNotFoundException(new IOException(se));
-                }
+                final DownloadNut dn = DownloadNut.class.cast(accessFor(getInitialName(), getInitialNutType()));
+                file = dn.file;
+                return dn.openStream();
             } else {
                 return super.openStream();
             }

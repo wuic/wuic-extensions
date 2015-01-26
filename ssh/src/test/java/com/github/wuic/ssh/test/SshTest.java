@@ -41,7 +41,6 @@ package com.github.wuic.ssh.test;
 import com.github.wuic.Context;
 import com.github.wuic.ContextBuilder;
 import com.github.wuic.exception.WuicException;
-import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.IOUtils;
@@ -92,7 +91,7 @@ public class SshTest {
      * </p>
      */
     @BeforeClass
-    public static void tearUp() throws StreamException, IOException {
+    public static void tearUp() throws IOException {
 
         // Default server on port 9876
         sshdServer = SshServer.setUpDefaultServer();

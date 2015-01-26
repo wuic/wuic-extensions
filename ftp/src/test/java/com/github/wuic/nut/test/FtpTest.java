@@ -42,9 +42,6 @@ import com.github.wuic.ApplicationConfig;
 import com.github.wuic.ContextBuilder;
 import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.config.ObjectBuilderFactory;
-import com.github.wuic.exception.BuilderPropertyNotSupportedException;
-import com.github.wuic.exception.NutNotFoundException;
-import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.NutDao;
@@ -167,11 +164,10 @@ public class FtpTest {
      * Test exists implementation.
      * </p>
      *
-     * @throws com.github.wuic.exception.wrapper.StreamException if test fails
-     * @throws com.github.wuic.exception.BuilderPropertyNotSupportedException if test fails
+     * @throws IOException if test fails
      */
     @Test
-    public void ftpExistsTest() throws StreamException, BuilderPropertyNotSupportedException {
+    public void ftpExistsTest() throws IOException {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, FtpNutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create(FtpNutDao.class.getSimpleName() + "Builder");
         final NutDao dao = builder
@@ -188,13 +184,10 @@ public class FtpTest {
      * Test stream.
      * </p>
      *
-     * @throws StreamException if test fails
-     * @throws BuilderPropertyNotSupportedException if test fails
      * @throws IOException if test fails
-     * @throws com.github.wuic.exception.NutNotFoundException if test fails
      */
     @Test
-    public void ftpReadTest() throws StreamException, BuilderPropertyNotSupportedException, NutNotFoundException, IOException {
+    public void ftpReadTest() throws IOException {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, FtpNutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create(FtpNutDao.class.getSimpleName() + "Builder");
         final NutDao dao = builder
@@ -212,13 +205,10 @@ public class FtpTest {
      * Test stream download on disk.
      * </p>
      *
-     * @throws StreamException if test fails
-     * @throws BuilderPropertyNotSupportedException if test fails
      * @throws IOException if test fails
-     * @throws com.github.wuic.exception.NutNotFoundException if test fails
      */
     @Test
-    public void ftpReadDiskTest() throws StreamException, BuilderPropertyNotSupportedException, NutNotFoundException, IOException {
+    public void ftpReadDiskTest() throws IOException {
         final String tmp = System.getProperty("java.io.tmpdir");
         final String tmpTest = IOUtils.mergePath(tmp, "ftptest");
         final File tmpDir = new File(tmpTest);

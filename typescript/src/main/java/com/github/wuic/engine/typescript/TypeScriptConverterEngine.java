@@ -180,7 +180,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
                 }
             }
 
-            IOUtils.copyStreamIoe(new ByteArrayInputStream(bos.toByteArray()), os);
+            IOUtils.copyStream(new ByteArrayInputStream(bos.toByteArray()), os);
         }
     }
 
@@ -277,7 +277,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
                     sourceMapInputStream = new FileInputStream(sourceMapFile);
                     final String sourceMapName = sourceMapFile.getName();
                     final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    IOUtils.copyStreamIoe(sourceMapInputStream, bos);
+                    IOUtils.copyStream(sourceMapInputStream, bos);
                     final ConvertibleNut sourceMapNut = new ByteArrayNut(bos.toByteArray(), sourceMapName, NutType.MAP, 0L);
                     internal.getRefNuts().add(sourceMapNut);
                 }
@@ -364,7 +364,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
 
             // Read the stream and collect referenced nuts
             cn.addObserver(this);
-            IOUtils.copyStreamIoe(cn, new OutputStream() {
+            IOUtils.copyStream(cn, new OutputStream() {
                 @Override
                 public void write(final int b) throws IOException {
                 }

@@ -40,7 +40,6 @@ package com.github.wuic.spring;
 
 import com.github.wuic.WuicFacade;
 import com.github.wuic.engine.EngineType;
-import com.github.wuic.exception.NutNotFoundException;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.UrlMatcher;
@@ -50,6 +49,7 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 import org.springframework.web.servlet.resource.ResourceResolverChain;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
@@ -135,10 +135,10 @@ public class WuicPathResourceResolver extends PathResourceResolver {
             final Nut nut = wuicFacade.runWorkflow(matcher.getWorkflowId(), matcher.getNutName(), SKIP);
 
             return new WuicResource(nut);
-        } catch (NutNotFoundException nnfe) {
+        } catch (IOException ioe) {
             try {
                 logger.debug(String.format("Unable to resolve nut with name '%s' in workflow '%s'",
-                        matcher.getNutName(), matcher.getWorkflowId()), nnfe);
+                        matcher.getNutName(), matcher.getWorkflowId()), ioe);
                 return null;
             } catch (UnsupportedEncodingException we) {
                 throw new IllegalArgumentException(we);

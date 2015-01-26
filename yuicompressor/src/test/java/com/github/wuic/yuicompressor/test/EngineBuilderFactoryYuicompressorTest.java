@@ -41,7 +41,6 @@ package com.github.wuic.yuicompressor.test;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.Engine;
 import com.github.wuic.engine.EngineService;
-import com.github.wuic.exception.UnableToInstantiateException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,7 +63,7 @@ public class EngineBuilderFactoryYuicompressorTest {
      * Test for CSS YUICompressor.
      */
     @Test
-    public void testCreateCssYuiCompressorBuilder() throws UnableToInstantiateException {
+    public void testCreateCssYuiCompressorBuilder() {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EngineService.DEFAULT_SCAN_PACKAGE);
         Assert.assertNotNull(factory.create("YuiCompressorCssEngineBuilder"));
     }
@@ -73,7 +72,7 @@ public class EngineBuilderFactoryYuicompressorTest {
      * Test for Javascript YUICompressor.
      */
     @Test
-    public void testCreateJavascriptYuiCompressorBuilder() throws UnableToInstantiateException {
+    public void testCreateJavascriptYuiCompressorBuilder() {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EngineService.DEFAULT_SCAN_PACKAGE);
         Assert.assertNotNull(factory.create("YuiCompressorJavascriptEngineBuilder"));
     }

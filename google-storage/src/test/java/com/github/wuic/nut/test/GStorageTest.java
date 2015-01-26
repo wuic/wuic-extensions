@@ -44,7 +44,6 @@ import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.EngineRequestBuilder;
 import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.core.TextAggregatorEngine;
-import com.github.wuic.exception.BuilderPropertyNotSupportedException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.dao.NutDao;
 import com.github.wuic.nut.dao.NutDaoService;
@@ -106,8 +105,8 @@ public class GStorageTest {
      * </p>
      *
      */
-    @Test(expected = BuilderPropertyNotSupportedException.class)
-    public void builderWithBadPropertyTest() throws BuilderPropertyNotSupportedException {
+    @Test(expected = IllegalArgumentException.class)
+    public void builderWithBadPropertyTest() {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, GStorageNutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create("GStorageNutDaoBuilder");
         Assert.assertNotNull(builder);

@@ -43,7 +43,6 @@ import com.github.wuic.ContextBuilder;
 import com.github.wuic.ContextBuilderConfigurator;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.WuicFacadeBuilder;
-import com.github.wuic.exception.wrapper.StreamException;
 import com.github.wuic.nut.dao.core.ClasspathNutDao;
 import com.github.wuic.spring.WuicPathResourceResolver;
 import com.github.wuic.spring.WuicVersionStrategy;
@@ -68,6 +67,7 @@ import org.springframework.web.servlet.resource.ResourceResolverChain;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -157,7 +157,7 @@ public class SpringSupportTest {
             }
 
             @Override
-            protected Long getLastUpdateTimestampFor(String path) throws StreamException {
+            protected Long getLastUpdateTimestampFor(String path) throws IOException {
                 return -1L;
             }
         });

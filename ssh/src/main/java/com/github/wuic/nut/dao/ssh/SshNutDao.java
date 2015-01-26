@@ -45,8 +45,7 @@ import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.IntegerConfigParam;
 import com.github.wuic.config.ObjectConfigParam;
 import com.github.wuic.config.StringConfigParam;
-import com.github.wuic.exception.NutNotFoundException;
-import com.github.wuic.exception.wrapper.StreamException;
+import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.AbstractNut;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.dao.NutDaoService;
@@ -174,7 +173,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public List<String> listNutsPaths(final String pattern) throws StreamException {
+    public List<String> listNutsPaths(final String pattern) throws IOException {
         ChannelSftp channel = null;
 
         try {
@@ -196,9 +195,11 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
                 return Arrays.asList(pattern);
             }
         } catch (JSchException je) {
-            throw new StreamException(new IOException(je));
+            WuicException.throwStreamException(new IOException(je));
+            return null;
         } catch (SftpException se) {
-            throw new StreamException(new IOException(se));
+            WuicException.throwStreamException(new IOException(se));
+            return null;
         } finally {
             if (channel != null) {
                 channel.disconnect();
@@ -210,7 +211,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public Nut accessFor(final String path, final NutType type) throws StreamException {
+    public Nut accessFor(final String path, final NutType type) throws IOException {
         return new SshNut(path, type, getVersionNumber(path));
     }
 
@@ -218,7 +219,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    protected Long getLastUpdateTimestampFor(final String path) throws StreamException {
+    protected Long getLastUpdateTimestampFor(final String path) throws IOException {
         ChannelSftp channel = null;
 
         try {
@@ -227,9 +228,11 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
             channel.cd(getBasePath());
             return (long) channel.stat(path).getMTime();
         } catch (JSchException je) {
-            throw new StreamException(new IOException(CANNOT_LOAD_MESSAGE, je));
+            WuicException.throwStreamException(new IOException(je));
+            return null;
         } catch (SftpException se) {
-            throw new StreamException(new IOException(CANNOT_LOAD_MESSAGE, se));
+            WuicException.throwStreamException(new IOException(CANNOT_LOAD_MESSAGE, se));
+            return null;
         } finally {
             if (channel != null) {
                 channel.disconnect();
@@ -262,14 +265,15 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path) throws StreamException {
+    public InputStream newInputStream(final String path) throws IOException {
         ChannelSftp channel = null;
 
         try {
             channel = open();
             return channel.get(path);
         } catch (SftpException se) {
-            throw new StreamException(new IOException("An SSH FTP error prevent remote file loading", se));
+            WuicException.throwStreamException(new IOException("An SSH FTP error prevent remote file loading", se));
+            return null;
         } finally {
             if (channel != null) {
                 channel.disconnect();
@@ -281,14 +285,15 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public Boolean exists(final String path) throws StreamException {
+    public Boolean exists(final String path) throws IOException {
         ChannelSftp channel = null;
         boolean exception = false;
         try {
             channel = open();
         } catch (SftpException se) {
             exception = true;
-            throw new StreamException(new IOException("An SSH FTP error prevent remote file loading", se));
+            WuicException.throwStreamException(new IOException("An SSH FTP error prevent remote file loading", se));
+            return false;
         } finally {
             if (exception) {
                 channel.disconnect();
@@ -313,11 +318,11 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * Open the returned channel and change directory to base path.
      * </p>
      *
-     * @throws StreamException if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      * @throws SftpException if connection could not be opened
      * @return the channel
      */
-    public ChannelSftp open() throws StreamException, SftpException {
+    public ChannelSftp open() throws IOException, SftpException {
         boolean exception = false;
         ChannelSftp channel = null;
 
@@ -330,7 +335,8 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
             exception = true;
             return channel;
         } catch (JSchException je) {
-            throw new StreamException(new IOException(CANNOT_LOAD_MESSAGE, je));
+            WuicException.throwStreamException(new IOException(CANNOT_LOAD_MESSAGE, je));
+            return null;
         } finally {
             if (exception) {
                 channel.disconnect();
@@ -366,7 +372,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
          * {@inheritDoc}
          */
         @Override
-        public InputStream openStream() throws NutNotFoundException {
+        public InputStream openStream() throws IOException {
             ChannelSftp channel;
 
             try {
@@ -377,9 +383,11 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
                 channel.cd(getBasePath());
                 return channel.get(getInitialName());
             } catch (JSchException je) {
-                throw new NutNotFoundException(new IOException(CANNOT_LOAD_MESSAGE, je));
+                WuicException.throwStreamException(new IOException(CANNOT_LOAD_MESSAGE, je));
+                return null;
             } catch (SftpException se) {
-                throw new NutNotFoundException(new IOException("An SSH FTP error prevent remote file loading", se));
+                WuicException.throwStreamException(new IOException("An SSH FTP error prevent remote file loading", se));
+                return null;
             }
         }
     }

@@ -38,7 +38,6 @@
 
 package com.github.wuic.spring;
 
-import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.Nut;
 import org.springframework.core.io.AbstractResource;
 
@@ -86,11 +85,7 @@ public class WuicResource extends AbstractResource {
      */
     @Override
     public InputStream getInputStream() throws IOException {
-        try {
-            return nut.openStream();
-        } catch (WuicException we) {
-            throw new IOException(we);
-        }
+        return nut.openStream();
     }
 
     /**
