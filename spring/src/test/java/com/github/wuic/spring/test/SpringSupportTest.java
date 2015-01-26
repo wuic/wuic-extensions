@@ -139,13 +139,11 @@ public class SpringSupportTest {
 
             @Override
             public int internalConfigure(final ContextBuilder ctxBuilder) {
-                final String type = ClasspathNutDao.class.getSimpleName() + "Builder";
-
                 try {
-                    ctxBuilder.contextNutDaoBuilder(ContextBuilder.ID_PREFIX + type, type)
+                    ctxBuilder.contextNutDaoBuilder(ClasspathNutDao.class)
                             .property(ApplicationConfig.BASE_PATH, "/statics")
                             .toContext()
-                            .heap("foo", ContextBuilder.ID_PREFIX + type, "foo.js");
+                            .heap("foo", ContextBuilder.getDefaultBuilderId(ClasspathNutDao.class), "foo.js");
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
