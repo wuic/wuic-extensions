@@ -49,7 +49,6 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 import org.springframework.web.servlet.resource.ResourceResolverChain;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
@@ -101,8 +100,6 @@ public class WuicPathResourceResolver extends PathResourceResolver {
         } else {
             try {
                 return internalResolve(matcher);
-            } catch (WuicException we) {
-                throw new IllegalArgumentException(we);
             } catch (UnsupportedEncodingException we) {
                 throw new IllegalArgumentException(we);
             }
@@ -127,22 +124,17 @@ public class WuicPathResourceResolver extends PathResourceResolver {
      * @param matcher the matcher
      * @return the resource that wraps the nut
      * @throws UnsupportedEncodingException should not happen
-     * @throws WuicException if any error occurs
      */
-    private WuicResource internalResolve(final UrlMatcher matcher) throws UnsupportedEncodingException, WuicException {
+    private WuicResource internalResolve(final UrlMatcher matcher) throws UnsupportedEncodingException {
 
         try {
             final Nut nut = wuicFacade.runWorkflow(matcher.getWorkflowId(), matcher.getNutName(), SKIP);
 
             return new WuicResource(nut);
-        } catch (IOException ioe) {
-            try {
-                logger.debug(String.format("Unable to resolve nut with name '%s' in workflow '%s'",
-                        matcher.getNutName(), matcher.getWorkflowId()), ioe);
-                return null;
-            } catch (UnsupportedEncodingException we) {
-                throw new IllegalArgumentException(we);
-            }
+        } catch (WuicException we) {
+            logger.debug(String.format("Unable to resolve nut with name '%s' in workflow '%s'",
+                    matcher.getNutName(), matcher.getWorkflowId()), we);
+            return null;
         }
     }
 }
