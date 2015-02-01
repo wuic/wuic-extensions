@@ -42,16 +42,18 @@ import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractConverterEngine;
 import com.github.wuic.engine.core.TextAggregatorEngine;
+import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.CompositeNut;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
-import com.github.wuic.util.NumberUtils;
+import com.github.wuic.util.NutDiskStore;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +61,6 @@ import ro.isdc.wro.WroRuntimeException;
 import ro.isdc.wro.extensions.processor.js.NodeTypeScriptProcessor;
 import ro.isdc.wro.extensions.processor.js.RhinoTypeScriptProcessor;
 import ro.isdc.wro.model.resource.Resource;
-import ro.isdc.wro.util.WroUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -78,6 +79,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -91,6 +93,11 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @EngineService(injectDefaultToWorkflow = true)
 public class TypeScriptConverterEngine extends AbstractConverterEngine {
+
+    /**
+     * ARGS file name.
+     */
+    private static final String ARGS_FILE = "args.txt";
 
     /**
      * The logger.
@@ -108,19 +115,27 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
     private final RhinoTypeScriptProcessor rhinoTypeScriptProcessor;
 
     /**
+     * The ECMA script version.
+     */
+    private final String ecmaScriptVersion;
+
+    /**
      * <p>
      * Builds a new instance.
      * </p>
      *
-     * @param convert      if this engine is enabled or not
-     * @param useNodeJs    use node.js command line or not
-     * @param asynchronous computes version number asynchronously or not
+     * @param convert       if this engine is enabled or not
+     * @param esv           the ECMA script version
+     * @param useNodeJs     use node.js command line or not
+     * @param asynchronous  computes version number asynchronously or not
      */
     @ConfigConstructor
     public TypeScriptConverterEngine(@BooleanConfigParam(propertyKey = ApplicationConfig.CONVERT, defaultValue = true) final Boolean convert,
+                                     @StringConfigParam(propertyKey = ApplicationConfig.ECMA_SCRIPT_VERSION, defaultValue = "ES3") final String esv,
                                      @BooleanConfigParam(propertyKey = ApplicationConfig.USE_NODE_JS, defaultValue = false) final Boolean useNodeJs,
                                      @BooleanConfigParam(propertyKey = ApplicationConfig.COMPUTE_VERSION_ASYNCHRONOUSLY, defaultValue = true) final Boolean asynchronous) {
         super(convert, asynchronous);
+        ecmaScriptVersion = esv;
 
         if (useNodeJs) {
             final String osName = System.getProperty("os.name");
@@ -217,63 +232,69 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
         @Override
         public void process(final Resource resource, final Reader reader, final Writer writer) throws IOException {
             final InternalInputStreamReader internal = InternalInputStreamReader.class.cast(reader);
+
+            // Resources to clean
             InputStream sourceMapInputStream = null;
             InputStream resultInputStream = null;
+            OutputStream argsOutputStream = null;
+            final File workingDir = NutDiskStore.INSTANCE.getWorkingDirectory();
+            final File compilationResult = new File(workingDir, TextAggregatorEngine.aggregationName(NutType.JAVASCRIPT));
+            final File sourceMapFile = new File(compilationResult.getAbsolutePath() + ".map");
+            final File argsFile = new File(workingDir, ARGS_FILE);
+
             final AtomicReference<OutputStream> out = new AtomicReference<OutputStream>();
             final List<String> pathsToCompile = internal.getPathsToCompile();
 
             try {
-                final File compilationResult = new File(internal.getWorkingDir(), TextAggregatorEngine.aggregationName(NutType.JAVASCRIPT));
-                log.debug("absolute path: {}", internal.getWorkingDir().getAbsolutePath());
+                log.debug("absolute path: {}", workingDir.getAbsolutePath());
 
                 // Do not generate source map if we are in best effort
                 final boolean be = internal.getEngineRequest().isBestEffort();
 
                 // Creates the command line to execute tsc tool
-                final int startIndex = (isWindows ? NumberUtils.FOUR : NumberUtils.TWO) - (be ? 1 : 0);
-                final String[] commandLine = new String[NumberUtils.TWO + startIndex + pathsToCompile.size()];
+                final String[] commandLine = isWindows ?
+                        new String[] { "cmd", "/c", "tsc", '@' + ARGS_FILE, } : new String[] { "tsc", '@' + ARGS_FILE};
 
-                if (isWindows) {
-                    commandLine[0] = "cmd";
-                    commandLine[1] = "/c";
-                    commandLine[NumberUtils.TWO] = "tsc";
+                argsOutputStream = new FileOutputStream(argsFile);
 
-                    if (!be) {
-                        commandLine[NumberUtils.THREE] = "--sourcemap";
-                    }
-                } else {
-                    commandLine[0] = "tsc";
-
-                    if (!be) {
-                        commandLine[1] = "--sourcemap";
-                    }
+                for (final String pathToCompile : pathsToCompile) {
+                    argsOutputStream.write((pathToCompile + " ").getBytes());
                 }
 
-                for (int i = 0; i < pathsToCompile.size(); i++) {
-                    commandLine[i + startIndex] = pathsToCompile.get(i);
+                if (!be) {
+                    argsOutputStream.write("--sourcemap".getBytes());
                 }
 
-                commandLine[commandLine.length - NumberUtils.TWO] = "--out";
-                commandLine[commandLine.length - 1] = compilationResult.getAbsolutePath();
+                argsOutputStream.write((" -t " + ecmaScriptVersion + " --out ").getBytes());
+                argsOutputStream.write(compilationResult.getAbsolutePath().getBytes());
 
                 log.debug("CommandLine arguments: {}", Arrays.asList(commandLine));
-                final Process process = new ProcessBuilder(commandLine).redirectErrorStream(true).start();
+                final Process process = new ProcessBuilder(commandLine)
+                        .directory(workingDir)
+                        .redirectErrorStream(true)
+                        .start();
+                final String errorMessage = org.apache.commons.io.IOUtils.toString(process.getInputStream());
 
                 // Execute tsc tool to generate the source map and javascript file
                 // this won't return till `out' stream being flushed!
                 final int exitStatus = process.waitFor();
+
+                if (exitStatus != 0) {
+                    log.warn("exitStatus: {}", exitStatus);
+
+                    if (compilationResult.exists()) {
+                        log.warn("errorMessage: {}", errorMessage);
+                    } else {
+                        log.error("exitStatus: {}", exitStatus);
+                        throw new WroRuntimeException(errorMessage).logError();
+                    }
+                }
+
                 resultInputStream = new FileInputStream(compilationResult);
                 IOUtils.copyStreamToWriterIoe(resultInputStream, writer, "UTF-8");
 
-                if (exitStatus != 0) {
-                    log.error("exitStatus: {}", exitStatus);
-                    String errorMessage = org.apache.commons.io.IOUtils.toString(process.getInputStream());
-                    throw new WroRuntimeException(errorMessage).logError();
-                }
-
                 // Read the generated source map
                 if (!be) {
-                    final File sourceMapFile = new File(compilationResult.getAbsolutePath() + ".map");
                     sourceMapInputStream = new FileInputStream(sourceMapFile);
                     final String sourceMapName = sourceMapFile.getName();
                     final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -285,8 +306,10 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
                 throw WroRuntimeException.wrap(e);
             } finally {
                 // Free resources
-                IOUtils.close(sourceMapInputStream, out.get(), resultInputStream);
-                FileUtils.deleteQuietly(internal.getWorkingDir());
+                IOUtils.close(sourceMapInputStream, out.get(), resultInputStream, argsOutputStream);
+                FileUtils.deleteQuietly(compilationResult);
+                FileUtils.deleteQuietly(argsFile);
+                FileUtils.deleteQuietly(sourceMapFile);
 
                 // return for later reuse
                 reader.close();
@@ -316,11 +339,6 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
          * The composite stream.
          */
         private final CompositeNut.CompositeInputStream cn;
-
-        /**
-         * Directory where files are written.
-         */
-        private final File workingDir;
 
         /**
          * Paths to compile.
@@ -357,7 +375,6 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
             }
 
             out = new AtomicReference<OutputStream>();
-            workingDir = WroUtil.createTempDirectory();
             refNuts = new ArrayList<ConvertibleNut>();
             pathsToCompile = new ArrayList<String>();
             engineRequest = request;
@@ -396,17 +413,6 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
 
         /**
          * <p>
-         * Gets the directory where files are written.
-         * </p>
-         *
-         * @return the working directory
-         */
-        private File getWorkingDir() {
-            return workingDir;
-        }
-
-        /**
-         * <p>
          * Gets the request.
          * </p>
          *
@@ -428,11 +434,10 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
 
                 // Write new nut
                 if (os == null) {
-                    final File path = new File(workingDir, e.getNut().getName());
-                    os = new FileOutputStream(path);
+                    os = NutDiskStore.INSTANCE.store(e.getNut());
                     out.set(os);
                     os.write(e.getRead());
-                    pathsToCompile.add(path.getAbsolutePath());
+                    pathsToCompile.add(e.getNut().getName());
                 } else if (e.getRead() == -1) {
                     // End of copy for current nut
                     os.close();
@@ -443,7 +448,11 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
                     os.write(e.getRead());
                 }
             } catch (IOException ioe) {
-                throw new IllegalStateException(ioe);
+                WuicException.throwBadStateException(ioe);
+            } catch (ExecutionException ee) {
+                WuicException.throwBadStateException(ee);
+            } catch (InterruptedException ie) {
+                WuicException.throwBadStateException(ie);
             }
         }
     }
