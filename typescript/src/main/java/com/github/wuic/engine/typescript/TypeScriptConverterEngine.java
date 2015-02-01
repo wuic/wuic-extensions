@@ -45,7 +45,6 @@ import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
-import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractConverterEngine;
 import com.github.wuic.engine.core.TextAggregatorEngine;
 import com.github.wuic.exception.WuicException;
@@ -162,14 +161,6 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
     @Override
     public List<NutType> getNutTypes() {
         return Arrays.asList(NutType.TYPESCRIPT);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public EngineType getEngineType() {
-        return EngineType.CONVERTER;
     }
 
     /**
