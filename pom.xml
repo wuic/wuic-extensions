@@ -205,11 +205,22 @@
                 <version>${google-collections.version}</version>
             </dependency>
 
-            <!-- Typescript4j -->
             <dependency>
-                <groupId>ro.isdc.wro4j</groupId>
-                <artifactId>wro4j-extensions</artifactId>
-                <version>${wro4j.version}</version>
+                <groupId>io.apigee</groupId>
+                <artifactId>rhino</artifactId>
+                <version>${rhino.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.apigee.trireme</groupId>
+                <artifactId>trireme-core</artifactId>
+                <version>${trireme.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.apigee.trireme</groupId>
+                <artifactId>trireme-node10src</artifactId>
+                <version>${trireme.version}</version>
             </dependency>
 
             <!-- Testing library -->
@@ -238,6 +249,7 @@
         <sshd-version>0.8.0</sshd-version>
         <ftpserver.version>1.0.6</ftpserver.version>
         <spring.version>4.1.1.RELEASE</spring.version>
-        <wro4j.version>1.7.7</wro4j.version>
+        <rhino.version>1.7R5pre4</rhino.version>
+        <trireme.version>0.8.5</trireme.version>
     </properties>
 </project>

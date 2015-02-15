@@ -53,15 +53,12 @@ import com.github.wuic.nut.CompositeNut;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.NutDiskStore;
-import org.apache.commons.io.FileUtils;
+import io.apigee.trireme.core.NodeEnvironment;
+import io.apigee.trireme.core.NodeException;
+import io.apigee.trireme.core.NodeScript;
+import io.apigee.trireme.core.ScriptFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ro.isdc.wro.WroRuntimeException;
-import ro.isdc.wro.extensions.processor.js.NodeTypeScriptProcessor;
-import ro.isdc.wro.extensions.processor.js.RhinoTypeScriptProcessor;
-import ro.isdc.wro.model.resource.Resource;
-
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,9 +67,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -104,19 +98,19 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
-     * The node.js based compiler.
-     */
-    private final NodeTypeScriptProcessor nodeProcessor;
-
-    /**
-     * The rhino based compiler
-     */
-    private final RhinoTypeScriptProcessor rhinoTypeScriptProcessor;
-
-    /**
      * The ECMA script version.
      */
     private final String ecmaScriptVersion;
+
+    /**
+     * Windows or not.
+     */
+    private final boolean isWindows;
+
+    /**
+     * Node environment to run tsc on top of rhino.
+     */
+    private NodeEnvironment env = new NodeEnvironment();
 
     /**
      * <p>
@@ -135,15 +129,11 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
                                      @BooleanConfigParam(propertyKey = ApplicationConfig.COMPUTE_VERSION_ASYNCHRONOUSLY, defaultValue = true) final Boolean asynchronous) {
         super(convert, asynchronous);
         ecmaScriptVersion = esv;
+        final String osName = System.getProperty("os.name");
+        isWindows = osName != null && osName.contains("Windows");
 
         if (useNodeJs) {
-            final String osName = System.getProperty("os.name");
-            final boolean isWindows = osName != null && osName.contains("Windows");
-            nodeProcessor = new InternalNodeProcessor(isWindows);
-            rhinoTypeScriptProcessor = null;
-        } else {
-            nodeProcessor = null;
-            rhinoTypeScriptProcessor = new RhinoTypeScriptProcessor();
+            env = new NodeEnvironment();
         }
     }
 
@@ -169,144 +159,174 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
     @Override
     public void transform(final InputStream is, final OutputStream os, final ConvertibleNut nut, final EngineRequest request)
             throws IOException {
-        if (nodeProcessor == null) {
-            rhinoTypeScriptProcessor.process(new InputStreamReader(is), new OutputStreamWriter(os));
-        } else {
-            // Compile typescript and read generated source map file
-            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        final InternalInputStreamReader internal = new InternalInputStreamReader(is);
 
-            // Read the entire combined stream and write in separate file each nut of the composition
-            final InternalInputStreamReader isr = new InternalInputStreamReader(is, request);
+        // Resources to clean
+        InputStream sourceMapInputStream = null;
+        InputStream resultInputStream = null;
+        final File workingDir = NutDiskStore.INSTANCE.getWorkingDirectory();
+        final File compilationResult = new File(workingDir, TextAggregatorEngine.aggregationName(NutType.JAVASCRIPT));
+        final File sourceMapFile = new File(compilationResult.getAbsolutePath() + ".map");
 
-            nodeProcessor.process(isr, new OutputStreamWriter(bos));
+        final AtomicReference<OutputStream> out = new AtomicReference<OutputStream>();
+        final List<String> pathsToCompile = internal.getPathsToCompile();
 
-            if (!request.isBestEffort()) {
-                for (final ConvertibleNut n : isr.getRefNuts()) {
-                    nut.addReferencedNut(n);
-                }
+        try {
+            log.debug("absolute path: {}", workingDir.getAbsolutePath());
+
+            // Do not generate source map if we are in best effort
+            final boolean be = request.isBestEffort();
+
+            if (env == null) {
+                node(workingDir, pathsToCompile, compilationResult, be);
+            } else {
+                rhino(workingDir, pathsToCompile, compilationResult, be);
             }
 
-            IOUtils.copyStream(new ByteArrayInputStream(bos.toByteArray()), os);
+            if (!compilationResult.exists()) {
+                log.error("{} does not exists, which means that some errors break compilation. Check log above to see them.");
+                throw new IOException("Typescript compilation fails, check logs for details");
+            }
+
+            resultInputStream = new FileInputStream(compilationResult);
+            IOUtils.copyStream(resultInputStream, os);
+
+            // Read the generated source map
+            if (!be) {
+                sourceMapInputStream = new FileInputStream(sourceMapFile);
+                final String sourceMapName = sourceMapFile.getName();
+                final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                IOUtils.copyStream(sourceMapInputStream, bos);
+                final ConvertibleNut sourceMapNut = new ByteArrayNut(bos.toByteArray(), sourceMapName, NutType.MAP, 0L);
+                internal.getRefNuts().add(sourceMapNut);
+            }
+        } catch (final Exception e) {
+            throw new IOException(e);
+        } finally {
+            // Free resources
+            IOUtils.close(sourceMapInputStream, out.get(), resultInputStream);
+            IOUtils.delete(compilationResult);
+            IOUtils.delete(sourceMapFile);
         }
     }
 
     /**
      * <p>
-     * An internal processor that deals with source map generation and multiple files compilation.
+     * Runs tsc compiler command ('npm install -g typescript' is required).
      * </p>
      *
-     * @author Guillaume DROUET
-     * @version 1.0
-     * @since 0.5.1
+     * @param workingDir the working directory
+     * @param pathsToCompile paths of files to compile
+     * @param compilationResult compilation result
+     * @param be best effort mode or not
+     * @throws IOException if a copy/read IO operation fails
+     * @throws InterruptedException if command execution is interrupted
      */
-    private final class InternalNodeProcessor extends NodeTypeScriptProcessor {
+    private void node(final File workingDir, final List<String> pathsToCompile, final File compilationResult, final Boolean be)
+            throws IOException, InterruptedException {
+        OutputStream argsOutputStream = null;
 
-        /**
-         * Windows or not.
-         */
-        private final boolean isWindows;
+        try {
+            // Creates the command line to execute tsc tool
+            final String[] commandLine = isWindows ?
+                    new String[] { "cmd", "/c", "tsc", '@' + ARGS_FILE, } : new String[] { "tsc", '@' + ARGS_FILE};
 
-        /**
-         * <p>
-         * Builds a new instance
-         * </p>
-         *
-         * @param windows {@code true} if we run on windows, {@code false} otherwise
-         */
-        private InternalNodeProcessor(final boolean windows) {
-            isWindows = windows;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void process(final Resource resource, final Reader reader, final Writer writer) throws IOException {
-            final InternalInputStreamReader internal = InternalInputStreamReader.class.cast(reader);
-
-            // Resources to clean
-            InputStream sourceMapInputStream = null;
-            InputStream resultInputStream = null;
-            OutputStream argsOutputStream = null;
-            final File workingDir = NutDiskStore.INSTANCE.getWorkingDirectory();
-            final File compilationResult = new File(workingDir, TextAggregatorEngine.aggregationName(NutType.JAVASCRIPT));
-            final File sourceMapFile = new File(compilationResult.getAbsolutePath() + ".map");
             final File argsFile = new File(workingDir, ARGS_FILE);
+            argsOutputStream = new FileOutputStream(argsFile);
 
-            final AtomicReference<OutputStream> out = new AtomicReference<OutputStream>();
-            final List<String> pathsToCompile = internal.getPathsToCompile();
-
-            try {
-                log.debug("absolute path: {}", workingDir.getAbsolutePath());
-
-                // Do not generate source map if we are in best effort
-                final boolean be = internal.getEngineRequest().isBestEffort();
-
-                // Creates the command line to execute tsc tool
-                final String[] commandLine = isWindows ?
-                        new String[] { "cmd", "/c", "tsc", '@' + ARGS_FILE, } : new String[] { "tsc", '@' + ARGS_FILE};
-
-                argsOutputStream = new FileOutputStream(argsFile);
-
-                for (final String pathToCompile : pathsToCompile) {
-                    argsOutputStream.write((pathToCompile + " ").getBytes());
-                }
-
-                if (!be) {
-                    argsOutputStream.write("--sourcemap".getBytes());
-                }
-
-                argsOutputStream.write((" -t " + ecmaScriptVersion + " --out ").getBytes());
-                argsOutputStream.write(compilationResult.getAbsolutePath().getBytes());
-
-                log.debug("CommandLine arguments: {}", Arrays.asList(commandLine));
-                final Process process = new ProcessBuilder(commandLine)
-                        .directory(workingDir)
-                        .redirectErrorStream(true)
-                        .start();
-                final String errorMessage = org.apache.commons.io.IOUtils.toString(process.getInputStream());
-
-                // Execute tsc tool to generate the source map and javascript file
-                // this won't return till `out' stream being flushed!
-                final int exitStatus = process.waitFor();
-
-                if (exitStatus != 0) {
-                    log.warn("exitStatus: {}", exitStatus);
-
-                    if (compilationResult.exists()) {
-                        log.warn("errorMessage: {}", errorMessage);
-                    } else {
-                        log.error("exitStatus: {}", exitStatus);
-                        throw new WroRuntimeException(errorMessage).logError();
-                    }
-                }
-
-                resultInputStream = new FileInputStream(compilationResult);
-                IOUtils.copyStreamToWriterIoe(resultInputStream, writer, "UTF-8");
-
-                // Read the generated source map
-                if (!be) {
-                    sourceMapInputStream = new FileInputStream(sourceMapFile);
-                    final String sourceMapName = sourceMapFile.getName();
-                    final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    IOUtils.copyStream(sourceMapInputStream, bos);
-                    final ConvertibleNut sourceMapNut = new ByteArrayNut(bos.toByteArray(), sourceMapName, NutType.MAP, 0L);
-                    internal.getRefNuts().add(sourceMapNut);
-                }
-            } catch (final Exception e) {
-                throw WroRuntimeException.wrap(e);
-            } finally {
-                // Free resources
-                IOUtils.close(sourceMapInputStream, out.get(), resultInputStream, argsOutputStream);
-                FileUtils.deleteQuietly(compilationResult);
-                FileUtils.deleteQuietly(argsFile);
-                FileUtils.deleteQuietly(sourceMapFile);
-
-                // return for later reuse
-                reader.close();
-                writer.close();
+            for (final String pathToCompile : pathsToCompile) {
+                argsOutputStream.write((pathToCompile + " ").getBytes());
             }
+
+            if (!be) {
+                argsOutputStream.write("--sourcemap".getBytes());
+            }
+
+            argsOutputStream.write((" -t " + ecmaScriptVersion + " --out ").getBytes());
+            argsOutputStream.write(compilationResult.getAbsolutePath().getBytes());
+            IOUtils.close(argsOutputStream);
+
+            log.debug("CommandLine arguments: {}", Arrays.asList(commandLine));
+            final Process process = new ProcessBuilder(commandLine)
+                    .directory(workingDir)
+                    .redirectErrorStream(true)
+                    .start();
+            final String errorMessage = IOUtils.readString(new InputStreamReader(process.getInputStream()));
+
+            // Execute tsc tool to generate the source map and javascript file
+            // this won't return till `out' stream being flushed!
+            final int exitStatus = process.waitFor();
+
+            if (exitStatus != 0) {
+                log.warn("exitStatus: {}", exitStatus);
+
+                if (compilationResult.exists()) {
+                    log.warn("errorMessage: {}", errorMessage);
+                } else {
+                    log.error("exitStatus: {}", exitStatus);
+                    throw new IOException(errorMessage);
+                }
+            }
+        } finally {
+            IOUtils.close(argsOutputStream);
         }
+    }
+
+    /**
+     * <p>
+     * Invokes tsc compiler on top of rhino using trireme.
+     * </p>
+     *
+     * @param workingDir the working directory
+     * @param pathsToCompile paths of files to compile
+     * @param compilationResult compilation result
+     * @param be best effort mode or not
+     * @throws IOException if a copy/read IO operation fails
+     * @throws NodeException if node compatibility layers fails
+     * @throws InterruptedException if command execution is interrupted
+     * @throws ExecutionException if command execution fails
+     */
+    private void rhino(final File workingDir, final List<String> pathsToCompile, final File compilationResult, final Boolean be)
+            throws IOException, NodeException, InterruptedException, ExecutionException {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("var compile=require('typescript-compiler');var logger=require('slf4j-logger');compile([");
+        for (final String pathToCompile : pathsToCompile) {
+            sb.append("'").append(pathToCompile).append("',");
+        }
+
+        sb.replace(sb.length() - 1, sb.length(), "]");
+        sb.append(",'");
+
+        if (!be) {
+            sb.append("--sourcemap ");
+        }
+
+        sb.append("-t ");
+        sb.append(ecmaScriptVersion);
+        sb.append(" --out ");
+        sb.append(compilationResult.getName());
+        sb.append("',null,function(e){logger.logWarning(e.messageText);});");
+
+        final File lib = new File(workingDir, "lib");
+
+        if (!lib.mkdirs()) {
+            log.debug("{} may already exists", lib.getAbsolutePath());
+        }
+
+        final OutputStream libDOs = new FileOutputStream(new File(lib, "lib.d.ts"));
+        final InputStream libDIs = IOUtils.class.getResourceAsStream("/wuic/tsc/lib/lib.d.ts");
+
+        try {
+            IOUtils.copyStream(libDIs, libDOs);
+        } finally {
+            IOUtils.close(libDIs, libDOs);
+        }
+
+        final NodeScript script = env.createScript("", sb.toString(), null);
+        script.setWorkingDirectory(workingDir.getAbsolutePath());
+        // Wait for the script to complete
+        final ScriptFuture f = script.execute();
+        f.get();
     }
 
     /**
@@ -342,20 +362,14 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
         private final List<ConvertibleNut> refNuts;
 
         /**
-         * The engine request.
-         */
-        private final EngineRequest engineRequest;
-
-        /**
          * <p>
          * Builds a new instance with an expected {@link CompositeNut.CompositeInputStream}.
          * </p>
          *
          * @param in an instance of {@link CompositeNut.CompositeInputStream}
-         * @param request the request bound to this reader
          * @throws IOException if any I/O error occurs
          */
-        private InternalInputStreamReader(final InputStream in, final EngineRequest request)
+        private InternalInputStreamReader(final InputStream in)
             throws IOException {
             super(in);
 
@@ -368,7 +382,6 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
             out = new AtomicReference<OutputStream>();
             refNuts = new ArrayList<ConvertibleNut>();
             pathsToCompile = new ArrayList<String>();
-            engineRequest = request;
 
             // Read the stream and collect referenced nuts
             cn.addObserver(this);
@@ -400,17 +413,6 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
          */
         private List<ConvertibleNut> getRefNuts() {
             return refNuts;
-        }
-
-        /**
-         * <p>
-         * Gets the request.
-         * </p>
-         *
-         * @return the request
-         */
-        private EngineRequest getEngineRequest() {
-            return engineRequest;
         }
 
         /**
