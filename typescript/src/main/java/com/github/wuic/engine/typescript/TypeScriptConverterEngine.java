@@ -134,6 +134,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
 
         if (useNodeJs) {
             env = new NodeEnvironment();
+            env.setDefaultClassCache();
         }
     }
 
@@ -198,7 +199,11 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
                 final ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 IOUtils.copyStream(sourceMapInputStream, bos);
                 final ConvertibleNut sourceMapNut = new ByteArrayNut(bos.toByteArray(), sourceMapName, NutType.MAP, 0L);
-                internal.getRefNuts().add(sourceMapNut);
+                nut.addReferencedNut(sourceMapNut);
+
+                for (final ConvertibleNut n : internal.getRefNuts()) {
+                    nut.addReferencedNut(n);
+                }
             }
         } catch (final Exception e) {
             throw new IOException(e);
