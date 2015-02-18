@@ -110,7 +110,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
     /**
      * Node environment to run tsc on top of rhino.
      */
-    private NodeEnvironment env = new NodeEnvironment();
+    private NodeEnvironment env;
 
     /**
      * <p>
@@ -132,7 +132,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
         final String osName = System.getProperty("os.name");
         isWindows = osName != null && osName.contains("Windows");
 
-        if (useNodeJs) {
+        if (!useNodeJs) {
             env = new NodeEnvironment();
             env.setDefaultClassCache();
         }
