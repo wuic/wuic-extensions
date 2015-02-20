@@ -39,6 +39,8 @@
 package com.github.wuic.typescriptforjava.test;
 
 import com.github.wuic.exception.WuicException;
+import com.github.wuic.util.IOUtils;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
@@ -57,6 +59,7 @@ import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.util.FutureLong;
 import com.github.wuic.util.Pipe;
 import org.junit.Assert;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.slf4j.Logger;
@@ -65,6 +68,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
@@ -83,6 +88,12 @@ import java.util.List;
 public class TypeScriptTest {
 
     /**
+     * Temporary folder.
+     */
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    /**
      * Logger.
      */
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -90,15 +101,18 @@ public class TypeScriptTest {
     /**
      * Some TS code to compile.
      */
-    public static final String TS = "interface Person {\n" +
+    public static final String TS1 = "interface Person {\n" +
             "    firstname: string;\n" +
             "    lastname: string;\n" +
             "}\n" +
             "function greeter(person : Person) {\n" +
             "    return \"Hello, \" + person.firstname + \" \" + person.lastname;\n" +
-            "}\n" +
-            "\n" +
-            "var user = {firstname: \"Jane\", lastname: \"User\"};\n" +
+            "}\n";
+
+    /**
+     * Some TS code to compile.
+     */
+    public static final String TS2 = "var user = {firstname: \"Jane\", lastname: \"User\"};\n" +
             "\n" +
             "document.body.innerHTML = greeter(user);";
 
@@ -119,18 +133,8 @@ public class TypeScriptTest {
      */
     @Test
     public void compileTest() throws Exception {
-        final Nut nut = mock(Nut.class);
-        when(nut.getInitialName()).thenReturn("foo.ts");
-        when(nut.openStream()).thenReturn(new ByteArrayInputStream(TS.getBytes()));
-
-        // Value must be different for each test
-        when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
-        when(nut.isTextReducible()).thenReturn(Boolean.TRUE);
-        when(nut.getInitialNutType()).thenReturn(NutType.TYPESCRIPT);
-
-        final NutsHeap heap = mock(NutsHeap.class);
-        when(heap.getNuts()).thenReturn(Arrays.asList(nut));
-
+        final File parent = temporaryFolder.newFolder("parent");
+        NutsHeap heap = mockHeap(parent);
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, TypeScriptConverterEngine.class);
         final ObjectBuilder<Engine> builder = factory.create("TypeScriptConverterEngineBuilder");
         final Engine engine = builder.build();
@@ -142,6 +146,7 @@ public class TypeScriptTest {
         logger.info("First compilation run in {}ms", System.currentTimeMillis() - start);
         start = System.currentTimeMillis();
 
+        heap = mockHeap(parent);
         res = engine.parse(new EngineRequestBuilder("wid", heap).contextPath("cp").build());
         bos = new ByteArrayOutputStream();
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
@@ -169,7 +174,7 @@ public class TypeScriptTest {
     public void compileErrorTest() throws IOException, WuicException {
         final Nut nut = mock(Nut.class);
         when(nut.getInitialName()).thenReturn("foo.ts");
-        when(nut.openStream()).thenReturn(new ByteArrayInputStream(TS.replace("{", "").getBytes()));
+        when(nut.openStream()).thenReturn(new ByteArrayInputStream(TS1.replace("{", "").getBytes()));
 
         // Value must be different for each test
         when(nut.getVersionNumber()).thenReturn(new FutureLong(1L));
@@ -186,5 +191,39 @@ public class TypeScriptTest {
         List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap).contextPath("cp").build());
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
+    }
+
+    /**
+     * <p>
+     * Mocks a new heap.
+     * </p>
+     *
+     * @param parent where nut could be stored
+     * @throws Exception if mock fails
+     * @return the mock
+     */
+    private NutsHeap mockHeap(final File parent) throws Exception {
+        final Nut nut1 = mock(Nut.class);
+        when(nut1.getInitialName()).thenReturn("foo.ts");
+        when(nut1.openStream()).thenReturn(new ByteArrayInputStream(TS1.getBytes()));
+
+        // Value must be different for each test
+        when(nut1.getVersionNumber()).thenReturn(new FutureLong(0L));
+        when(nut1.isTextReducible()).thenReturn(Boolean.TRUE);
+        when(nut1.getInitialNutType()).thenReturn(NutType.TYPESCRIPT);
+
+        IOUtils.copyStream(new ByteArrayInputStream(TS2.getBytes()), new FileOutputStream(new File(parent, "bar.ts")));
+        final Nut nut2 = mock(Nut.class);
+        when(nut2.getParentFile()).thenReturn(parent.getAbsolutePath());
+        when(nut2.getInitialName()).thenReturn("bar.ts");
+        when(nut2.openStream()).thenReturn(new ByteArrayInputStream(TS2.getBytes()));
+        when(nut2.getVersionNumber()).thenReturn(new FutureLong(0L));
+        when(nut2.isTextReducible()).thenReturn(Boolean.TRUE);
+        when(nut2.getInitialNutType()).thenReturn(NutType.TYPESCRIPT);
+
+        final NutsHeap heap = mock(NutsHeap.class);
+        when(heap.getNuts()).thenReturn(Arrays.asList(nut1, nut2));
+
+        return heap;
     }
 }

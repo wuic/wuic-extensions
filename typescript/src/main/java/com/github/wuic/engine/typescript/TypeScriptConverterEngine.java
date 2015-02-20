@@ -47,7 +47,6 @@ import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.core.AbstractConverterEngine;
 import com.github.wuic.engine.core.TextAggregatorEngine;
-import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.CompositeNut;
 import com.github.wuic.nut.ConvertibleNut;
@@ -59,6 +58,7 @@ import io.apigee.trireme.core.NodeScript;
 import io.apigee.trireme.core.ScriptFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,8 +70,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -160,7 +158,50 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
     @Override
     public void transform(final InputStream is, final OutputStream os, final ConvertibleNut nut, final EngineRequest request)
             throws IOException {
-        final InternalInputStreamReader internal = new InternalInputStreamReader(is);
+        // Do not generate source map if we are in best effort
+        final boolean be = request.isBestEffort();
+
+        final CompositeNut.CompositeInputStream cn;
+
+        if (is instanceof CompositeNut.CompositeInputStream) {
+            cn = CompositeNut.CompositeInputStream.class.cast(is);
+        } else {
+            throw new IllegalArgumentException("Nut must be an instance of " + CompositeNut.CompositeInputStream.class.getName());
+        }
+
+        final List<String> pathsToCompile = new ArrayList<String>(cn.getComposition().size());
+
+        // Read the stream and collect referenced nuts
+        for (final ConvertibleNut n : cn.getComposition()) {
+            if (n.getParentFile() == null) {
+                InputStream isNut = null;
+                OutputStream osNut = null;
+
+                try {
+                    final File file = NutDiskStore.INSTANCE.store(n);
+
+                    if (!file.exists()) {
+                        isNut = n.openStream();
+                        osNut = new FileOutputStream(file);
+                        IOUtils.copyStream(isNut, osNut);
+                    }
+
+                    pathsToCompile.add(file.getAbsolutePath());
+                } catch (InterruptedException ie) {
+                    throw new IOException(ie);
+                } catch (ExecutionException ee) {
+                    throw new IOException(ee);
+                } finally {
+                    IOUtils.close(isNut, osNut);
+                }
+            } else {
+                pathsToCompile.add(IOUtils.mergePath(n.getParentFile(), n.getName()));
+            }
+
+            if (!be) {
+                nut.addReferencedNut(n);
+            }
+        }
 
         // Resources to clean
         InputStream sourceMapInputStream = null;
@@ -170,13 +211,9 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
         final File sourceMapFile = new File(compilationResult.getAbsolutePath() + ".map");
 
         final AtomicReference<OutputStream> out = new AtomicReference<OutputStream>();
-        final List<String> pathsToCompile = internal.getPathsToCompile();
 
         try {
             log.debug("absolute path: {}", workingDir.getAbsolutePath());
-
-            // Do not generate source map if we are in best effort
-            final boolean be = request.isBestEffort();
 
             if (env == null) {
                 node(workingDir, pathsToCompile, compilationResult, be);
@@ -200,10 +237,6 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
                 IOUtils.copyStream(sourceMapInputStream, bos);
                 final ConvertibleNut sourceMapNut = new ByteArrayNut(bos.toByteArray(), sourceMapName, NutType.MAP, 0L);
                 nut.addReferencedNut(sourceMapNut);
-
-                for (final ConvertibleNut n : internal.getRefNuts()) {
-                    nut.addReferencedNut(n);
-                }
             }
         } catch (final Exception e) {
             throw new IOException(e);
@@ -295,8 +328,9 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
             throws IOException, NodeException, InterruptedException, ExecutionException {
         final StringBuilder sb = new StringBuilder();
         sb.append("var compile=require('typescript-compiler');var logger=require('slf4j-logger');compile([");
+
         for (final String pathToCompile : pathsToCompile) {
-            sb.append("'").append(pathToCompile).append("',");
+            sb.append("'").append(pathToCompile.replace('\\', '/')).append("',");
         }
 
         sb.replace(sb.length() - 1, sb.length(), "]");
@@ -332,126 +366,5 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
         // Wait for the script to complete
         final ScriptFuture f = script.execute();
         f.get();
-    }
-
-    /**
-     * <p>
-     * This internal class provides extra features related to {@link CompositeNut.CompositeInputStream} class.
-     * This will help to read a set of combined steams and be able to write each stream in a separate file.
-     * </p>
-     *
-     * @author Guillaume DROUET
-     * @version 1.0
-     * @since 0.5.1
-     */
-    private final class InternalInputStreamReader extends InputStreamReader implements Observer {
-
-        /**
-         * An reference to the current written output stream.
-         */
-        private final AtomicReference<OutputStream> out;
-
-        /**
-         * The composite stream.
-         */
-        private final CompositeNut.CompositeInputStream cn;
-
-        /**
-         * Paths to compile.
-         */
-        private final List<String> pathsToCompile;
-
-        /**
-         * Referenced nuts.
-         */
-        private final List<ConvertibleNut> refNuts;
-
-        /**
-         * <p>
-         * Builds a new instance with an expected {@link CompositeNut.CompositeInputStream}.
-         * </p>
-         *
-         * @param in an instance of {@link CompositeNut.CompositeInputStream}
-         * @throws IOException if any I/O error occurs
-         */
-        private InternalInputStreamReader(final InputStream in)
-            throws IOException {
-            super(in);
-
-            if (in instanceof CompositeNut.CompositeInputStream) {
-                cn = CompositeNut.CompositeInputStream.class.cast(in);
-            } else {
-                throw new IllegalArgumentException("Nut must be an instance of " + CompositeNut.CompositeInputStream.class.getName());
-            }
-
-            out = new AtomicReference<OutputStream>();
-            refNuts = new ArrayList<ConvertibleNut>();
-            pathsToCompile = new ArrayList<String>();
-
-            // Read the stream and collect referenced nuts
-            cn.addObserver(this);
-            IOUtils.copyStream(cn, new OutputStream() {
-                @Override
-                public void write(final int b) throws IOException {
-                }
-            });
-            cn.removeObserver(this);
-        }
-
-        /**
-         * <p>
-         * Gets the paths to compile.
-         * </p>
-         *
-         * @return the files path
-         */
-        private List<String> getPathsToCompile() {
-            return pathsToCompile;
-        }
-
-        /**
-         * <p>
-         * Gets the collected nuts.
-         * </p>
-         *
-         * @return the nuts to be referenced
-         */
-        private List<ConvertibleNut> getRefNuts() {
-            return refNuts;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void update(final Observable o, final Object arg) {
-            final CompositeNut.CompositeInputStreamReadEvent e = CompositeNut.CompositeInputStreamReadEvent.class.cast(arg);
-
-            try {
-                OutputStream os = out.get();
-
-                // Write new nut
-                if (os == null) {
-                    os = NutDiskStore.INSTANCE.store(e.getNut());
-                    out.set(os);
-                    os.write(e.getRead());
-                    pathsToCompile.add(e.getNut().getName());
-                } else if (e.getRead() == -1) {
-                    // End of copy for current nut
-                    os.close();
-                    refNuts.add(e.getNut());
-                    out.set(null);
-                } else {
-                    // Copying
-                    os.write(e.getRead());
-                }
-            } catch (IOException ioe) {
-                WuicException.throwBadStateException(ioe);
-            } catch (ExecutionException ee) {
-                WuicException.throwBadStateException(ee);
-            } catch (InterruptedException ie) {
-                WuicException.throwBadStateException(ie);
-            }
-        }
     }
 }
