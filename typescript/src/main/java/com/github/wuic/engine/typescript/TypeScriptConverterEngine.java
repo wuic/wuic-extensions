@@ -67,6 +67,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -344,22 +345,35 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
         sb.append(ecmaScriptVersion);
         sb.append(" --out ");
         sb.append(compilationResult.getName());
-        sb.append("',null,function(e){logger.logWarning(e.messageText);});");
+        sb.append("',");
 
-        final File lib = new File(workingDir, "lib");
+        final URL resource = IOUtils.class.getResource("/wuic/tsc/lib/lib.d.ts");
 
-        if (!lib.mkdirs()) {
-            log.debug("{} may already exists", lib.getAbsolutePath());
+        // Copy the file to the working directory if not stored on the file system, otherwise give the absolute path
+        if (resource.toString().startsWith("file:")) {
+            sb.append("{ defaultLibFilename: '");
+            sb.append(new File(resource.getFile()).getAbsolutePath().replace('\\', '/'));
+            sb.append("'}");
+        } else {
+            sb.append("null");
+
+            final File lib = new File(workingDir, "lib");
+
+            if (!lib.mkdirs()) {
+                log.debug("{} may already exists", lib.getAbsolutePath());
+            }
+
+            final OutputStream libDOs = new FileOutputStream(new File(lib, "lib.d.ts"));
+            final InputStream libDIs = resource.openStream();
+
+            try {
+                IOUtils.copyStream(libDIs, libDOs);
+            } finally {
+                IOUtils.close(libDIs, libDOs);
+            }
         }
 
-        final OutputStream libDOs = new FileOutputStream(new File(lib, "lib.d.ts"));
-        final InputStream libDIs = IOUtils.class.getResourceAsStream("/wuic/tsc/lib/lib.d.ts");
-
-        try {
-            IOUtils.copyStream(libDIs, libDOs);
-        } finally {
-            IOUtils.close(libDIs, libDOs);
-        }
+        sb.append(",function(e){logger.logWarning(e.messageText);});");
 
         final NodeScript script = env.createScript("", sb.toString(), null);
         script.setWorkingDirectory(workingDir.getAbsolutePath());
