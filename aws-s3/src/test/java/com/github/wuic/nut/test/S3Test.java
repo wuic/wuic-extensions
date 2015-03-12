@@ -156,7 +156,7 @@ public class S3Test {
         when(client.getObject(anyString(), anyString())).thenReturn(object);
 
         // TODO : problem here : we specify '[cloud.css]' but getNuts() returns 'cloud.css' because regex are always activated !
-        final NutsHeap nutsHeap = new NutsHeap(Arrays.asList("[cloud].css"), dao, "heap");
+        final NutsHeap nutsHeap = new NutsHeap(this, Arrays.asList("[cloud].css"), dao, "heap");
         Assert.assertEquals(nutsHeap.getNuts().size(), 1);
 
         final NodeEngine aggregator = new TextAggregatorEngine(true, true);
