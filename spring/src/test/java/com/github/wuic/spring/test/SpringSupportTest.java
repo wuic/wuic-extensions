@@ -143,7 +143,7 @@ public class SpringSupportTest {
                     ctxBuilder.contextNutDaoBuilder(ClasspathNutDao.class)
                             .property(ApplicationConfig.BASE_PATH, "/statics")
                             .toContext()
-                            .heap("foo", ContextBuilder.getDefaultBuilderId(ClasspathNutDao.class), "foo.js");
+                            .heap("foo", ContextBuilder.getDefaultBuilderId(ClasspathNutDao.class), new String[] { "foo.js" });
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
