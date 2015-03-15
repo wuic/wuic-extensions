@@ -40,7 +40,6 @@ package com.github.wuic.spring.test;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.ContextBuilder;
-import com.github.wuic.ContextBuilderConfigurator;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.nut.dao.core.ClasspathNutDao;
@@ -67,7 +66,6 @@ import org.springframework.web.servlet.resource.ResourceResolverChain;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -134,33 +132,16 @@ public class SpringSupportTest {
      */
     @Before
     public void tearUp() throws Exception {
-        wuicFacade = new WuicFacadeBuilder().build();
-        wuicFacade.configure(new ContextBuilderConfigurator() {
-
-            @Override
-            public int internalConfigure(final ContextBuilder ctxBuilder) {
-                try {
-                    ctxBuilder.contextNutDaoBuilder(ClasspathNutDao.class)
-                            .property(ApplicationConfig.BASE_PATH, "/statics")
-                            .toContext()
-                            .heap("foo", ContextBuilder.getDefaultBuilderId(ClasspathNutDao.class), new String[] { "foo.js" });
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-
-                return 0;
-            }
-
-            @Override
-            public String getTag() {
-                return getClass().getName();
-            }
-
-            @Override
-            protected Long getLastUpdateTimestampFor(String path) throws IOException {
-                return -1L;
-            }
-        });
+        wuicFacade = new WuicFacadeBuilder()
+                .contextBuilder()
+                .tag(getClass())
+                .contextNutDaoBuilder(ClasspathNutDao.class)
+                .property(ApplicationConfig.BASE_PATH, "/statics")
+                .toContext()
+                .heap("foo", ContextBuilder.getDefaultBuilderId(ClasspathNutDao.class), new String[] { "foo.js" })
+                .releaseTag()
+                .toFacade()
+                .build();
 
         registry = new ExposedResourceHandlerRegistry();
         registration = registry.addResourceHandler(PATTERN);
