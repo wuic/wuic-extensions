@@ -38,8 +38,8 @@
 
 package com.github.wuic.ssh.test;
 
-import com.github.wuic.Context;
-import com.github.wuic.ContextBuilder;
+import com.github.wuic.context.Context;
+import com.github.wuic.context.ContextBuilder;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;

@@ -39,7 +39,7 @@
 package com.github.wuic.nut.test;
 
 import com.github.wuic.ApplicationConfig;
-import com.github.wuic.ContextBuilder;
+import com.github.wuic.context.ContextBuilder;
 import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.nut.ConvertibleNut;
