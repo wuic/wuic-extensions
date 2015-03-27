@@ -39,7 +39,7 @@
 package com.github.wuic.spring.test;
 
 import com.github.wuic.ApplicationConfig;
-import com.github.wuic.ContextBuilder;
+import com.github.wuic.context.ContextBuilder;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.nut.dao.core.ClasspathNutDao;
