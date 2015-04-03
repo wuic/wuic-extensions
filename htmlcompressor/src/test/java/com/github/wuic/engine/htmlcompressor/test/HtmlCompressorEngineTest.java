@@ -85,7 +85,6 @@ public class HtmlCompressorEngineTest {
     public void htmlCompressTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialNutType()).thenReturn(NutType.HTML);
-        Mockito.when(nut.isTextReducible()).thenReturn(true);
         Mockito.when(nut.getInitialName()).thenReturn("index.html");
         Mockito.when(nut.openStream()).thenReturn(HtmlCompressorEngineTest.class.getResourceAsStream("/htmlcompressor/index.html"));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));

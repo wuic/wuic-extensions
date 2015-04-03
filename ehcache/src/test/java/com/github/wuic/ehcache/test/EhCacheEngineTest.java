@@ -66,6 +66,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -166,6 +167,7 @@ public class EhCacheEngineTest {
         Mockito.when(nut.getInitialNutType()).thenReturn(NutType.CSS);
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(1L));
+        Mockito.when(nut.openStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
         e.parse(new EngineRequestBuilder("", heap).chains(map).build());
         Assert.assertEquals(1, count.get());
         e.parse(new EngineRequestBuilder("", heap).chains(map).build());
@@ -191,7 +193,6 @@ public class EhCacheEngineTest {
         Assert.assertEquals(2, count.get());
     }
 
-
     /**
      * Test that cached content is invalidated when changes are notified.
      *
@@ -203,6 +204,7 @@ public class EhCacheEngineTest {
         Mockito.when(nut.getInitialNutType()).thenReturn(NutType.JAVASCRIPT);
         Mockito.when(nut.getInitialName()).thenReturn("foo.js");
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(1L));
+        Mockito.when(nut.openStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));
         final List<HeapListener> listeners = new ArrayList<HeapListener>();

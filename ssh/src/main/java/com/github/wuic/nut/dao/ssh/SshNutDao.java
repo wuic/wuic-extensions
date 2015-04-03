@@ -365,7 +365,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
          * @param v the version number
          */
         private SshNut(final String name, final NutType nt, final Future<Long> v) {
-            super(name, nt, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, v);
+            super(name, nt, v);
         }
 
         /**
