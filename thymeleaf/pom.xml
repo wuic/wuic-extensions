@@ -22,13 +22,7 @@
 
         <dependency>
             <groupId>com.github.wuic</groupId>
-            <artifactId>wuic-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
+            <artifactId>wuic-jee</artifactId>
         </dependency>
     </dependencies>
 </project>

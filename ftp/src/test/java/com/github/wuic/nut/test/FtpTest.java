@@ -147,7 +147,7 @@ public class FtpTest {
     public void ftpTest() throws Exception {
         final ContextBuilder builder = new ContextBuilder().configureDefault();
         new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")).configure(builder);
-        final List<ConvertibleNut> group = builder.build().process("", "css-imagecss-image", UrlUtils.urlProviderFactory());
+        final List<ConvertibleNut> group = builder.build().process("", "css-imagecss-image", UrlUtils.urlProviderFactory(), null);
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;
@@ -175,8 +175,8 @@ public class FtpTest {
                 .property(ApplicationConfig.LOGIN, "wuicuser")
                 .property(ApplicationConfig.PASSWORD, "wuicpassword")
                 .build();
-        Assert.assertTrue(dao.exists("style.css"));
-        Assert.assertFalse(dao.exists("unknw.css"));
+        Assert.assertTrue(dao.exists("style.css", null));
+        Assert.assertFalse(dao.exists("unknw.css", null));
     }
 
     /**
@@ -195,7 +195,7 @@ public class FtpTest {
                 .property(ApplicationConfig.LOGIN, "wuicuser")
                 .property(ApplicationConfig.PASSWORD, "wuicpassword")
                 .build();
-        final InputStream is = dao.create("style.css").get(0).openStream();
+        final InputStream is = dao.create("style.css", null).get(0).openStream();
         IOUtils.copyStream(is, new ByteArrayOutputStream());
         is.close();
     }
@@ -225,7 +225,7 @@ public class FtpTest {
                 .build();
 
         // Raed existing file
-        final Nut nut = dao.create("style.css").get(0);
+        final Nut nut = dao.create("style.css", null).get(0);
         InputStream is = nut.openStream();
         OutputStream bos = new ByteArrayOutputStream();
         IOUtils.copyStream(is, bos);

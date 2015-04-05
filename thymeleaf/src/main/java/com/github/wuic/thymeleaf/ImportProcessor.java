@@ -38,8 +38,10 @@
 
 package com.github.wuic.thymeleaf;
 
+import com.github.wuic.ProcessContext;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.exception.WuicException;
+import com.github.wuic.jee.ServletProcessContext;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.HtmlUtil;
 import com.github.wuic.util.IOUtils;
@@ -48,6 +50,7 @@ import com.github.wuic.util.UrlProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.Arguments;
+import org.thymeleaf.context.IWebContext;
 import org.thymeleaf.dom.Macro;
 import org.thymeleaf.dom.Element;
 import org.thymeleaf.processor.ProcessorResult;
@@ -116,7 +119,9 @@ public class ImportProcessor extends AbstractAttrProcessor {
 
         try {
             int cpt = 0;
-            final List<ConvertibleNut> nuts = wuicFacade.runWorkflow(workflow);
+            final ProcessContext pc = arguments.getContext() instanceof IWebContext ?
+                    new ServletProcessContext(IWebContext.class.cast(arguments.getContext()).getHttpServletRequest()) : null;
+            final List<ConvertibleNut> nuts = wuicFacade.runWorkflow(workflow, urlProviderFactory, pc);
 
             // Insert import statements into the top
             for (final ConvertibleNut nut : nuts) {

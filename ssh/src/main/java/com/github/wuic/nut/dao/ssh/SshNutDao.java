@@ -40,6 +40,7 @@ package com.github.wuic.nut.dao.ssh;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.ProcessContext;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.IntegerConfigParam;
@@ -211,8 +212,8 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public Nut accessFor(final String path, final NutType type) throws IOException {
-        return new SshNut(path, type, getVersionNumber(path));
+    public Nut accessFor(final String path, final NutType type, final ProcessContext processContext) throws IOException {
+        return new SshNut(path, type, getVersionNumber(path, processContext));
     }
 
     /**
@@ -265,7 +266,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path) throws IOException {
+    public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
         ChannelSftp channel = null;
 
         try {
@@ -285,7 +286,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public Boolean exists(final String path) throws IOException {
+    public Boolean exists(final String path, final ProcessContext processContext) throws IOException {
         ChannelSftp channel = null;
         boolean exception = false;
         try {

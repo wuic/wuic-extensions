@@ -40,6 +40,7 @@ package com.github.wuic.nut.dao.ftp;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.ProcessContext;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.IntegerConfigParam;
@@ -261,7 +262,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public Nut accessFor(final String realPath, final NutType type) throws IOException {
+    public Nut accessFor(final String realPath, final NutType type, final ProcessContext processContext) throws IOException {
         try {
             // Connect if necessary
             connect();
@@ -286,7 +287,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
                         throw new IOException("FTP command not completed correctly.");
                     }
 
-                    return new DownloadNut(parent, realPath, type, getVersionNumber(realPath));
+                    return new DownloadNut(parent, realPath, type, getVersionNumber(realPath, processContext), processContext);
                 }
             } else {
                 // Download path into memory
@@ -299,7 +300,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
                 }
 
                 // Create nut
-                return new ByteArrayNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath).get());
+                return new ByteArrayNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath, processContext).get());
             }
         } catch (IOException ioe) {
             WuicException.throwStreamException(ioe);
@@ -379,7 +380,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path) throws IOException {
+    public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
         // Connect if necessary
         connect();
 
@@ -393,13 +394,13 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public Boolean exists(final String path) throws IOException {
+    public Boolean exists(final String path, final ProcessContext processContext) throws IOException {
         // Connect if necessary
         connect();
 
         ftpClient.changeWorkingDirectory(getBasePath());
 
-        InputStream inputStream = newInputStream(path);
+        InputStream inputStream = newInputStream(path, processContext);
         return inputStream != null && ftpClient.getReplyCode() != FILE_UNAVAILABLE_CODE;
     }
 
@@ -430,6 +431,11 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
         private File file;
 
         /**
+         * The process context.
+         */
+        private final ProcessContext processContext;
+
+        /**
          * <p>
          * Builds a new instance.
          * </p>
@@ -438,13 +444,19 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
          * @param name the path
          * @param ft the type
          * @param versionNumber the version number
+         * @param pc the process context
          */
-        private DownloadNut(final File parent, final String name, final NutType ft, final Future<Long> versionNumber)
+        private DownloadNut(final File parent,
+                            final String name,
+                            final NutType ft,
+                            final Future<Long> versionNumber,
+                            final ProcessContext pc)
                 throws IOException {
             super(FilePath.class.cast(
                     DirectoryPath.class.cast(
                             IOUtils.buildPath(parent.getAbsolutePath())).getChild(name)), name, ft, versionNumber);
             file = new File(parent, name);
+            processContext = pc;
         }
 
         /**
@@ -453,7 +465,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
         @Override
         public InputStream openStream() throws IOException {
             if (!file.exists()) {
-                final DownloadNut dn = DownloadNut.class.cast(accessFor(getInitialName(), getInitialNutType()));
+                final DownloadNut dn = DownloadNut.class.cast(accessFor(getInitialName(), getInitialNutType(), processContext));
                 file = dn.file;
                 return dn.openStream();
             } else {

@@ -162,7 +162,7 @@ public class SshTest {
         final ContextBuilder builder = new ContextBuilder().configureDefault();
         new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")).configure(builder);
         final Context facade = builder.build();
-        final List<ConvertibleNut> group = facade.process("", "css-imagecss-image", UrlUtils.urlProviderFactory());
+        final List<ConvertibleNut> group = facade.process("", "css-imagecss-image", UrlUtils.urlProviderFactory(), null);
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;

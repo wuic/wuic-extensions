@@ -40,6 +40,7 @@ package com.github.wuic.nut.dao.gstorage;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.ProcessContext;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.IntegerConfigParam;
@@ -251,9 +252,9 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * {@inheritDoc}
      */
     @Override
-    public Nut accessFor(final String realPath, final NutType type) throws IOException {
+    public Nut accessFor(final String realPath, final NutType type, final ProcessContext processContext) throws IOException {
         // Create nut
-        return new GStorageNut(realPath, type, getVersionNumber(realPath));
+        return new GStorageNut(realPath, type, getVersionNumber(realPath, processContext));
     }
 
     /**
@@ -294,7 +295,7 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path) throws IOException {
+    public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
         // Try to get a Storage object
         return storage.objects().get(bucketName, path).executeMediaAsInputStream();
     }
@@ -303,7 +304,7 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * {@inheritDoc}
      */
     @Override
-    public Boolean exists(final String path) throws IOException {
+    public Boolean exists(final String path, final ProcessContext processContext) throws IOException {
         try {
             // Try to get a Storage object
             storage.objects().get(bucketName, path).executeMediaAsInputStream().close();

@@ -22,7 +22,7 @@
 
         <dependency>
             <groupId>com.github.wuic</groupId>
-            <artifactId>wuic-core</artifactId>
+            <artifactId>wuic-jee</artifactId>
         </dependency>
 
         <dependency>

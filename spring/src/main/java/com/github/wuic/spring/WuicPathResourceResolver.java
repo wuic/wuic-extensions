@@ -38,9 +38,11 @@
 
 package com.github.wuic.spring;
 
+import com.github.wuic.ProcessContext;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.exception.WuicException;
+import com.github.wuic.jee.ServletProcessContext;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.UrlMatcher;
 import com.github.wuic.util.UrlUtils;
@@ -99,7 +101,7 @@ public class WuicPathResourceResolver extends PathResourceResolver {
             return null;
         } else {
             try {
-                return internalResolve(matcher);
+                return internalResolve(matcher, new ServletProcessContext(request));
             } catch (UnsupportedEncodingException we) {
                 throw new IllegalArgumentException(we);
             }
@@ -121,14 +123,16 @@ public class WuicPathResourceResolver extends PathResourceResolver {
      * Resolves the nut from the given {@link UrlMatcher} and wrap it to a spring resource.
      * </p>
      *
+     * @param processContext the process context
      * @param matcher the matcher
      * @return the resource that wraps the nut
      * @throws UnsupportedEncodingException should not happen
      */
-    private WuicResource internalResolve(final UrlMatcher matcher) throws UnsupportedEncodingException {
+    private WuicResource internalResolve(final UrlMatcher matcher, final ProcessContext processContext)
+            throws UnsupportedEncodingException {
 
         try {
-            final Nut nut = wuicFacade.runWorkflow(matcher.getWorkflowId(), matcher.getNutName(), SKIP);
+            final Nut nut = wuicFacade.runWorkflow(matcher.getWorkflowId(), matcher.getNutName(), processContext, SKIP);
 
             return new WuicResource(nut);
         } catch (WuicException we) {

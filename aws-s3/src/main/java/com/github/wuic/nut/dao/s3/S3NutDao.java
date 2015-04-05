@@ -51,6 +51,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.sns.model.NotFoundException;
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.ProcessContext;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.ConfigConstructor;
 import com.github.wuic.config.IntegerConfigParam;
@@ -228,9 +229,9 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public Nut accessFor(final String realPath, final NutType type) throws IOException {
+    public Nut accessFor(final String realPath, final NutType type, final ProcessContext processContext) throws IOException {
         // Create nut
-        return new S3Nut(realPath, type, getVersionNumber(realPath));
+        return new S3Nut(realPath, type, getVersionNumber(realPath, processContext));
     }
 
     /**
@@ -276,7 +277,7 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path) throws IOException {
+    public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
         try {
             connect();
             return amazonS3Client.getObject(bucketName, path).getObjectContent();
@@ -290,7 +291,7 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public Boolean exists(final String path) throws IOException {
+    public Boolean exists(final String path, final ProcessContext processContext) throws IOException {
         try {
             connect();
             amazonS3Client.getObject(bucketName, path).getObjectContent().close();
