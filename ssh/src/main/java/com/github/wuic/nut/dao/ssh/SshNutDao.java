@@ -117,16 +117,17 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * Builds a new instance.
      * </p>
      *
-     * @param regex                     consider paths as regex or not
-     * @param host                      the host name
-     * @param p                         the port
-     * @param path                      default the path
-     * @param user                      the user name ({@code null} to skip the the authentication)
-     * @param pwd                       the password (will be ignored if user is {@code null})
-     * @param pollingInterval           the interval for polling operations in seconds (-1 to deactivate)
-     * @param proxyUris                 the proxies URIs in front of the nut
+     * @param regex consider paths as regex or not
+     * @param host the host name
+     * @param p the port
+     * @param path default the path
+     * @param user the user name ({@code null} to skip the the authentication)
+     * @param pwd the password (will be ignored if user is {@code null})
+     * @param pollingInterval the interval for polling operations in seconds (-1 to deactivate)
+     * @param proxyUris the proxies URIs in front of the nut
      * @param contentBasedVersionNumber {@code true} if version number is computed from nut content, {@code false} if based on timestamp
      * @param computeVersionAsynchronously (@code true} if version number can be computed asynchronously, {@code false} otherwise
+     * @param fixedVersionNumber fixed version number, {@code null} if version number is computed from content or is last modification date
      */
     @ConfigConstructor
     public SshNutDao(@BooleanConfigParam(defaultValue = false, propertyKey = REGEX) final Boolean regex,
@@ -139,8 +140,10 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
                      @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxyUris,
                      @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingInterval,
                      @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber,
-                     @BooleanConfigParam(defaultValue = true, propertyKey = COMPUTE_VERSION_ASYNCHRONOUSLY) final Boolean computeVersionAsynchronously) {
-        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber, computeVersionAsynchronously);
+                     @BooleanConfigParam(defaultValue = true, propertyKey = COMPUTE_VERSION_ASYNCHRONOUSLY) final Boolean computeVersionAsynchronously,
+                     @StringConfigParam(defaultValue = "", propertyKey = ApplicationConfig.FIXED_VERSION_NUMBER) final String fixedVersionNumber) {
+        super(path, basePathAsSysProp, proxyUris, pollingInterval,
+                new VersionNumberStrategy(contentBasedVersionNumber, computeVersionAsynchronously, fixedVersionNumber));
         regularExpression = regex;
 
         final JSch jsch = new JSch();

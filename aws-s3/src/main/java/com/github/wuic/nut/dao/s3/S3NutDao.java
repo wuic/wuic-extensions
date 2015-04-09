@@ -133,6 +133,7 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
      * @param regex consider path as regex or not
      * @param contentBasedVersionNumber  {@code true} if version number is computed from nut content, {@code false} if based on timestamp
      * @param computeVersionAsynchronously (@code true} if version number can be computed asynchronously, {@code false} otherwise
+     * @param fixedVersionNumber fixed version number, {@code null} if version number is computed from content or is last modification date
      */
     @ConfigConstructor
     public S3NutDao(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
@@ -144,8 +145,10 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
                     @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String secretKey,
                     @BooleanConfigParam(defaultValue = false, propertyKey = REGEX) final Boolean regex,
                     @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber,
-                    @BooleanConfigParam(defaultValue = true, propertyKey = COMPUTE_VERSION_ASYNCHRONOUSLY) final Boolean computeVersionAsynchronously) {
-        super(path, basePathAsSysProp, proxyUris, pollingInterval, contentBasedVersionNumber, computeVersionAsynchronously);
+                    @BooleanConfigParam(defaultValue = true, propertyKey = COMPUTE_VERSION_ASYNCHRONOUSLY) final Boolean computeVersionAsynchronously,
+                    @StringConfigParam(defaultValue = "", propertyKey = ApplicationConfig.FIXED_VERSION_NUMBER) final String fixedVersionNumber) {
+        super(path, basePathAsSysProp, proxyUris, pollingInterval,
+                new VersionNumberStrategy(contentBasedVersionNumber, computeVersionAsynchronously, fixedVersionNumber));
         bucketName = bucket;
         login = accessKey;
         password = secretKey;
