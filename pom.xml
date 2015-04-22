@@ -22,6 +22,7 @@
         <module>htmlcompressor</module>
         <module>spring</module>
         <module>typescript</module>
+        <module>http2-jetty</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -251,5 +252,6 @@
         <spring.version>4.1.1.RELEASE</spring.version>
         <rhino.version>1.7R5pre4</rhino.version>
         <trireme.version>0.8.5</trireme.version>
+        <jetty.version>9.3.0.M2</jetty.version>
     </properties>
 </project>
