@@ -178,7 +178,6 @@ public class TypeScriptTest {
 
         // Value must be different for each test
         when(nut.getVersionNumber()).thenReturn(new FutureLong(1L));
-        when(nut.isTextReducible()).thenReturn(Boolean.TRUE);
         when(nut.getInitialNutType()).thenReturn(NutType.TYPESCRIPT);
 
         final NutsHeap heap = mock(NutsHeap.class);
@@ -209,7 +208,6 @@ public class TypeScriptTest {
 
         // Value must be different for each test
         when(nut1.getVersionNumber()).thenReturn(new FutureLong(0L));
-        when(nut1.isTextReducible()).thenReturn(Boolean.TRUE);
         when(nut1.getInitialNutType()).thenReturn(NutType.TYPESCRIPT);
 
         IOUtils.copyStream(new ByteArrayInputStream(TS2.getBytes()), new FileOutputStream(new File(parent, "bar.ts")));
@@ -218,7 +216,6 @@ public class TypeScriptTest {
         when(nut2.getInitialName()).thenReturn("bar.ts");
         when(nut2.openStream()).thenReturn(new ByteArrayInputStream(TS2.getBytes()));
         when(nut2.getVersionNumber()).thenReturn(new FutureLong(0L));
-        when(nut2.isTextReducible()).thenReturn(Boolean.TRUE);
         when(nut2.getInitialNutType()).thenReturn(NutType.TYPESCRIPT);
 
         final NutsHeap heap = mock(NutsHeap.class);
