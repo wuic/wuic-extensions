@@ -124,7 +124,7 @@ public class GStorageTest {
         final byte[] array = ".cloud { text-align : justify;}".getBytes();
         when(nutsHeap.getNutTypes()).thenReturn(new HashSet<NutType>(Arrays.asList(NutType.CSS)));
         final List<Nut> nuts = new ArrayList<Nut>();
-        nuts.add(new ByteArrayNut(array, "cloud.css", NutType.CSS, 1L));
+        nuts.add(new ByteArrayNut(array, "cloud.css", NutType.CSS, 1L, false));
         when(nutsHeap.getNuts()).thenReturn(nuts);
 
         final NodeEngine aggregator = new TextAggregatorEngine(true, true);

@@ -302,7 +302,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
                 }
 
                 // Create nut
-                return new ByteArrayNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath, processContext).get());
+                return new ByteArrayNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath, processContext).get(), false);
             }
         } catch (IOException ioe) {
             WuicException.throwStreamException(ioe);

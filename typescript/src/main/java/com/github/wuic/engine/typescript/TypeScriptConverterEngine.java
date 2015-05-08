@@ -305,7 +305,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
                 final String sourceMapName = sourceMapFile.getName();
                 final ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 IOUtils.copyStream(sourceMapInputStream, bos);
-                final ConvertibleNut sourceMapNut = new ByteArrayNut(bos.toByteArray(), sourceMapName, NutType.MAP, 0L);
+                final ConvertibleNut sourceMapNut = new ByteArrayNut(bos.toByteArray(), sourceMapName, NutType.MAP, 0L, false);
                 nut.addReferencedNut(sourceMapNut);
             }
         } catch (final Exception e) {

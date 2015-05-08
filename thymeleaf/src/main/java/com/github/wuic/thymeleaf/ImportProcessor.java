@@ -56,6 +56,7 @@ import org.thymeleaf.dom.Element;
 import org.thymeleaf.processor.ProcessorResult;
 import org.thymeleaf.processor.attr.AbstractAttrProcessor;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 
@@ -109,6 +110,11 @@ public class ImportProcessor extends AbstractAttrProcessor {
      */
     @Override
     protected ProcessorResult processAttribute(final Arguments arguments, final Element element, final String attributeName) {
+        final HttpServletRequest request = IWebContext.class.cast(arguments.getContext()).getHttpServletRequest();
+
+        // TODO: use constant by moving HtmlParserFilter to a dependency
+        request.setAttribute("c.g.wuic.forceDynamicContent", "");
+
         final String workflow = element.getAttributeValue(attributeName);
 
         if (wuicFacade.allowsMultipleConfigInTagSupport()) {
@@ -120,7 +126,7 @@ public class ImportProcessor extends AbstractAttrProcessor {
         try {
             int cpt = 0;
             final ProcessContext pc = arguments.getContext() instanceof IWebContext ?
-                    new ServletProcessContext(IWebContext.class.cast(arguments.getContext()).getHttpServletRequest()) : null;
+                    new ServletProcessContext(request) : null;
             final List<ConvertibleNut> nuts = wuicFacade.runWorkflow(workflow, urlProviderFactory, pc);
 
             // Insert import statements into the top
