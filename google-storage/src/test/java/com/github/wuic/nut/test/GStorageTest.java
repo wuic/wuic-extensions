@@ -129,7 +129,7 @@ public class GStorageTest {
 
         final NodeEngine aggregator = new TextAggregatorEngine(true, true);
 
-        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap).build());
+        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null).build());
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;

@@ -96,7 +96,7 @@ public class HtmlCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("HtmlCompressorEngineBuilder");
         final Engine engine = builder.build();
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap).contextPath("cp").build());
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).contextPath("cp").build());
         Assert.assertEquals(-1, NutUtils.readTransform(res.get(0)).indexOf('\n'));
     }
 
@@ -122,7 +122,7 @@ public class HtmlCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("HtmlCompressorEngineBuilder");
         final Engine engine = builder.property(ApplicationConfig.COMPRESS, false).build();
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap).contextPath("cp").build());
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).contextPath("cp").build());
         Assert.assertNotSame(-1, IOUtils.readString(new InputStreamReader(res.get(0).openStream())).indexOf('\n'));
     }
 }

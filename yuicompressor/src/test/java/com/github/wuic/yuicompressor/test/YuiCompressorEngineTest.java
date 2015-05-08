@@ -95,7 +95,7 @@ public class YuiCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("YuiCompressorJavascriptEngineBuilder");
         final Engine engine = builder.build();
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap).contextPath("cp").build());
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).contextPath("cp").build());
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
         Assert.assertEquals("var foo=0;", new String(bos.toByteArray()));
@@ -121,7 +121,7 @@ public class YuiCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("YuiCompressorCssEngineBuilder");
         final Engine engine = builder.build();
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap).contextPath("cp").build());
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).contextPath("cp").build());
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
         Assert.assertEquals(".foo{color:black}", new String(bos.toByteArray()));

@@ -168,9 +168,9 @@ public class EhCacheEngineTest {
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(1L));
         Mockito.when(nut.openStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
-        e.parse(new EngineRequestBuilder("", heap).chains(map).build());
+        e.parse(new EngineRequestBuilder("", heap, null).chains(map).build());
         Assert.assertEquals(1, count.get());
-        e.parse(new EngineRequestBuilder("", heap).chains(map).build());
+        e.parse(new EngineRequestBuilder("", heap, null).chains(map).build());
         Assert.assertEquals(1, count.get());
     }
 
@@ -187,9 +187,9 @@ public class EhCacheEngineTest {
         builder.property(ApplicationConfig.CACHE, false);
         final Engine chain = mock();
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
-        chain.parse(new EngineRequestBuilder("", heap).build());
+        chain.parse(new EngineRequestBuilder("", heap, null).build());
         Assert.assertEquals(1, count.get());
-        chain.parse(new EngineRequestBuilder("", heap).build());
+        chain.parse(new EngineRequestBuilder("", heap, null).build());
         Assert.assertEquals(2, count.get());
     }
 
@@ -229,18 +229,18 @@ public class EhCacheEngineTest {
         final Map<NutType, NodeEngine> map = new HashMap<NutType, NodeEngine>();
         map.put(NutType.JAVASCRIPT, mock());
 
-        cache.parse(new EngineRequestBuilder("", heap).chains(map).build());
+        cache.parse(new EngineRequestBuilder("", heap, null).chains(map).build());
         Assert.assertEquals(1, count.get());
-        cache.parse(new EngineRequestBuilder("", heap).chains(map).build());
+        cache.parse(new EngineRequestBuilder("", heap, null).chains(map).build());
         Assert.assertEquals(1, count.get());
         Assert.assertEquals(listeners.size(), 1);
 
         // Invalidate cache
         listeners.get(0).nutUpdated(heap);
 
-        cache.parse(new EngineRequestBuilder("", heap).chains(map).build());
+        cache.parse(new EngineRequestBuilder("", heap, null).chains(map).build());
         Assert.assertEquals(2, count.get());
-        cache.parse(new EngineRequestBuilder("", heap).chains(map).build());
+        cache.parse(new EngineRequestBuilder("", heap, null).chains(map).build());
         Assert.assertEquals(2, count.get());
     }
 }
