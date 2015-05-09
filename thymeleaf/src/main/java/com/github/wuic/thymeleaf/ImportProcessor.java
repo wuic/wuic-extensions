@@ -121,22 +121,27 @@ public class ImportProcessor extends AbstractAttrProcessor {
             wuicFacade.clearTag(workflow);
         }
 
-        final UrlProvider urlProvider = urlProviderFactory.create(IOUtils.mergePath(wuicFacade.getContextPath(), workflow));
+        // TODO: use constant by moving HtmlParserFilter to a dependency
+        if (request.getAttribute("com.github.wuic.servlet.HtmlParserFilter") == null) {
+            final UrlProvider urlProvider = urlProviderFactory.create(IOUtils.mergePath(wuicFacade.getContextPath(), workflow));
 
-        try {
-            int cpt = 0;
-            final ProcessContext pc = arguments.getContext() instanceof IWebContext ?
-                    new ServletProcessContext(request) : null;
-            final List<ConvertibleNut> nuts = wuicFacade.runWorkflow(workflow, urlProviderFactory, pc);
+            try {
+                int cpt = 0;
+                final ProcessContext pc = arguments.getContext() instanceof IWebContext ?
+                        new ServletProcessContext(request) : null;
+                final List<ConvertibleNut> nuts = wuicFacade.runWorkflow(workflow, urlProviderFactory, pc);
 
-            // Insert import statements into the top
-            for (final ConvertibleNut nut : nuts) {
-                element.insertChild(cpt++, new Macro(HtmlUtil.writeScriptImport(nut, urlProvider)));
+                // Insert import statements into the top
+                for (final ConvertibleNut nut : nuts) {
+                    element.insertChild(cpt++, new Macro(HtmlUtil.writeScriptImport(nut, urlProvider)));
+                }
+            } catch (WuicException we) {
+                log.error("WUIC import processor has failed", we);
+            } catch (IOException ioe) {
+                log.error("WUIC import processor has failed", ioe);
             }
-        } catch (WuicException we) {
-            log.error("WUIC import processor has failed", we);
-        } catch (IOException ioe) {
-            log.error("WUIC import processor has failed", ioe);
+        } else {
+            element.insertChild(0, new Macro("<wuic:html-import workflowId='" + workflow + "' />"));
         }
 
         // Not lenient
