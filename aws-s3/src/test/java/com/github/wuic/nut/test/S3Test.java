@@ -161,7 +161,7 @@ public class S3Test {
         Assert.assertEquals(nutsHeap.getNuts().size(), 1);
 
         final NodeEngine aggregator = new TextAggregatorEngine(true, true);
-        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap).build());
+        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null).build());
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;
