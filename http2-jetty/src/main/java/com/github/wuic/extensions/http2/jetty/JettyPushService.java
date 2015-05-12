@@ -38,7 +38,7 @@
 
 package com.github.wuic.extensions.http2.jetty;
 
-import com.github.wuic.jee.PushService;
+import com.github.wuic.servlet.PushService;
 import org.eclipse.jetty.server.PushBuilder;
 import org.eclipse.jetty.server.Request;
 import org.slf4j.Logger;

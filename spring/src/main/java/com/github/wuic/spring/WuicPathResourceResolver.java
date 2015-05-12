@@ -42,7 +42,7 @@ import com.github.wuic.ProcessContext;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.exception.WuicException;
-import com.github.wuic.jee.ServletProcessContext;
+import com.github.wuic.servlet.ServletProcessContext;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.UrlMatcher;
 import com.github.wuic.util.UrlUtils;

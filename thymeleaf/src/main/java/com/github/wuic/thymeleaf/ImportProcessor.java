@@ -41,7 +41,8 @@ package com.github.wuic.thymeleaf;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.exception.WuicException;
-import com.github.wuic.jee.ServletProcessContext;
+import com.github.wuic.servlet.HtmlParserFilter;
+import com.github.wuic.servlet.ServletProcessContext;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.HtmlUtil;
 import com.github.wuic.util.IOUtils;
@@ -112,8 +113,7 @@ public class ImportProcessor extends AbstractAttrProcessor {
     protected ProcessorResult processAttribute(final Arguments arguments, final Element element, final String attributeName) {
         final HttpServletRequest request = IWebContext.class.cast(arguments.getContext()).getHttpServletRequest();
 
-        // TODO: use constant by moving HtmlParserFilter to a dependency
-        request.setAttribute("c.g.wuic.forceDynamicContent", "");
+        request.setAttribute(HtmlParserFilter.FORCE_DYNAMIC_CONTENT, "");
 
         final String workflow = element.getAttributeValue(attributeName);
 
@@ -121,8 +121,7 @@ public class ImportProcessor extends AbstractAttrProcessor {
             wuicFacade.clearTag(workflow);
         }
 
-        // TODO: use constant by moving HtmlParserFilter to a dependency
-        if (request.getAttribute("com.github.wuic.servlet.HtmlParserFilter") == null) {
+        if (request.getAttribute(HtmlParserFilter.class.getName()) == null) {
             final UrlProvider urlProvider = urlProviderFactory.create(IOUtils.mergePath(wuicFacade.getContextPath(), workflow));
 
             try {
