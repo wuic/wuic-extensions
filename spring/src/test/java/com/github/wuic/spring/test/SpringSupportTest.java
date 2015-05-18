@@ -39,6 +39,7 @@
 package com.github.wuic.spring.test;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.ProcessContext;
 import com.github.wuic.context.ContextBuilder;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.WuicFacadeBuilder;
@@ -135,6 +136,7 @@ public class SpringSupportTest {
         wuicFacade = new WuicFacadeBuilder()
                 .contextBuilder()
                 .tag(getClass())
+                .processContext(ProcessContext.DEFAULT)
                 .contextNutDaoBuilder(ClasspathNutDao.class)
                 .property(ApplicationConfig.BASE_PATH, "/statics")
                 .toContext()

@@ -40,6 +40,7 @@ package com.github.wuic.nut.test;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.ProcessContext;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.EngineRequestBuilder;
 import com.github.wuic.engine.NodeEngine;
@@ -129,7 +130,7 @@ public class GStorageTest {
 
         final NodeEngine aggregator = new TextAggregatorEngine(true, true);
 
-        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null).build());
+        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null).processContext(ProcessContext.DEFAULT).build());
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;

@@ -38,6 +38,7 @@
 
 package com.github.wuic.typescriptforjava.test;
 
+import com.github.wuic.ProcessContext;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.util.IOUtils;
 import org.junit.Rule;
@@ -140,14 +141,14 @@ public class TypeScriptTest {
         final Engine engine = builder.build();
 
         long start = System.currentTimeMillis();
-        List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).contextPath("cp").build());
+        List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).processContext(ProcessContext.DEFAULT).contextPath("cp").build());
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
         logger.info("First compilation run in {}ms", System.currentTimeMillis() - start);
         start = System.currentTimeMillis();
 
         heap = mockHeap(parent);
-        res = engine.parse(new EngineRequestBuilder("wid", heap, null).contextPath("cp").build());
+        res = engine.parse(new EngineRequestBuilder("wid", heap, null).processContext(ProcessContext.DEFAULT).contextPath("cp").build());
         bos = new ByteArrayOutputStream();
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
         logger.info("Second compilation run in {}ms", System.currentTimeMillis() - start);
@@ -187,7 +188,7 @@ public class TypeScriptTest {
         final ObjectBuilder<Engine> builder = factory.create("TypeScriptConverterEngineBuilder");
         final Engine engine = builder.build();
 
-        List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).contextPath("cp").build());
+        List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).processContext(ProcessContext.DEFAULT).contextPath("cp").build());
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
     }

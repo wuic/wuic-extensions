@@ -38,6 +38,7 @@
 
 package com.github.wuic.ssh.test;
 
+import com.github.wuic.ProcessContext;
 import com.github.wuic.context.Context;
 import com.github.wuic.context.ContextBuilder;
 import com.github.wuic.exception.WuicException;
@@ -162,7 +163,7 @@ public class SshTest {
         final ContextBuilder builder = new ContextBuilder().configureDefault();
         new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")).configure(builder);
         final Context facade = builder.build();
-        final List<ConvertibleNut> group = facade.process("", "css-imagecss-image", UrlUtils.urlProviderFactory(), null);
+        final List<ConvertibleNut> group = facade.process("", "css-imagecss-image", UrlUtils.urlProviderFactory(), ProcessContext.DEFAULT);
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;

@@ -101,7 +101,7 @@ public class WuicPathResourceResolver extends PathResourceResolver {
             return null;
         } else {
             try {
-                return internalResolve(matcher, new ServletProcessContext(request));
+                return internalResolve(matcher, request == null ? ProcessContext.DEFAULT : new ServletProcessContext(request));
             } catch (UnsupportedEncodingException we) {
                 throw new IllegalArgumentException(we);
             }

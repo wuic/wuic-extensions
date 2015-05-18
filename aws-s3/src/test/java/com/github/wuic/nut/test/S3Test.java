@@ -46,6 +46,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.ProcessContext;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.EngineRequestBuilder;
 import com.github.wuic.engine.NodeEngine;
@@ -157,11 +158,11 @@ public class S3Test {
 
         // TODO : problem here : we specify '[cloud.css]' but getNuts() returns 'cloud.css' because regex are always activated !
         final NutsHeap nutsHeap = new NutsHeap(this, Arrays.asList("[cloud].css"), dao, "heap");
-        nutsHeap.checkFiles(null);
+        nutsHeap.checkFiles(ProcessContext.DEFAULT);
         Assert.assertEquals(nutsHeap.getNuts().size(), 1);
 
         final NodeEngine aggregator = new TextAggregatorEngine(true, true);
-        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null).build());
+        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null).processContext(ProcessContext.DEFAULT).build());
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;
