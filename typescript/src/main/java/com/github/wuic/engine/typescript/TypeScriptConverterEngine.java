@@ -219,7 +219,8 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
         if (is instanceof CompositeNut.CompositeInputStream) {
             cn = CompositeNut.CompositeInputStream.class.cast(is);
         } else {
-            throw new IllegalArgumentException("Nut must be an instance of " + CompositeNut.CompositeInputStream.class.getName());
+            final String m = "Nut's InputStream must be an instance of " + CompositeNut.CompositeInputStream.class.getName();
+            throw new IllegalArgumentException(m);
         }
 
         final List<String> pathsToCompile = new ArrayList<String>(cn.getComposition().size());
