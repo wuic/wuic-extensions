@@ -42,6 +42,7 @@ package com.github.wuic.thymeleaf;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.exception.WuicException;
+import com.github.wuic.servlet.HttpUtil;
 import com.github.wuic.servlet.ServletProcessContext;
 import com.github.wuic.xml.ReaderXmlContextBuilderConfigurator;
 import org.thymeleaf.Arguments;
@@ -50,6 +51,7 @@ import org.thymeleaf.dom.Element;
 import org.thymeleaf.processor.element.AbstractRemovalElementProcessor;
 import org.thymeleaf.util.DOMUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -99,8 +101,13 @@ public class ConfigProcessor extends AbstractRemovalElementProcessor {
         try {
             // Let's load the wuic.xml file and configure the builder with it
             final Reader reader = new StringReader(DOMUtils.getHtml5For(element.getFirstElementChild()));
-            final ProcessContext pc = new ServletProcessContext(IWebContext.class.cast(arguments.getContext()).getHttpServletRequest());
-            wuicFacade.configure(new ReaderXmlContextBuilderConfigurator(reader, toString(), wuicFacade.allowsMultipleConfigInTagSupport(), pc));
+            final HttpServletRequest req = IWebContext.class.cast(arguments.getContext()).getHttpServletRequest();
+            final ProcessContext pc = new ServletProcessContext(req);
+            wuicFacade.configure(new ReaderXmlContextBuilderConfigurator(
+                    reader,
+                    HttpUtil.INSTANCE.computeUniqueTag(req),
+                    wuicFacade.allowsMultipleConfigInTagSupport(),
+                    pc));
         } catch (WuicException we) {
             WuicException.throwBadStateException(we);
         } catch (JAXBException se) {
