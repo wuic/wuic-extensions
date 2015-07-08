@@ -163,7 +163,7 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
             
             // Create the compressor using the source stream
             final JavaScriptCompressor compressor =
-                    new JavaScriptCompressor(in, new JavascriptYuiCompressorErrorReporter());
+                    new JavaScriptCompressor(in, new JavascriptYuiCompressorErrorReporter(convertibleNut.getName()));
             
             // Now close the stream read
             in.close();

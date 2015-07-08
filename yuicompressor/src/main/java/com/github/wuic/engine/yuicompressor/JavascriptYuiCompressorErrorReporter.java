@@ -60,25 +60,43 @@ public class JavascriptYuiCompressorErrorReporter implements ErrorReporter {
      * Logger.
      */
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-    
+
+    /**
+     * The nut name associated to the compressed content.
+     */
+    private final String nutName;
+
+    /**
+     * <p>
+     * Builds a new instance.
+     * </p>
+     *
+     * @param nutName the nut name
+     */
+    public JavascriptYuiCompressorErrorReporter(final String nutName) {
+        this.nutName = nutName;
+    }
+
     /**
      * {@inheritDoc}
      */
+    @Override
     public void warning(final String message,
             final String sourceName,
             final int line,
             final String lineSource,
             final int lineOffset) {
         if (line < 0) {
-            log.debug("Source name : {} - Message : {} ", sourceName, message);
+            log.debug("Nut name: {} - Source name: {} - Message: {} ", nutName, sourceName, message);
         } else {
-            log.debug("Source name : {} - Line Number : {} - Column : {} - Message : {} ", sourceName, line, lineOffset, message);
+            log.debug("Nut name: {} - Line Number: {} - Column: {} - Message: {} ", nutName, sourceName, line, lineOffset, message);
         }
     }
  
     /**
      * {@inheritDoc}
      */
+    @Override
     public void error(final String message,
             final String sourceName,
             final int line,
