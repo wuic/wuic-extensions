@@ -54,7 +54,6 @@ import net.sf.ehcache.Cache;
  * </p>
  * 
  * @author Guillaume DROUET
- * @version 1.1
  * @since 0.2.2
  */
 public interface WuicEhcacheProvider extends CacheProvider<Cache> {

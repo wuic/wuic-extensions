@@ -70,7 +70,6 @@ import java.util.List;
  * </p>
  * 
  * @author Guillaume DROUET
- * @version 1.8
  * @since 0.1.0
  */
 @EngineService(injectDefaultToWorkflow = true)

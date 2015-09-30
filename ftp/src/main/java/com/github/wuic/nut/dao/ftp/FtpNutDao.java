@@ -85,7 +85,6 @@ import java.util.regex.Pattern;
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.5
  * @since 0.3.1
  */
 @NutDaoService
@@ -422,7 +421,6 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * </p>
      *
      * @author Guillaume DROUET
-     * @version 1.0
      * @since 0.5.0
      */
     private final class DownloadNut extends FilePathNut {

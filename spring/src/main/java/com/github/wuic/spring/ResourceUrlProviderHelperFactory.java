@@ -51,7 +51,6 @@ import org.springframework.web.servlet.resource.ResourceUrlProvider;
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.0
  * @since 0.5.0
  */
 public class ResourceUrlProviderHelperFactory implements UrlProviderFactory {
@@ -98,7 +97,6 @@ public class ResourceUrlProviderHelperFactory implements UrlProviderFactory {
      * </p>
      *
      * @author Guillaume DROUET
-     * @version 1.0
      * @since 0.5.0
      */
     private final class UrlProviderHelper implements UrlProvider {

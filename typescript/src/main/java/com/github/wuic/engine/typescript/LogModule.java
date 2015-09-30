@@ -57,7 +57,6 @@ import java.lang.reflect.InvocationTargetException;
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.0
  * @since 0.5.1
  */
 public class LogModule implements NodeModule {
@@ -95,7 +94,6 @@ public class LogModule implements NodeModule {
      * </p>
      *
      * @author Guillaume DROUET
-     * @version 1.0
      * @since 0.5.1
      */
     public static class LogModuleImpl extends ScriptableObject {

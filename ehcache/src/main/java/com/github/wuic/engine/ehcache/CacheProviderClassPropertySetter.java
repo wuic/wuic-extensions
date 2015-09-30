@@ -48,7 +48,6 @@ import com.github.wuic.exception.WuicException;
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.0
  * @since 0.4.0
  */
 public class CacheProviderClassPropertySetter extends PropertySetter.PropertySetterOfObject {

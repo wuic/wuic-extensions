@@ -56,7 +56,6 @@ import net.sf.ehcache.Element;
  * </p>
  * 
  * @author Guillaume DROUET
- * @version 2.0
  * @since 0.1.1
  */
 @EngineService(injectDefaultToWorkflow = true)

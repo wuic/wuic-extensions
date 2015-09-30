@@ -76,7 +76,6 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.6
  * @since 0.3.1
  */
 @NutDaoService
@@ -354,7 +353,6 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * </p>
      *
      * @author Guillaume DROUET
-     * @version 1.0
      * @since 0.5.0
      */
     private final class SshNut extends AbstractNut {

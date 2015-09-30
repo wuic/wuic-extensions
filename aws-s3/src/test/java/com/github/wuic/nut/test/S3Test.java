@@ -83,7 +83,6 @@ import static org.mockito.Mockito.when;
  * </p>
  *
  * @author Corentin AZELART
- * @version 1.4
  * @since 0.3.3
  */
 @RunWith(JUnit4.class)

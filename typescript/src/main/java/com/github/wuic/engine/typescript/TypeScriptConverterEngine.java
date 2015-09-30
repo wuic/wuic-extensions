@@ -81,7 +81,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.0
  * @since 0.5.1
  */
 @EngineService(injectDefaultToWorkflow = true)

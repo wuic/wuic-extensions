@@ -82,7 +82,6 @@ import java.util.regex.Pattern;
  *
  * @author Corentin AZELART
  * @author Guillaume DROUET
- * @version 1.5
  * @since 0.3.3
  */
 @NutDaoService
@@ -323,7 +322,6 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * </p>
      *
      * @author Guillaume DROUET
-     * @version 1.0
      * @since 0.5.0
      */
     private final class GStorageNut extends AbstractNut {

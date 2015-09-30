@@ -80,7 +80,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.1
  * @since 0.4.0
  */
 @RunWith(JUnit4.class)
@@ -92,7 +91,6 @@ public class EhCacheEngineTest {
      * </p>
      *
      * @author Guillaume DROUET
-     * @version 1.0
      * @since 0.4.0
      */
     public static final class CacheFactory implements WuicEhcacheProvider {

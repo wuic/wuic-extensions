@@ -51,7 +51,6 @@ import org.slf4j.LoggerFactory;
  * </p>
  * 
  * @author Guillaume DROUET
- * @version 1.1
  * @since 0.1.0
  */
 public class JavascriptYuiCompressorErrorReporter implements ErrorReporter {

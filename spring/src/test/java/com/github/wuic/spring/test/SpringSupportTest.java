@@ -75,7 +75,6 @@ import java.util.List;
  * </p>
  *
  * @author Guillaume DROUET
- * @version 1.0
  * @since 0.5.0
  */
 @RunWith(JUnit4.class)
@@ -85,7 +84,6 @@ public class SpringSupportTest {
      * Just expose the protected method.
      *
      * @author Guillaume DROUET
-     * @version 1.0
      * @since 0.5.0
      */
     private static final class ExposedResourceHandlerRegistry extends ResourceHandlerRegistry {
