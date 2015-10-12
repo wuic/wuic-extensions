@@ -51,6 +51,7 @@ import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.CompositeNut;
 import com.github.wuic.nut.ConvertibleNut;
+import com.github.wuic.nut.SourceMapNutImpl;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.NutDiskStore;
 import io.apigee.trireme.core.NodeEnvironment;
@@ -208,24 +209,25 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
      * {@inheritDoc}
      */
     @Override
-    public void transform(final InputStream is, final OutputStream os, final ConvertibleNut nut, final EngineRequest request)
+    public InputStream transform(final InputStream is, final ConvertibleNut nut, final EngineRequest request)
             throws IOException {
         // Do not generate source map if we are in best effort
         final boolean be = request.isBestEffort();
-
-        final CompositeNut.CompositeInputStream cn;
+        final List<ConvertibleNut> compositionList;
 
         if (is instanceof CompositeNut.CompositeInputStream) {
-            cn = CompositeNut.CompositeInputStream.class.cast(is);
+            compositionList = CompositeNut.CompositeInputStream.class.cast(is).getCompositeNut().getCompositionList();
+        } else if (nut instanceof CompositeNut) {
+            compositionList = CompositeNut.class.cast(nut).getCompositionList();
         } else {
-            final String m = "Nut's InputStream must be an instance of " + CompositeNut.CompositeInputStream.class.getName();
-            throw new IllegalArgumentException(m);
+            final String m = "Nut must be a %s or it's InputStream must be an instance of %s";
+            throw new IllegalArgumentException(String.format(m, CompositeNut.class.getName(), CompositeNut.CompositeInputStream.class.getName()));
         }
 
-        final List<String> pathsToCompile = new ArrayList<String>(cn.getComposition().size());
+        final List<String> pathsToCompile = new ArrayList<String>(compositionList.size());
 
         // Read the stream and collect referenced nuts
-        for (final ConvertibleNut n : cn.getComposition()) {
+        for (final ConvertibleNut n : compositionList) {
             if (n.getParentFile() == null) {
                 InputStream isNut = null;
                 OutputStream osNut = null;
@@ -258,7 +260,6 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
 
         // Resources to clean
         InputStream sourceMapInputStream = null;
-        InputStream resultInputStream = null;
         final File workingDir = NutDiskStore.INSTANCE.getWorkingDirectory();
         final File compilationResult = new File(workingDir, TextAggregatorEngine.aggregationName(NutType.JAVASCRIPT));
         final File sourceMapFile = new File(compilationResult.getAbsolutePath() + ".map");
@@ -296,9 +297,6 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
                 throw new IOException("Typescript compilation fails, check logs for details");
             }
 
-            resultInputStream = new FileInputStream(compilationResult);
-            IOUtils.copyStream(resultInputStream, os);
-
             // Read the generated source map
             if (!be) {
                 sourceMapInputStream = new FileInputStream(sourceMapFile);
@@ -306,13 +304,15 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
                 final ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 IOUtils.copyStream(sourceMapInputStream, bos);
                 final ConvertibleNut sourceMapNut = new ByteArrayNut(bos.toByteArray(), sourceMapName, NutType.MAP, 0L, false);
-                nut.addReferencedNut(sourceMapNut);
+                nut.setSource(new SourceMapNutImpl(request.getHeap(), nut, sourceMapNut, request.getProcessContext()));
             }
+
+            return new FileInputStream(compilationResult);
         } catch (final Exception e) {
             throw new IOException(e);
         } finally {
             // Free resources
-            IOUtils.close(sourceMapInputStream, out.get(), resultInputStream, argsOutputStream);
+            IOUtils.close(sourceMapInputStream, out.get(), argsOutputStream);
             IOUtils.delete(compilationResult);
             IOUtils.delete(sourceMapFile);
         }
