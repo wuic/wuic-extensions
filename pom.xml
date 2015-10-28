@@ -23,6 +23,7 @@
         <module>spring</module>
         <module>typescript</module>
         <module>http2-jetty</module>
+        <module>nodejs</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -224,6 +225,12 @@
                 <version>${trireme.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-plugin-core</artifactId>
+                <version>${frontend-plugin-core.version}</version>
+            </dependency>
+
             <!-- Testing library -->
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -253,5 +260,6 @@
         <rhino.version>1.7R5pre4</rhino.version>
         <trireme.version>0.8.5</trireme.version>
         <jetty.version>9.3.0.M2</jetty.version>
+        <frontend-plugin-core.version>0.0.26</frontend-plugin-core.version>
     </properties>
 </project>
