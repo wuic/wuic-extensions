@@ -80,4 +80,13 @@ dependencies. What you have simply to do is to include the extension's maven dep
             Engine
         </td>
     </tr>
+    <tr>
+        <td>wuic-attoparser</td>
+        <td>
+            Rely on <i>AttoParser</i> to read HTML document and detect web assets to optimize.
+        </td>
+        <td>
+            Engine
+        </td>
+    </tr>
 </table>

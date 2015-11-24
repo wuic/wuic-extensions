@@ -24,6 +24,7 @@
         <module>typescript</module>
         <module>http2-jetty</module>
         <module>nodejs</module>
+        <module>attoparser</module>
     </modules>
 
     <packaging>pom</packaging>
