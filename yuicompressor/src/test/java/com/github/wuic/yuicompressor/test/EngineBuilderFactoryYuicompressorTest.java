@@ -61,7 +61,7 @@ public class EngineBuilderFactoryYuicompressorTest {
     /**
      * Test for CSS YUICompressor.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testCreateCssYuiCompressorBuilder() {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EngineService.DEFAULT_SCAN_PACKAGE);
         Assert.assertNotNull(factory.create("YuiCompressorCssEngineBuilder"));
@@ -70,7 +70,7 @@ public class EngineBuilderFactoryYuicompressorTest {
     /**
      * Test for Javascript YUICompressor.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testCreateJavascriptYuiCompressorBuilder() {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EngineService.DEFAULT_SCAN_PACKAGE);
         Assert.assertNotNull(factory.create("YuiCompressorJavascriptEngineBuilder"));

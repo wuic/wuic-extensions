@@ -152,7 +152,7 @@ public class SpringSupportTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void resolverTest() throws Exception {
         registration.resourceChain(true).addResolver(new WuicPathResourceResolver(wuicFacade));
         final SimpleUrlHandlerMapping handlerMapping = (SimpleUrlHandlerMapping) this.registry.getHandlerMapping();
@@ -170,7 +170,7 @@ public class SpringSupportTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void versionTest() throws Exception {
         final ResourceResolver mock = Mockito.mock(ResourceResolver.class);
         final Resource resource = new FileSystemResource(getClass().getResource("/statics/foo.js").getFile());

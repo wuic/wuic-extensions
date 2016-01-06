@@ -60,7 +60,7 @@ public class EngineBuilderFactoryEhCacheTest {
     /**
      * Test for EhCache.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testCreateEhCacheBuilder() {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EngineService.DEFAULT_SCAN_PACKAGE);
         Assert.assertNotNull(factory.create("EhCacheEngineBuilder"));

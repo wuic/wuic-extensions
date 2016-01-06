@@ -95,7 +95,7 @@ public class S3Test {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void builderTest() throws Exception {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, NutDaoService.DEFAULT_SCAN_PACKAGE);
         final ObjectBuilder<NutDao> builder = factory.create("S3NutDaoBuilder");
@@ -113,7 +113,7 @@ public class S3Test {
      * </p>
      *
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test(timeout = 60000, expected = IllegalArgumentException.class)
     public void builderWithBadPropertyTest() {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, S3NutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create("S3NutDaoBuilder");
@@ -128,7 +128,7 @@ public class S3Test {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void s3Test() throws Exception {
         // Create a real object and mock its initClient method
         final S3NutDao dao = spy(new S3NutDao("/path", false, null, -1, "wuic", "login", "pwd", false, false, true, null));

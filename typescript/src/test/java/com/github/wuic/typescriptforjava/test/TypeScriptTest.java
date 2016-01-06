@@ -131,7 +131,7 @@ public class TypeScriptTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void compileTest() throws Exception {
         final File parent = temporaryFolder.newFolder("parent");
         NutsHeap heap = mockHeap(parent);
@@ -170,7 +170,7 @@ public class TypeScriptTest {
      * @throws IOException if test succeed
      * @throws com.github.wuic.exception.WuicException if test fails
      */
-    @Test(expected = IOException.class)
+    @Test(timeout = 60000, expected = IOException.class)
     public void compileErrorTest() throws IOException, WuicException {
         final Nut nut = mock(Nut.class);
         when(nut.getInitialName()).thenReturn("foo.ts");

@@ -157,7 +157,7 @@ public class SshTest {
      * @throws IOException if any I/O error occurs
      * @throws JAXBException if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void sshTest() throws JSchException, IOException, InterruptedException, WuicException, JAXBException {
         final ContextBuilder builder = new ContextBuilder().configureDefault();
         new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")).configure(builder);

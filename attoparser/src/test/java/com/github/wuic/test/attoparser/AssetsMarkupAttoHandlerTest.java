@@ -528,7 +528,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests inline import.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testInlineImport() {
         testImport(">");
     }
@@ -538,7 +538,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standalone import.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testStandaloneImport() {
         testImport("/>");
     }
@@ -548,7 +548,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standard HTML import.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testImport() {
         testImport("></wuic:html-import>");
     }
@@ -558,7 +558,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests auto close.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testBalancedImport() {
         testImport("><script>");
     }
@@ -612,7 +612,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Runs several assertions for a comment.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testComment() {
         final AdapterFactory factory = new AdapterFactory() {
 
@@ -667,7 +667,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests inline image.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testInlineImg() {
         testImg(">");
     }
@@ -677,7 +677,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standalone image.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testStandaloneImg() {
         testImg("/>");
     }
@@ -687,7 +687,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standard HTML image.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testImg() {
         testImg("></img>");
     }
@@ -697,7 +697,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests auto close.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testBalancedImg() {
         testImg("><script>");
     }
@@ -752,7 +752,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests inline CSS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSrcInlineCss() {
         testSrcCss(">");
     }
@@ -762,7 +762,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standalone CSS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSrcStandaloneCss() {
         testSrcCss("/>");
     }
@@ -772,7 +772,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standard HTML CSS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSrcCss() {
         testSrcCss("></link>");
     }
@@ -782,7 +782,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests auto close.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSrcBalancedCss() {
         testSrcCss("><style>");
     }
@@ -838,7 +838,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests inline CSS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testInlineCss() {
         testCss(">", "");
     }
@@ -848,7 +848,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standalone JS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testStandaloneCss() {
         testCss("/>", "");
     }
@@ -858,7 +858,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standard CSS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testCss() {
         final String css = ".foo {\n"
                 + "width:100%;\n"
@@ -871,7 +871,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests auto close.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testBalancedCss() {
         testCss("><img>", "");
     }
@@ -916,7 +916,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests inline JS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSrcInlineJs() {
         testSrcJs(">");
     }
@@ -926,7 +926,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standalone JS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSrcStandaloneJs() {
         testSrcJs("/>");
     }
@@ -936,7 +936,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standard JS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSrcJs() {
         testSrcJs("></script>");
     }
@@ -946,7 +946,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests auto close.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSrcBalancedJs() {
         testSrcJs("><style>");
     }
@@ -1002,7 +1002,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests inline JS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testInlineJs() {
         testJs(">", "");
     }
@@ -1012,7 +1012,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standalone JS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testStandaloneJs() {
         testJs("/>", "");
     }
@@ -1022,7 +1022,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests standard JS.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testJs() {
         final String js = "if (1 > 0 && 1 < 2) {\n"
                 + "alert('ok');\n"
@@ -1035,7 +1035,7 @@ public class AssetsMarkupAttoHandlerTest {
      * Tests auto close.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void testBalancedJs() {
         testJs("><style>", "");
     }

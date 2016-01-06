@@ -79,7 +79,7 @@ public class YuiCompressorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void javascriptTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialName()).thenReturn("foo.js");
@@ -105,7 +105,7 @@ public class YuiCompressorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void cssTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialName()).thenReturn("foo.js");

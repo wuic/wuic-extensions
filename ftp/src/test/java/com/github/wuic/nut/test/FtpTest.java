@@ -143,7 +143,7 @@ public class FtpTest {
      * Tests the FTP access nuts with an embedded server.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void ftpTest() throws Exception {
         final ContextBuilder builder = new ContextBuilder().configureDefault();
         new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")).configure(builder);
@@ -166,7 +166,7 @@ public class FtpTest {
      *
      * @throws IOException if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void ftpExistsTest() throws IOException {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, FtpNutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create(FtpNutDao.class.getSimpleName() + "Builder");
@@ -186,7 +186,7 @@ public class FtpTest {
      *
      * @throws IOException if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void ftpReadTest() throws IOException {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, FtpNutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create(FtpNutDao.class.getSimpleName() + "Builder");
@@ -207,7 +207,7 @@ public class FtpTest {
      *
      * @throws IOException if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void ftpReadDiskTest() throws IOException {
         final String tmp = System.getProperty("java.io.tmpdir");
         final String tmpTest = IOUtils.mergePath(tmp, "ftptest");

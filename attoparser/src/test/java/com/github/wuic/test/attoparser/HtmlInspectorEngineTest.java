@@ -131,7 +131,7 @@ public class HtmlInspectorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void parseTest() throws Exception {
         final Context ctx = newContext();
         final NutDao dao = new DiskNutDao(getClass().getResource("/html").getFile(), false, null, -1, false, false, false, true, null);
@@ -168,7 +168,7 @@ public class HtmlInspectorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void checkInlineScript() throws Exception {
         final String script = "var j; for (j = 0; < 100; j++) { console.log(j);}";
         final byte[] bytes = ("<script>" + script + "</script>").getBytes();

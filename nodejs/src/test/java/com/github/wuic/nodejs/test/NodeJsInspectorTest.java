@@ -65,7 +65,7 @@ public class NodeJsInspectorTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void nodeJsInspectorTest() throws Exception {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class,
                 CommandLineConverterEngine.class,

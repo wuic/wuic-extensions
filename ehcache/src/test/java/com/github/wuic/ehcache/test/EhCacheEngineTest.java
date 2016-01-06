@@ -150,7 +150,7 @@ public class EhCacheEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void cacheTest() throws Exception {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EhCacheEngine.class);
         final ObjectBuilder<Engine> builder = factory.create("EhCacheEngineBuilder");
@@ -177,7 +177,7 @@ public class EhCacheEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void noCacheTest() throws Exception {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EhCacheEngine.class);
         final ObjectBuilder<Engine> builder = factory.create("EhCacheEngineBuilder");
@@ -196,7 +196,7 @@ public class EhCacheEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void invalidateCacheTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialNutType()).thenReturn(NutType.JAVASCRIPT);

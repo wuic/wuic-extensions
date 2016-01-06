@@ -80,7 +80,7 @@ public class HtmlCompressorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void htmlCompressTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialNutType()).thenReturn(NutType.HTML);
@@ -106,7 +106,7 @@ public class HtmlCompressorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void disableHtmlCompressTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialNutType()).thenReturn(NutType.HTML);

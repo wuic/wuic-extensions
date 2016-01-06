@@ -87,7 +87,7 @@ public class GStorageTest {
      *
      * @throws Exception if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void builderTest() throws Exception {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, NutDaoService.DEFAULT_SCAN_PACKAGE);
         final ObjectBuilder<NutDao> builder = factory.create("GStorageNutDaoBuilder");
@@ -105,7 +105,7 @@ public class GStorageTest {
      * </p>
      *
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test(timeout = 60000, expected = IllegalArgumentException.class)
     public void builderWithBadPropertyTest() {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, GStorageNutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create("GStorageNutDaoBuilder");
@@ -118,7 +118,7 @@ public class GStorageTest {
      * Tests the Google Storage access.
      * </p>
      */
-    @Test
+    @Test(timeout = 60000)
     public void gStorageTest() throws Exception {
         final NutsHeap nutsHeap = mock(NutsHeap.class);
         final byte[] array = ".cloud { text-align : justify;}".getBytes();
