@@ -131,14 +131,14 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
     @ConfigConstructor
     public YuiCompressorJavascriptEngine(
             @BooleanConfigParam(propertyKey = ApplicationConfig.COMPRESS, defaultValue = true) final Boolean compress,
-            @StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "UTF-8") final String cs,
+            @StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "") final String cs,
             @IntegerConfigParam(propertyKey = ApplicationConfig.LINE_BREAK_POS, defaultValue = -1) final Integer lbp,
             @BooleanConfigParam(propertyKey = ApplicationConfig.DISABLE_OPTIMIZATIONS, defaultValue = true) final Boolean disableOptim,
             @BooleanConfigParam(propertyKey = ApplicationConfig.VERBOSE, defaultValue = false) final Boolean verb,
             @BooleanConfigParam(propertyKey = ApplicationConfig.PRESERVE_SEMICOLONS, defaultValue = true) final Boolean keepSemiColons,
             @BooleanConfigParam(propertyKey = ApplicationConfig.OBFUSCATE, defaultValue = true) final Boolean obfuscate) {
         super(compress, ".min");
-        charset = cs;
+        charset = IOUtils.checkCharset(cs);;
         lineBreakPos = lbp;
         disableOptimization = disableOptim;
         verbose = verb;
