@@ -45,6 +45,11 @@ import com.github.wuic.context.Context;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineRequestBuilder;
 import com.github.wuic.engine.NodeEngine;
+import com.github.wuic.engine.SpriteProvider;
+import com.github.wuic.engine.core.BinPacker;
+import com.github.wuic.engine.core.CssSpriteProvider;
+import com.github.wuic.engine.core.ImageAggregatorEngine;
+import com.github.wuic.engine.core.SpriteInspectorEngine;
 import com.github.wuic.engine.core.TextAggregatorEngine;
 import com.github.wuic.engine.core.HtmlInspectorEngine;
 import com.github.wuic.exception.WorkflowNotFoundException;
@@ -159,6 +164,37 @@ public class HtmlInspectorEngineTest {
         Assert.assertTrue(script, script.contains("console.log(i);"));
         Assert.assertTrue(script, script.contains("i+=3"));
         Assert.assertTrue(script, script.contains("i+=4"));
+    }
+
+    /**
+     * <p>
+     * Tests that sequence of image are properly handled by the HTML inspector that apply a sprite inspector on it.
+     * </p>
+     *
+     * @throws Exception if test fails
+     */
+    @Test(timeout = 60000)
+    public void imageSequenceTest() throws Exception {
+        final Context ctx = newContext();
+        final NutDao dao = new DiskNutDao(getClass().getResource("/html").getFile(), false, null, -1, false, false, false, true, null);
+        final NutsHeap heap = new NutsHeap(this, Arrays.asList("img-sequence.html"), dao, "heap");
+        heap.checkFiles(ProcessContext.DEFAULT);
+        final Map<NutType, NodeEngine> chains = new HashMap<NutType, NodeEngine>();
+        final NodeEngine e = new SpriteInspectorEngine(true, new SpriteProvider[] { new CssSpriteProvider() });
+        e.setNext(new ImageAggregatorEngine(true, new BinPacker<ConvertibleNut>()));
+        chains.put(NutType.PNG, e);
+        final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx).chains(chains).processContext(ProcessContext.DEFAULT).build();
+        final List<ConvertibleNut> nuts = new HtmlInspectorEngine(true, "UTF-8", true).parse(request);
+        Assert.assertEquals(1, nuts.size());
+        final String html = NutUtils.readTransform(nuts.get(0));
+
+        final int body = html.indexOf("body");
+        int idx = html.indexOf("topbar-title.png", body);
+        Assert.assertNotEquals(-1, idx);
+        Assert.assertEquals(html, -1, html.indexOf("topbar-title.png", idx + 10));
+        idx = html.indexOf("topbar-logo.png", body);
+        Assert.assertNotEquals(-1, idx);
+        Assert.assertEquals(html, -1, html.indexOf("topbar-logo.png", idx + 10));
     }
 
     /**
