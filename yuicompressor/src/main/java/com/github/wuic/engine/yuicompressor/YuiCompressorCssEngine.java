@@ -96,7 +96,7 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
             @StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "") final String cs,
             @IntegerConfigParam(propertyKey = ApplicationConfig.LINE_BREAK_POS, defaultValue = -1) final Integer lbp) {
         super(compress, ".min");
-        charset = IOUtils.checkCharset(cs);;
+        charset = IOUtils.checkCharset(cs);
         lineBreakPos = lbp;
     }
 

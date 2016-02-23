@@ -138,7 +138,7 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
             @BooleanConfigParam(propertyKey = ApplicationConfig.PRESERVE_SEMICOLONS, defaultValue = true) final Boolean keepSemiColons,
             @BooleanConfigParam(propertyKey = ApplicationConfig.OBFUSCATE, defaultValue = true) final Boolean obfuscate) {
         super(compress, ".min");
-        charset = IOUtils.checkCharset(cs);;
+        charset = IOUtils.checkCharset(cs);
         lineBreakPos = lbp;
         disableOptimization = disableOptim;
         verbose = verb;
