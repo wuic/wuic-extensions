@@ -38,10 +38,9 @@
 
 package com.github.wuic.engine.typescript;
 
-import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.config.BooleanConfigParam;
-import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.Config;
 import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
@@ -69,6 +68,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static com.github.wuic.ApplicationConfig.ECMA_SCRIPT_VERSION;
+import static com.github.wuic.ApplicationConfig.USE_NODE_JS;
+
 /**
  * <p>
  * This class can convert Typescript files using the Typescript4j library.
@@ -93,7 +95,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine implement
     /**
      * The ECMA script version.
      */
-    private final String ecmaScriptVersion;
+    private String ecmaScriptVersion;
 
     /**
      * Node environment to run tsc on top of rhino.
@@ -107,22 +109,17 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine implement
 
     /**
      * <p>
-     * Builds a new instance.
+     * Initializes a new instance.
      * </p>
      *
-     * @param convert       if this engine is enabled or not
      * @param esv           the ECMA script version
      * @param useNodeJs     use node.js command line or not
-     * @param asynchronous  computes version number asynchronously or not
      * @throws WuicException if the engine cannot be initialized
      */
-    @ConfigConstructor
-    public TypeScriptConverterEngine(@BooleanConfigParam(propertyKey = ApplicationConfig.CONVERT, defaultValue = true) final Boolean convert,
-                                     @StringConfigParam(propertyKey = ApplicationConfig.ECMA_SCRIPT_VERSION, defaultValue = "ES3") final String esv,
-                                     @BooleanConfigParam(propertyKey = ApplicationConfig.USE_NODE_JS, defaultValue = false) final Boolean useNodeJs,
-                                     @BooleanConfigParam(propertyKey = ApplicationConfig.COMPUTE_VERSION_ASYNCHRONOUSLY, defaultValue = true) final Boolean asynchronous)
+    @Config
+    public void init(@StringConfigParam(propertyKey = ECMA_SCRIPT_VERSION, defaultValue = "ES3") final String esv,
+                     @BooleanConfigParam(propertyKey = USE_NODE_JS, defaultValue = false) final Boolean useNodeJs)
             throws WuicException {
-        super(convert, asynchronous);
         ecmaScriptVersion = esv;
 
         if (!useNodeJs) {

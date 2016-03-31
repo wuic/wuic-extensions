@@ -40,7 +40,7 @@ package com.github.wuic.engine.ehcache;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.config.BooleanConfigParam;
-import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.Config;
 import com.github.wuic.config.ObjectConfigParam;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
@@ -68,15 +68,15 @@ public class EhCacheEngine extends AbstractCacheEngine implements ApplicationCon
 
     /**
      * <p>
-     * Builds a new engine.
+     * Initializes a new engine.
      * </p>
      *
      * @param work if cache should be activated or not
      * @param cache the cache to be wrapped
      * @param bestEffort enable best effort mode or not
      */
-    @ConfigConstructor
-    public EhCacheEngine(
+    @Config
+    public void init(
             @BooleanConfigParam(propertyKey = CACHE, defaultValue = true)
             final Boolean work,
             @ObjectConfigParam(propertyKey = CACHE_PROVIDER_CLASS,
@@ -85,7 +85,7 @@ public class EhCacheEngine extends AbstractCacheEngine implements ApplicationCon
             final Cache cache,
             @BooleanConfigParam(propertyKey = BEST_EFFORT, defaultValue = false)
             final Boolean bestEffort) {
-        super(work, bestEffort);
+        init(work, bestEffort);
         ehCache = cache;
     }
 

@@ -41,11 +41,8 @@ package com.github.wuic.nut.dao.gstorage;
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.ProcessContext;
-import com.github.wuic.config.BooleanConfigParam;
-import com.github.wuic.config.ConfigConstructor;
-import com.github.wuic.config.IntegerConfigParam;
-import com.github.wuic.config.ObjectConfigParam;
-import com.github.wuic.config.StringConfigParam;
+import com.github.wuic.config.*;
+import com.github.wuic.config.Config;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.AbstractNut;
 import com.github.wuic.nut.AbstractNutDao;
@@ -119,7 +116,7 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
 
     /**
      * <p>
-     * Builds a new instance.
+     * Initializes a new instance.
      * </p>
      *
      * @param bucket                    the bucket name
@@ -129,23 +126,16 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * @param pollingInterval           the interval for polling operations in seconds (-1 to deactivate)
      * @param proxyUris                 the proxies URIs in front of the nut
      * @param keyFile                   the private key path location
-     * @param contentBasedVersionNumber {@code true} if version number is computed from nut content, {@code false} if based on timestamp
-     * @param computeVersionAsynchronously (@code true} if version number can be computed asynchronously, {@code false} otherwise
-     * @param fixedVersionNumber fixed version number, {@code null} if version number is computed from content or is last modification date
      */
-    @ConfigConstructor
-    public GStorageNutDao(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
-                          @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
-                          @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxyUris,
-                          @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingInterval,
-                          @StringConfigParam(defaultValue = "", propertyKey = CLOUD_BUCKET) final String bucket,
-                          @StringConfigParam(defaultValue = "", propertyKey = LOGIN) final String accountId,
-                          @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String keyFile,
-                          @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber,
-                          @BooleanConfigParam(defaultValue = true, propertyKey = COMPUTE_VERSION_ASYNCHRONOUSLY) final Boolean computeVersionAsynchronously,
-                          @StringConfigParam(defaultValue = "", propertyKey = ApplicationConfig.FIXED_VERSION_NUMBER) final String fixedVersionNumber) {
-        super(path, basePathAsSysProp, proxyUris, pollingInterval,
-                new VersionNumberStrategy(contentBasedVersionNumber, computeVersionAsynchronously, fixedVersionNumber));
+    @Config
+    public void init(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
+                     @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
+                     @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxyUris,
+                     @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingInterval,
+                     @StringConfigParam(defaultValue = "", propertyKey = CLOUD_BUCKET) final String bucket,
+                     @StringConfigParam(defaultValue = "", propertyKey = LOGIN) final String accountId,
+                     @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String keyFile) {
+        init(path, basePathAsSysProp, proxyUris, pollingInterval);
         bucketName = bucket;
         privateKeyFile = keyFile;
         serviceAccountId = accountId;

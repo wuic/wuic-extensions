@@ -39,8 +39,7 @@
 package com.github.wuic.nodejs.test;
 
 import com.github.wuic.ApplicationConfig;
-import com.github.wuic.config.BooleanConfigParam;
-import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.Config;
 import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.core.CommandLineConverterEngine;
@@ -56,27 +55,23 @@ public class FooCommandLineConverterEngine extends CommandLineConverterEngine {
 
     /**
      * <p>
-     * Builds a new instance.
+     * Initializes a new instance.
      * </p>
      *
      * @param command the command line
      * @param inputNutType the input nut type
      * @param outputNutType the output nut type
      * @param separator the path separator
-     * @param convert if this engine is enabled or not
-     * @param asynchronous computes version number asynchronously or not
      * @param libs additional libraries paths available in the classpath
      * @throws WuicException if the engine cannot be initialized
      * @throws IOException if any I/O error occurs
      */
-    @ConfigConstructor
-    public FooCommandLineConverterEngine(@BooleanConfigParam(propertyKey = ApplicationConfig.CONVERT, defaultValue = true) final Boolean convert,
-                                         @BooleanConfigParam(propertyKey = ApplicationConfig.COMPUTE_VERSION_ASYNCHRONOUSLY, defaultValue = true) final Boolean asynchronous,
-                                         @StringConfigParam(propertyKey = ApplicationConfig.COMMAND, defaultValue = "") final String command,
-                                         @StringConfigParam(propertyKey = ApplicationConfig.INPUT_NUT_TYPE, defaultValue = "") final String inputNutType,
-                                         @StringConfigParam(propertyKey = ApplicationConfig.OUTPUT_NUT_TYPE, defaultValue = "") final String outputNutType,
-                                         @StringConfigParam(propertyKey = ApplicationConfig.PATH_SEPARATOR, defaultValue = " ") final String separator,
-                                         @StringConfigParam(propertyKey = ApplicationConfig.LIBRARIES, defaultValue = "") final String libs) throws WuicException, IOException {
-        super(convert, asynchronous, command, inputNutType, outputNutType, separator, libs);
+    @Config
+    public void init(@StringConfigParam(propertyKey = ApplicationConfig.COMMAND, defaultValue = "") final String command,
+                     @StringConfigParam(propertyKey = ApplicationConfig.INPUT_NUT_TYPE, defaultValue = "") final String inputNutType,
+                     @StringConfigParam(propertyKey = ApplicationConfig.OUTPUT_NUT_TYPE, defaultValue = "") final String outputNutType,
+                     @StringConfigParam(propertyKey = ApplicationConfig.PATH_SEPARATOR, defaultValue = " ") final String separator,
+                     @StringConfigParam(propertyKey = ApplicationConfig.LIBRARIES, defaultValue = "") final String libs) throws WuicException, IOException {
+        super.init(command, inputNutType, outputNutType, separator, libs);
     }
 }

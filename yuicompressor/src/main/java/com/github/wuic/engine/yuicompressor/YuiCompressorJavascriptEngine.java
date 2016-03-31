@@ -41,7 +41,7 @@ package com.github.wuic.engine.yuicompressor;
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.config.BooleanConfigParam;
-import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.Config;
 import com.github.wuic.config.IntegerConfigParam;
 import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.engine.EngineService;
@@ -117,10 +117,9 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
 
     /**
      * <p>
-     * Creates a new instance.
+     * Initializes a new instance.
      * </p>
      *
-     * @param compress activate compression or not
      * @param cs charset of files to compress
      * @param lbp line break position
      * @param disableOptim disable micro optimizations
@@ -128,16 +127,14 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
      * @param keepSemiColons keep unnecessary semicolons
      * @param obfuscate obfuscate the code or not
      */
-    @ConfigConstructor
-    public YuiCompressorJavascriptEngine(
-            @BooleanConfigParam(propertyKey = ApplicationConfig.COMPRESS, defaultValue = true) final Boolean compress,
-            @StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "") final String cs,
+    @Config
+    public void init(@StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "") final String cs,
             @IntegerConfigParam(propertyKey = ApplicationConfig.LINE_BREAK_POS, defaultValue = -1) final Integer lbp,
             @BooleanConfigParam(propertyKey = ApplicationConfig.DISABLE_OPTIMIZATIONS, defaultValue = true) final Boolean disableOptim,
             @BooleanConfigParam(propertyKey = ApplicationConfig.VERBOSE, defaultValue = false) final Boolean verb,
             @BooleanConfigParam(propertyKey = ApplicationConfig.PRESERVE_SEMICOLONS, defaultValue = true) final Boolean keepSemiColons,
             @BooleanConfigParam(propertyKey = ApplicationConfig.OBFUSCATE, defaultValue = true) final Boolean obfuscate) {
-        super(compress, ".min");
+        setRenameExtensionPrefix(".min");
         charset = IOUtils.checkCharset(cs);
         lineBreakPos = lbp;
         disableOptimization = disableOptim;

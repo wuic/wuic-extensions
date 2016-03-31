@@ -35,12 +35,12 @@
  * licenses."
  */
 
+
 package com.github.wuic.engine.yuicompressor;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
-import com.github.wuic.config.BooleanConfigParam;
-import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.Config;
 import com.github.wuic.config.IntegerConfigParam;
 import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.engine.EngineService;
@@ -83,19 +83,16 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
 
     /**
      * <p>
-     * Builds a new instance.
+     * Initializes a new instance.
      * </p>
      *
-     * @param compress activate compression or not
      * @param cs the char set
      * @param lbp the line break position
      */
-    @ConfigConstructor
-    public YuiCompressorCssEngine(
-            @BooleanConfigParam(propertyKey = ApplicationConfig.COMPRESS, defaultValue = true) final Boolean compress,
-            @StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "") final String cs,
+    @Config
+    public void init( @StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "") final String cs,
             @IntegerConfigParam(propertyKey = ApplicationConfig.LINE_BREAK_POS, defaultValue = -1) final Integer lbp) {
-        super(compress, ".min");
+        setRenameExtensionPrefix(".min");
         charset = IOUtils.checkCharset(cs);
         lineBreakPos = lbp;
     }

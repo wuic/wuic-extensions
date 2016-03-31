@@ -139,14 +139,27 @@ public class HtmlInspectorEngineTest {
     @Test(timeout = 60000)
     public void parseTest() throws Exception {
         final Context ctx = newContext();
-        final NutDao dao = new DiskNutDao(getClass().getResource("/html").getFile(), false, null, -1, false, false, false, true, null);
+        final DiskNutDao dao = new DiskNutDao();
+        dao.init(getClass().getResource("/html").getFile(), false, null, -1, false, false);
+        dao.init(false, true, null);
         final NutsHeap heap = new NutsHeap(this, Arrays.asList("index.html"), dao, "heap");
         heap.checkFiles(ProcessContext.DEFAULT);
         final Map<NutType, NodeEngine> chains = new HashMap<NutType, NodeEngine>();
-        chains.put(NutType.CSS, new TextAggregatorEngine(true, true));
-        chains.put(NutType.JAVASCRIPT, new TextAggregatorEngine(true, true));
+
+        final TextAggregatorEngine css = new TextAggregatorEngine();
+        css.init(true);
+        css.async(true);
+        chains.put(NutType.CSS, css);
+
+        final TextAggregatorEngine jse = new TextAggregatorEngine();
+        jse.init(true);
+        jse.async(true);
+        chains.put(NutType.JAVASCRIPT, jse);
+
         final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx).chains(chains).processContext(ProcessContext.DEFAULT).build();
-        final List<ConvertibleNut> nuts = new HtmlInspectorEngine(true, "UTF-8", true).parse(request);
+        final HtmlInspectorEngine h = new HtmlInspectorEngine();
+        h.init(true, "UTF-8", true);
+        final List<ConvertibleNut> nuts = h.parse(request);
 
         Assert.assertEquals(1, nuts.size());
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -176,15 +189,23 @@ public class HtmlInspectorEngineTest {
     @Test(timeout = 60000)
     public void imageSequenceTest() throws Exception {
         final Context ctx = newContext();
-        final NutDao dao = new DiskNutDao(getClass().getResource("/html").getFile(), false, null, -1, false, false, false, true, null);
+        final DiskNutDao dao = new DiskNutDao();
+        dao.init(getClass().getResource("/html").getFile(), false, null, -1, false, false);
+        dao.init(false, true, null);
         final NutsHeap heap = new NutsHeap(this, Arrays.asList("img-sequence.html"), dao, "heap");
         heap.checkFiles(ProcessContext.DEFAULT);
         final Map<NutType, NodeEngine> chains = new HashMap<NutType, NodeEngine>();
-        final NodeEngine e = new SpriteInspectorEngine(true, new SpriteProvider[] { new CssSpriteProvider() });
-        e.setNext(new ImageAggregatorEngine(true, new BinPacker<ConvertibleNut>()));
+        final SpriteInspectorEngine e = new SpriteInspectorEngine();
+        e.init(true, new SpriteProvider[] { new CssSpriteProvider() });
+        final ImageAggregatorEngine i = new ImageAggregatorEngine();
+        i.init(true);
+        i.init(new BinPacker<ConvertibleNut>());
+        e.setNext(i);
         chains.put(NutType.PNG, e);
         final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx).chains(chains).processContext(ProcessContext.DEFAULT).build();
-        final List<ConvertibleNut> nuts = new HtmlInspectorEngine(true, "UTF-8", true).parse(request);
+        final HtmlInspectorEngine h = new HtmlInspectorEngine();
+        h.init(true, "UTF-8", true);
+        final List<ConvertibleNut> nuts = h.parse(request);
         Assert.assertEquals(1, nuts.size());
         final String html = NutUtils.readTransform(nuts.get(0));
 
@@ -208,7 +229,8 @@ public class HtmlInspectorEngineTest {
     public void checkInlineScript() throws Exception {
         final String script = "var j; for (j = 0; < 100; j++) { console.log(j);}";
         final byte[] bytes = ("<script>" + script + "</script>").getBytes();
-        final HtmlInspectorEngine engine = new HtmlInspectorEngine(true, "UTF-8", true);
+        final HtmlInspectorEngine engine = new HtmlInspectorEngine();
+        engine.init(true, "UTF-8", true);
         ConvertibleNut nut = new ByteArrayNut(bytes, "index.html", NutType.HTML, 1L, true);
         final ConvertibleNut finalNut = nut;
         final NutDao dao = Mockito.mock(NutDao.class);

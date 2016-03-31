@@ -43,7 +43,6 @@ import com.github.wuic.NutType;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.EngineRequestBuilder;
-import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.core.TextAggregatorEngine;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.dao.NutDao;
@@ -127,7 +126,9 @@ public class GStorageTest {
         nuts.add(new ByteArrayNut(array, "cloud.css", NutType.CSS, 1L, false));
         when(nutsHeap.getNuts()).thenReturn(nuts);
 
-        final NodeEngine aggregator = new TextAggregatorEngine(true, true);
+        final TextAggregatorEngine aggregator = new TextAggregatorEngine();
+        aggregator.init(true);
+        aggregator.async(true);
 
         final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null).processContext(ProcessContext.DEFAULT).build());
 

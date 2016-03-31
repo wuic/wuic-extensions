@@ -49,7 +49,6 @@ import com.github.wuic.ApplicationConfig;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.EngineRequestBuilder;
-import com.github.wuic.engine.NodeEngine;
 import com.github.wuic.engine.core.TextAggregatorEngine;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.dao.NutDao;
@@ -130,8 +129,13 @@ public class S3Test {
      */
     @Test(timeout = 60000)
     public void s3Test() throws Exception {
+        final S3NutDao d = new S3NutDao();
+        d.init("wuic", "login", "pwd", false);
+        d.init("/path", false, null, -1);
+        d.init(false, true, null);
+
         // Create a real object and mock its initClient method
-        final S3NutDao dao = spy(new S3NutDao("/path", false, null, -1, "wuic", "login", "pwd", false, false, true, null));
+        final S3NutDao dao = spy(d);
 
         // Build client mock
         final AmazonS3Client client = mock(AmazonS3Client.class);
@@ -160,7 +164,10 @@ public class S3Test {
         nutsHeap.checkFiles(ProcessContext.DEFAULT);
         Assert.assertEquals(nutsHeap.getNuts().size(), 1);
 
-        final NodeEngine aggregator = new TextAggregatorEngine(true, true);
+        final TextAggregatorEngine aggregator = new TextAggregatorEngine();
+        aggregator.init(true);
+        aggregator.async(true);
+
         final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null).processContext(ProcessContext.DEFAULT).build());
 
         Assert.assertFalse(group.isEmpty());

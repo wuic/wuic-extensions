@@ -38,10 +38,9 @@
 
 package com.github.wuic.engine.htmlcompressor;
 
-import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.config.BooleanConfigParam;
-import com.github.wuic.config.ConfigConstructor;
+import com.github.wuic.config.Config;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
@@ -56,6 +55,8 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.github.wuic.ApplicationConfig.PRESERVE_LINE_BREAK;
+
 /**
  * <p>
  * This engine is based on HTML compressor to be able to compress HTML code.
@@ -67,25 +68,20 @@ import java.util.List;
 @EngineService(injectDefaultToWorkflow = true)
 public class HtmlCompressorEngine extends AbstractCompressorEngine {
 
-
     /**
      * Compressor.
      */
-    private final HtmlCompressor compressor;
+    private HtmlCompressor compressor;
 
     /**
      * <p>
-     * Builds a new instance.
+     * Initializes a new instance.
      * </p>
      *
-     * @param compress the instance to build
      * @param preserveLb preserve the line break points or not
      */
-    @ConfigConstructor
-    public HtmlCompressorEngine(
-            @BooleanConfigParam(propertyKey = ApplicationConfig.COMPRESS, defaultValue = true) Boolean compress,
-            @BooleanConfigParam(propertyKey = ApplicationConfig.PRESERVE_LINE_BREAK, defaultValue = false) Boolean preserveLb) {
-        super(compress, null);
+    @Config
+    public void preserveLineBreak(@BooleanConfigParam(propertyKey = PRESERVE_LINE_BREAK, defaultValue = false) Boolean preserveLb) {
         compressor = new HtmlCompressor();
         compressor.setPreserveLineBreaks(preserveLb);
     }

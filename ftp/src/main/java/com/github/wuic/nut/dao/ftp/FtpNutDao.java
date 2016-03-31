@@ -41,11 +41,8 @@ package com.github.wuic.nut.dao.ftp;
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.ProcessContext;
-import com.github.wuic.config.BooleanConfigParam;
-import com.github.wuic.config.ConfigConstructor;
-import com.github.wuic.config.IntegerConfigParam;
-import com.github.wuic.config.ObjectConfigParam;
-import com.github.wuic.config.StringConfigParam;
+import com.github.wuic.config.*;
+import com.github.wuic.config.Config;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.FilePathNut;
@@ -142,40 +139,43 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
 
     /**
      * <p>
-     * Builds a new instance.
+     * Initializes a new instance.
+     * </p>
+     *
+     * @param path default the path
+     * @param basePathAsSysProp {@code true} if the base path is a system property
+     * @param proxies proxy URIs serving the nut
+     * @param pollingSeconds interval in seconds for polling feature (-1 to disable)
+     */
+    @Config
+    public void init(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
+                     @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
+                     @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxies,
+                     @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingSeconds) {
+        super.init(path, basePathAsSysProp, proxies, pollingSeconds);
+    }
+
+    /**
+     * <p>
+     * Initializes the FTP data.
      * </p>
      *
      * @param ftps use FTPS or FTP protocol
      * @param host the host name
      * @param p the port
-     * @param path default the path
-     * @param basePathAsSysProp {@code true} if the base path is a system property
      * @param user the user name ({@code null} to skip the the authentication)
      * @param pwd the password (will be ignored if user is {@code null})
-     * @param proxies proxy URIs serving the nut
-     * @param pollingSeconds interval in seconds for polling feature (-1 to disable)
      * @param regex consider path as regex or not
-     * @param contentBasedVersionNumber {@code true} if version number is computed from nut content, {@code false} if based on timestamp
      * @param dtd {@code true} if the resources should be download from the FTP to the disk and not stored in memory
-     * @param computeVersionAsynchronously (@code true} if version number can be computed asynchronously, {@code false} otherwise
-     * @param fixedVersionNumber fixed version number, {@code null} if version number is computed from content or is last modification date
      */
-    @ConfigConstructor
-    public FtpNutDao(@BooleanConfigParam(defaultValue = false, propertyKey = SECRET_PROTOCOL) final Boolean ftps,
+    @Config
+    public void init(@BooleanConfigParam(defaultValue = false, propertyKey = SECRET_PROTOCOL) final Boolean ftps,
                      @StringConfigParam(defaultValue = "localhost", propertyKey = SERVER_DOMAIN) final String host,
                      @IntegerConfigParam(defaultValue = FTPClient.DEFAULT_PORT, propertyKey = SERVER_PORT) final int p,
-                     @StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
-                     @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
                      @StringConfigParam(defaultValue = "", propertyKey = LOGIN) final String user,
                      @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String pwd,
-                     @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxies,
-                     @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingSeconds,
                      @BooleanConfigParam(defaultValue = false, propertyKey = REGEX) final Boolean regex,
-                     @BooleanConfigParam(defaultValue = false, propertyKey = CONTENT_BASED_VERSION_NUMBER) final Boolean contentBasedVersionNumber,
-                     @BooleanConfigParam(defaultValue = false, propertyKey = DOWNLOAD_TO_DISK) final Boolean dtd,
-                     @BooleanConfigParam(defaultValue = true, propertyKey = COMPUTE_VERSION_ASYNCHRONOUSLY) final Boolean computeVersionAsynchronously,
-                     @StringConfigParam(defaultValue = "", propertyKey = ApplicationConfig.FIXED_VERSION_NUMBER) final String fixedVersionNumber) {
-        super(path, basePathAsSysProp, proxies, pollingSeconds, new VersionNumberStrategy(contentBasedVersionNumber, computeVersionAsynchronously, fixedVersionNumber));
+                     @BooleanConfigParam(defaultValue = false, propertyKey = DOWNLOAD_TO_DISK) final Boolean dtd) {
         ftpClient = ftps ? new FTPSClient(Boolean.TRUE) : new FTPClient();
         hostName = host;
         userName = user;
