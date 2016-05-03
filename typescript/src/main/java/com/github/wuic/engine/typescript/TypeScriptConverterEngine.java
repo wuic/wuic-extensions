@@ -50,7 +50,6 @@ import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.BiFunction;
 import com.github.wuic.util.IOUtils;
-import com.github.wuic.util.NutDiskStore;
 import io.apigee.trireme.core.NodeEnvironment;
 import io.apigee.trireme.core.NodeException;
 import io.apigee.trireme.core.NodeScript;
@@ -69,6 +68,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.github.wuic.ApplicationConfig.ECMA_SCRIPT_VERSION;
+import static com.github.wuic.ApplicationConfig.RESOLVED_FILE_DIRECTORY_AS_WORKING_DIR;
 import static com.github.wuic.ApplicationConfig.USE_NODE_JS;
 
 /**
@@ -80,7 +80,8 @@ import static com.github.wuic.ApplicationConfig.USE_NODE_JS;
  * @since 0.5.1
  */
 @EngineService(injectDefaultToWorkflow = true)
-public class TypeScriptConverterEngine extends AbstractConverterEngine implements BiFunction<List<String>, File, Boolean> {
+public class TypeScriptConverterEngine extends AbstractConverterEngine
+        implements BiFunction<CommandLineConverterEngine.CommandLineInfo, EngineRequest, Boolean> {
 
     /**
      * ARGS file name.
@@ -108,67 +109,31 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine implement
     private NodeScript script;
 
     /**
+     * Try to use the directory containing source files as parent directory for generated content.
+     */
+    private Boolean resolvedFileDirectoryAsWorkingDirectory;
+
+    /**
      * <p>
      * Initializes a new instance.
      * </p>
      *
      * @param esv           the ECMA script version
      * @param useNodeJs     use node.js command line or not
+     * @param srdaws        try to reuse source directory to generate files
      * @throws WuicException if the engine cannot be initialized
      */
     @Config
     public void init(@StringConfigParam(propertyKey = ECMA_SCRIPT_VERSION, defaultValue = "ES3") final String esv,
-                     @BooleanConfigParam(propertyKey = USE_NODE_JS, defaultValue = false) final Boolean useNodeJs)
+                     @BooleanConfigParam(propertyKey = USE_NODE_JS, defaultValue = false) final Boolean useNodeJs,
+                     @BooleanConfigParam(propertyKey = RESOLVED_FILE_DIRECTORY_AS_WORKING_DIR, defaultValue = true) final Boolean srdaws)
             throws WuicException {
         ecmaScriptVersion = esv;
+        resolvedFileDirectoryAsWorkingDirectory = srdaws;
 
         if (!useNodeJs) {
             env = new NodeEnvironment();
             env.setDefaultClassCache();
-
-            final StringBuilder sb = new StringBuilder();
-            sb.append("var compile=require('typescript-compiler');var logger=require('slf4j-logger');compile([],'@");
-            sb.append(ARGS_FILE);
-            sb.append("',");
-
-            final URL resource = IOUtils.class.getResource("/wuic/tsc/lib/lib.d.ts");
-
-            try {
-                final File workingDir = NutDiskStore.INSTANCE.getWorkingDirectory();
-
-                // Copy the file to the working directory if not stored on the file system, otherwise give the absolute path
-                if (resource.toString().startsWith("file:")) {
-                    sb.append("{ defaultLibFilename: '");
-                    sb.append(new File(resource.getFile()).getAbsolutePath().replace('\\', '/'));
-                    sb.append("'}");
-                } else {
-                    sb.append("null");
-
-                    final File lib = new File(workingDir, "lib");
-
-                    if (!lib.mkdirs()) {
-                        log.debug("{} may already exists", lib.getAbsolutePath());
-                    }
-
-                    final OutputStream libDOs = new FileOutputStream(new File(lib, "lib.d.ts"));
-                    final InputStream libDIs = resource.openStream();
-
-                    try {
-                        IOUtils.copyStream(libDIs, libDOs);
-                    } finally {
-                        IOUtils.close(libDIs, libDOs);
-                    }
-                }
-
-                sb.append(",function(e){logger.logWarning(e.messageText);});");
-
-                script = env.createScript("", sb.toString(), null);
-                script.setWorkingDirectory(workingDir.getAbsolutePath());
-            } catch (NodeException ne) {
-                WuicException.throwWuicException(ne);
-            } catch (IOException ioe) {
-                WuicException.throwWuicException(ioe);
-            }
         }
     }
 
@@ -194,17 +159,19 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine implement
     @Override
     public InputStream transform(final InputStream is, final ConvertibleNut nut, final EngineRequest request)
             throws IOException {
-        return CommandLineConverterEngine.execute(is, nut, request, this);
+        return CommandLineConverterEngine.execute(is, nut, request, this, resolvedFileDirectoryAsWorkingDirectory);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Boolean apply(final List<String> pathsToCompile, final File compilationResult) {
+    public Boolean apply(final CommandLineConverterEngine.CommandLineInfo commandLineInfo, final EngineRequest request) {
+        final File compilationResult = commandLineInfo.getCompilationResult();
+        final List<String> pathsToCompile = commandLineInfo.getPathsToCompile();
         OutputStream argsOutputStream = null;
         Boolean retval = Boolean.TRUE;
-        final File workingDir = NutDiskStore.INSTANCE.getWorkingDirectory();
+        final File workingDir = compilationResult.getParentFile();
 
         try {
             log.debug("absolute path: {}", workingDir.getAbsolutePath());
@@ -216,15 +183,19 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine implement
                 argsOutputStream.write((pathToCompile + " ").getBytes());
             }
 
-            argsOutputStream.write((" --sourcemap -t " + ecmaScriptVersion + " --out ").getBytes());
+            // Do not generate source map in best effort
+            if (!request.isBestEffort()) {
+                argsOutputStream.write(" --sourcemap".getBytes());
+            }
+
+            argsOutputStream.write((" -t " + ecmaScriptVersion + " --out ").getBytes());
             argsOutputStream.write(compilationResult.getAbsolutePath().getBytes());
             IOUtils.close(argsOutputStream);
-
 
             if (env == null) {
                 retval = node(workingDir, compilationResult);
             } else {
-                retval = rhino();
+                retval = rhino(workingDir.getAbsolutePath());
             }
 
             if (!compilationResult.exists()) {
@@ -269,14 +240,55 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine implement
      * Invokes tsc compiler on top of rhino using trireme.
      * </p>
      *
+     * @param workingDirectory the directory where script will be executed
+     *
      * @throws IOException if a copy/read IO operation fails
      * @throws NodeException if node compatibility layers fails
      * @throws InterruptedException if command execution is interrupted
      * @throws ExecutionException if command execution fails
      * @return {@code true} if no exception is thrown
      */
-    private Boolean rhino()
+    private Boolean rhino(final String workingDirectory)
             throws IOException, NodeException, InterruptedException, ExecutionException {
+        if (script == null || !workingDirectory.equals(script.getWorkingDirectory())) {
+
+            final StringBuilder sb = new StringBuilder();
+            sb.append("var compile=require('typescript-compiler');var logger=require('slf4j-logger');compile([],'@");
+            sb.append(ARGS_FILE);
+            sb.append("',");
+
+            final URL resource = IOUtils.class.getResource("/wuic/tsc/lib/lib.d.ts");
+
+            // Copy the file to the working directory if not stored on the file system, otherwise give the absolute path
+            if (resource.toString().startsWith("file:")) {
+                sb.append("{ defaultLibFilename: '");
+                sb.append(new File(resource.getFile()).getAbsolutePath().replace('\\', '/'));
+                sb.append("'}");
+            } else {
+                sb.append("null");
+
+                final File lib = new File(workingDirectory, "lib");
+
+                if (!lib.mkdirs()) {
+                    log.debug("{} may already exists", lib.getAbsolutePath());
+                }
+
+                final OutputStream libDOs = new FileOutputStream(new File(lib, "lib.d.ts"));
+                final InputStream libDIs = resource.openStream();
+
+                try {
+                    IOUtils.copyStream(libDIs, libDOs);
+                } finally {
+                    IOUtils.close(libDIs, libDOs);
+                }
+            }
+
+            sb.append(",function(e){logger.logWarning(e.messageText);});");
+
+            script = env.createScript("", sb.toString(), null);
+            script.setWorkingDirectory(workingDirectory);
+        }
+
         // Wait for the script to complete
         final ScriptFuture f = script.execute();
         f.get();

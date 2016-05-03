@@ -39,6 +39,7 @@
 package com.github.wuic.nodejs.test;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.Config;
 import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.engine.EngineService;
@@ -46,6 +47,8 @@ import com.github.wuic.engine.core.CommandLineConverterEngine;
 import com.github.wuic.exception.WuicException;
 
 import java.io.IOException;
+
+import static com.github.wuic.ApplicationConfig.RESOLVED_FILE_DIRECTORY_AS_WORKING_DIR;
 
 /**
  * {@link CommandLineConverterEngine} with default working directory.
@@ -63,6 +66,7 @@ public class FooCommandLineConverterEngine extends CommandLineConverterEngine {
      * @param outputNutType the output nut type
      * @param separator the path separator
      * @param libs additional libraries paths available in the classpath
+     * @param srdaws try to reuse source directory to generate files
      * @throws WuicException if the engine cannot be initialized
      * @throws IOException if any I/O error occurs
      */
@@ -71,7 +75,9 @@ public class FooCommandLineConverterEngine extends CommandLineConverterEngine {
                      @StringConfigParam(propertyKey = ApplicationConfig.INPUT_NUT_TYPE, defaultValue = "") final String inputNutType,
                      @StringConfigParam(propertyKey = ApplicationConfig.OUTPUT_NUT_TYPE, defaultValue = "") final String outputNutType,
                      @StringConfigParam(propertyKey = ApplicationConfig.PATH_SEPARATOR, defaultValue = " ") final String separator,
-                     @StringConfigParam(propertyKey = ApplicationConfig.LIBRARIES, defaultValue = "") final String libs) throws WuicException, IOException {
-        super.init(command, inputNutType, outputNutType, separator, libs);
+                     @StringConfigParam(propertyKey = ApplicationConfig.LIBRARIES, defaultValue = "") final String libs,
+                     @BooleanConfigParam(propertyKey = RESOLVED_FILE_DIRECTORY_AS_WORKING_DIR, defaultValue = true) final Boolean srdaws)
+            throws WuicException, IOException {
+        super.init(command, inputNutType, outputNutType, separator, libs, srdaws);
     }
 }
