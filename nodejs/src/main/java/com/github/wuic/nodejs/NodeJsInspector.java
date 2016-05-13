@@ -42,9 +42,13 @@ import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
 import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.github.wuic.config.ObjectBuilderInspector;
+import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.core.CommandLineConverterEngine;
+import com.github.wuic.engine.core.CommandLineConverterEngine.CommandLineInfo;
 import com.github.wuic.exception.WuicException;
+import com.github.wuic.util.BiFunction;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.NutDiskStore;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -53,8 +57,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -62,9 +69,9 @@ import java.util.Set;
 
 /**
  * <p>
- * This inspector installs {@code Node.JS} and {@code NPM} in the {@link com.github.wuic.util.NutDiskStore#getWorkingDirectory()}
- * as soon as a {@link CommandLineConverterEngine} is created. This guarantee to any {@link CommandLineConverterEngine}
- * that any command will be executed in a context where 'npm' command is available.
+ * This inspector decorates any created {@link CommandLineConverterEngine} with an executor that installs {@code Node.JS}
+ * and {@code NPM} in the parent of given {@link CommandLineInfo#compilationResult}. This guarantee to any
+ * {@link CommandLineConverterEngine} that any command will be executed in a context where 'npm' command is available.
  * </p>
  *
  * @author Guillaume DROUET
@@ -226,25 +233,71 @@ public class NodeJsInspector implements ObjectBuilderInspector {
     @Override
     public <T> T inspect(final T object) {
         final CommandLineConverterEngine engine = CommandLineConverterEngine.class.cast(object);
-        final File workingDir = engine.getWorkingDirectory();
-
-        // Node is installed in "node" folder
-        engine.setWorkingDirectory(new File(workingDir, "node"));
-
-        // Already installed
-        if (installed.contains(workingDir.getAbsolutePath())) {
-            return object;
-        }
-
-        final FrontendPluginFactory factory = new FrontendPluginFactory(workingDir, workingDir);
-
-        try {
-            factory.getNodeAndNPMInstaller(new ProxyConfig(proxies)).install(nodeVersion, npmVersion, nodeDownloadRoot, npmDownloadRoot);
-            installed.add(workingDir.getAbsolutePath());
-        } catch (InstallationException ie) {
-            WuicException.throwBadStateException(ie);
-        }
-
+        engine.setExecutor(new NodeJsExecutor(engine.getExecutor()));
         return object;
+    }
+
+    /**
+     * <p>
+     * This executor wraps any new {@link CommandLineConverterEngine} executor to make sure NodeJS is installed before
+     * a command is executed.
+     * </p>
+     *
+     * @author Guillaume DROUET
+     * @since 0.5.3
+     */
+    private class NodeJsExecutor implements BiFunction<CommandLineInfo, EngineRequest, Boolean> {
+
+        /**
+         * Wrapped executor.
+         */
+        private BiFunction<CommandLineInfo, EngineRequest, Boolean> wrap;
+
+        /**
+         * <p>
+         * Builds a new instance.
+         * </p>
+         *
+         * @param wrap the wrapped executor
+         */
+        private NodeJsExecutor(final BiFunction<CommandLineInfo, EngineRequest, Boolean> wrap) {
+            this.wrap = wrap;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Boolean apply(final CommandLineInfo commandLineInfo, final EngineRequest engineRequest) {
+            final File workingDir = NutDiskStore.INSTANCE.getWorkingDirectory();
+
+            // Not already installed
+            if (!installed.contains(workingDir.getAbsolutePath())) {
+                final FrontendPluginFactory factory = new FrontendPluginFactory(workingDir, workingDir);
+                OutputStream outputStream = null;
+
+                try {
+                    // NodeJS will be installed in "node" directory, script will be referenced from the working directory
+                    factory.getNodeAndNPMInstaller(new ProxyConfig(proxies)).install(nodeVersion, npmVersion, nodeDownloadRoot, npmDownloadRoot);
+                    outputStream = new FileOutputStream(new File(commandLineInfo.getCompilationResult().getParent(), "npm"));
+
+                    if (CommandLineConverterEngine.IS_WINDOWS) {
+                        // Windows script
+                        outputStream.write((IOUtils.mergePath(workingDir.getAbsolutePath(), "node/npm.cmd") + " $@").getBytes());
+                    } else {
+                        // Linux script
+                        outputStream.write((IOUtils.mergePath(workingDir.getAbsolutePath(), "node/npm") + " %*").getBytes());
+                    }
+                } catch (InstallationException ie) {
+                    WuicException.throwBadStateException(ie);
+                } catch (IOException ioe) {
+                    logger.error("Unable to create scripts for Node.JS", ioe);
+                } finally {
+                    IOUtils.close(outputStream);
+                }
+            }
+
+            return wrap.apply(commandLineInfo, engineRequest);
+        }
     }
 }

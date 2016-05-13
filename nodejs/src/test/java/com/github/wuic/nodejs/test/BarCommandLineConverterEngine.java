@@ -46,7 +46,6 @@ import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.core.CommandLineConverterEngine;
 import com.github.wuic.exception.WuicException;
 
-import java.io.File;
 import java.io.IOException;
 
 import static com.github.wuic.ApplicationConfig.RESOLVED_FILE_DIRECTORY_AS_WORKING_DIR;
@@ -80,6 +79,5 @@ public class BarCommandLineConverterEngine extends CommandLineConverterEngine {
                      @BooleanConfigParam(propertyKey = RESOLVED_FILE_DIRECTORY_AS_WORKING_DIR, defaultValue = true) final Boolean srdaws)
             throws WuicException, IOException {
         super.init(command, inputNutType, outputNutType, separator, libs, srdaws);
-        setWorkingDirectory(new File(getWorkingDirectory(), getClass().getSimpleName()));
     }
 }
