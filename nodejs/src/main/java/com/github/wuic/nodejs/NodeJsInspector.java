@@ -174,7 +174,7 @@ public class NodeJsInspector implements ObjectBuilderInspector, Runnable {
             installProxies(config);
 
             // Download and install npm
-            WuicScheduledThreadPool.getInstance().executeAsap(this);
+            WuicScheduledThreadPool.INSTANCE.executeAsap(this);
         } finally {
             IOUtils.close(is);
         }
