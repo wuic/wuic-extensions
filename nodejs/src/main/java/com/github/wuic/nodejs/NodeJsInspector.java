@@ -49,6 +49,7 @@ import com.github.wuic.exception.WuicException;
 import com.github.wuic.util.BiFunction;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.NutDiskStore;
+import com.github.wuic.util.WuicScheduledThreadPool;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -78,12 +79,17 @@ import java.util.Set;
  * @since 0.5.3
  */
 @ObjectBuilderInspector.InspectedType(CommandLineConverterEngine.class)
-public class NodeJsInspector implements ObjectBuilderInspector {
+public class NodeJsInspector implements ObjectBuilderInspector, Runnable {
 
     /**
      * Configuration file location in classpath.
      */
     public static final String CONFIG_FILE_PATH = '/' + NodeJsInspector.class.getName() + ".config.json";
+
+    /**
+     * Contains all paths where installation is already done.
+     */
+    private static final Set<String> INSTALLED = new HashSet<String>();
 
     /**
      * Mandatory node version.
@@ -131,17 +137,11 @@ public class NodeJsInspector implements ObjectBuilderInspector {
     private final List<ProxyConfig.Proxy> proxies;
 
     /**
-     * Contains all paths where installation is already done.
-     */
-    private Set<String> installed;
-
-    /**
      * <p>
      * Builds a new instance.
      * </p>
      */
     public NodeJsInspector() {
-        installed = new HashSet<String>();
         InputStream is = null;
 
         try {
@@ -172,6 +172,9 @@ public class NodeJsInspector implements ObjectBuilderInspector {
             npmDownloadRoot = read(config, "npmDownloadRoot");
             proxies = new ArrayList<ProxyConfig.Proxy>();
             installProxies(config);
+
+            // Download and install npm
+            WuicScheduledThreadPool.getInstance().executeAsap(this);
         } finally {
             IOUtils.close(is);
         }
@@ -228,6 +231,35 @@ public class NodeJsInspector implements ObjectBuilderInspector {
     }
 
     /**
+     * <p>
+     * Checks if node is already installed in the current working directory and download it if needed.
+     * </p>
+     *
+     * @return the installation directory
+     */
+    private File installNpm() {
+        final File workingDir = NutDiskStore.INSTANCE.getWorkingDirectory();
+
+        synchronized (INSTALLED) {
+
+            // Not already installed
+            if (!INSTALLED.contains(workingDir.getAbsolutePath())) {
+                final FrontendPluginFactory factory = new FrontendPluginFactory(workingDir, workingDir);
+
+                try {
+                    // NodeJS will be installed in "node" directory, script will be referenced from the working directory
+                    factory.getNodeAndNPMInstaller(new ProxyConfig(proxies)).install(nodeVersion, npmVersion, nodeDownloadRoot, npmDownloadRoot);
+                    INSTALLED.add(workingDir.getAbsolutePath());
+                } catch (InstallationException ie) {
+                    WuicException.throwBadStateException(ie);
+                }
+            }
+        }
+
+        return workingDir;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -235,6 +267,14 @@ public class NodeJsInspector implements ObjectBuilderInspector {
         final CommandLineConverterEngine engine = CommandLineConverterEngine.class.cast(object);
         engine.setExecutor(new NodeJsExecutor(engine.getExecutor()));
         return object;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void run() {
+        installNpm();
     }
 
     /**
@@ -269,17 +309,17 @@ public class NodeJsInspector implements ObjectBuilderInspector {
          */
         @Override
         public Boolean apply(final CommandLineInfo commandLineInfo, final EngineRequest engineRequest) {
-            final File workingDir = NutDiskStore.INSTANCE.getWorkingDirectory();
+            // Download and install npm
+            final File workingDir = installNpm();
 
-            // Not already installed
-            if (!installed.contains(workingDir.getAbsolutePath())) {
-                final FrontendPluginFactory factory = new FrontendPluginFactory(workingDir, workingDir);
+            // Installs an "npm" script if needed
+            final File bin = new File(commandLineInfo.getCompilationResult().getParent(), "npm");
+
+            if (!bin.exists()) {
                 OutputStream outputStream = null;
 
                 try {
-                    // NodeJS will be installed in "node" directory, script will be referenced from the working directory
-                    factory.getNodeAndNPMInstaller(new ProxyConfig(proxies)).install(nodeVersion, npmVersion, nodeDownloadRoot, npmDownloadRoot);
-                    outputStream = new FileOutputStream(new File(commandLineInfo.getCompilationResult().getParent(), "npm"));
+                    outputStream = new FileOutputStream(bin);
 
                     if (CommandLineConverterEngine.IS_WINDOWS) {
                         // Windows script
@@ -288,8 +328,6 @@ public class NodeJsInspector implements ObjectBuilderInspector {
                         // Linux script
                         outputStream.write((IOUtils.mergePath(workingDir.getAbsolutePath(), "node/npm") + " %*").getBytes());
                     }
-                } catch (InstallationException ie) {
-                    WuicException.throwBadStateException(ie);
                 } catch (IOException ioe) {
                     logger.error("Unable to create scripts for Node.JS", ioe);
                 } finally {
