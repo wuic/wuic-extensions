@@ -43,7 +43,7 @@ import com.github.wuic.NutType;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.Config;
 import com.github.wuic.config.IntegerConfigParam;
-import com.github.wuic.config.StringConfigParam;
+import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
@@ -86,11 +86,6 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
     private static final String[] TO_ESCAPE = {"n", "t", "r"};
     
     /**
-     * Charset for compressed files.
-     */
-    private String charset;
-
-    /**
      * Position of line break insertion (-1 if not \n should be inserted).
      */
     private Integer lineBreakPos;
@@ -120,7 +115,6 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
      * Initializes a new instance.
      * </p>
      *
-     * @param cs charset of files to compress
      * @param lbp line break position
      * @param disableOptim disable micro optimizations
      * @param verb be verbose when compressing
@@ -128,14 +122,12 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
      * @param obfuscate obfuscate the code or not
      */
     @Config
-    public void init(@StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "") final String cs,
-            @IntegerConfigParam(propertyKey = ApplicationConfig.LINE_BREAK_POS, defaultValue = -1) final Integer lbp,
+    public void init(@IntegerConfigParam(propertyKey = ApplicationConfig.LINE_BREAK_POS, defaultValue = -1) final Integer lbp,
             @BooleanConfigParam(propertyKey = ApplicationConfig.DISABLE_OPTIMIZATIONS, defaultValue = true) final Boolean disableOptim,
             @BooleanConfigParam(propertyKey = ApplicationConfig.VERBOSE, defaultValue = false) final Boolean verb,
             @BooleanConfigParam(propertyKey = ApplicationConfig.PRESERVE_SEMICOLONS, defaultValue = true) final Boolean keepSemiColons,
             @BooleanConfigParam(propertyKey = ApplicationConfig.OBFUSCATE, defaultValue = true) final Boolean obfuscate) {
         setRenameExtensionPrefix(".min");
-        charset = IOUtils.checkCharset(cs);
         lineBreakPos = lbp;
         disableOptimization = disableOptim;
         verbose = verb;
@@ -147,7 +139,7 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public void transform(final InputStream source, final OutputStream target, final ConvertibleNut convertibleNut)
+    public void transform(final InputStream source, final OutputStream target, final ConvertibleNut convertibleNut, final EngineRequest request)
             throws IOException {
         Reader in = null;
         StringWriter out = null;
@@ -155,7 +147,7 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
         
         try {
             // Stream to read from the source
-            in = new InputStreamReader(switchSpecialChars(source, Boolean.FALSE), charset);
+            in = new InputStreamReader(switchSpecialChars(source, Boolean.FALSE, request.getCharset()), request.getCharset());
             
             // Create the compressor using the source stream
             final JavaScriptCompressor compressor =
@@ -178,10 +170,10 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
             
             // Stream to write into the target with backed special characters
             final InputStream bis = new ByteArrayInputStream(out.getBuffer().toString().getBytes());
-            final InputStream restore = switchSpecialChars(bis, Boolean.TRUE);
+            final InputStream restore = switchSpecialChars(bis, Boolean.TRUE, request.getCharset());
             targetOut = new OutputStreamWriter(target);
 
-            IOUtils.copyStreamToWriterIoe(restore, targetOut, charset);
+            IOUtils.copyStreamToWriterIoe(restore, targetOut, request.getCharset());
         } finally {
             IOUtils.close(in);
             IOUtils.close(out);
@@ -198,10 +190,11 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
      * 
      * @param source the source to escape
      * @param restore flag that indicates if we escape or restore
+     * @param charset the charset
      * @return the result
      * @throws IOException if an I/O error occurs
      */
-    private InputStream switchSpecialChars(final InputStream source, final Boolean restore) throws IOException {
+    private InputStream switchSpecialChars(final InputStream source, final Boolean restore, final String charset) throws IOException {
         final Reader parser = new InputStreamReader(source, charset);
         ByteArrayOutputStream streamParser = null;
         

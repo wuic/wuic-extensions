@@ -41,6 +41,7 @@ package com.github.wuic.engine.htmlcompressor;
 import com.github.wuic.NutType;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.Config;
+import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
@@ -106,7 +107,7 @@ public class HtmlCompressorEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public void transform(final InputStream is, final OutputStream os, final ConvertibleNut convertible) throws IOException {
-        os.write(compressor.compress(IOUtils.readString(new InputStreamReader(is))).getBytes());
+    public void transform(final InputStream is, final OutputStream os, final ConvertibleNut convertible, final EngineRequest request) throws IOException {
+        os.write(compressor.compress(IOUtils.readString(new InputStreamReader(is, request.getCharset()))).getBytes());
     }
 }

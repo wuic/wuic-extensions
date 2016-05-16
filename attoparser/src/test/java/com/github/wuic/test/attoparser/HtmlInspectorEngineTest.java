@@ -158,7 +158,7 @@ public class HtmlInspectorEngineTest {
 
         final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx).chains(chains).processContext(ProcessContext.DEFAULT).build();
         final HtmlInspectorEngine h = new HtmlInspectorEngine();
-        h.init(true, "UTF-8", true);
+        h.init(true, true);
         final List<ConvertibleNut> nuts = h.parse(request);
 
         Assert.assertEquals(1, nuts.size());
@@ -204,7 +204,7 @@ public class HtmlInspectorEngineTest {
         chains.put(NutType.PNG, e);
         final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx).chains(chains).processContext(ProcessContext.DEFAULT).build();
         final HtmlInspectorEngine h = new HtmlInspectorEngine();
-        h.init(true, "UTF-8", true);
+        h.init(true, true);
         final List<ConvertibleNut> nuts = h.parse(request);
         Assert.assertEquals(1, nuts.size());
         final String html = NutUtils.readTransform(nuts.get(0));
@@ -230,7 +230,7 @@ public class HtmlInspectorEngineTest {
         final String script = "var j; for (j = 0; < 100; j++) { console.log(j);}";
         final byte[] bytes = ("<script>" + script + "</script>").getBytes();
         final HtmlInspectorEngine engine = new HtmlInspectorEngine();
-        engine.init(true, "UTF-8", true);
+        engine.init(true, true);
         ConvertibleNut nut = new ByteArrayNut(bytes, "index.html", NutType.HTML, 1L, true);
         final ConvertibleNut finalNut = nut;
         final NutDao dao = Mockito.mock(NutDao.class);

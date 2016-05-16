@@ -42,7 +42,7 @@ import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.config.Config;
 import com.github.wuic.config.IntegerConfigParam;
-import com.github.wuic.config.StringConfigParam;
+import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
@@ -72,11 +72,6 @@ import java.util.List;
 public class YuiCompressorCssEngine extends AbstractCompressorEngine {
 
     /**
-     * Charset of processed files.
-     */
-    private String charset;
-
-    /**
      * Position of break line (-1 if not \n should be inserted).
      */
     private Integer lineBreakPos;
@@ -86,14 +81,11 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
      * Initializes a new instance.
      * </p>
      *
-     * @param cs the char set
      * @param lbp the line break position
      */
     @Config
-    public void init( @StringConfigParam(propertyKey = ApplicationConfig.CHARSET, defaultValue = "") final String cs,
-            @IntegerConfigParam(propertyKey = ApplicationConfig.LINE_BREAK_POS, defaultValue = -1) final Integer lbp) {
+    public void init(@IntegerConfigParam(propertyKey = ApplicationConfig.LINE_BREAK_POS, defaultValue = -1) final Integer lbp) {
         setRenameExtensionPrefix(".min");
-        charset = IOUtils.checkCharset(cs);
         lineBreakPos = lbp;
     }
 
@@ -101,14 +93,14 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public void transform(final InputStream source, final OutputStream target, final ConvertibleNut convertibleNut)
+    public void transform(final InputStream source, final OutputStream target, final ConvertibleNut convertibleNut, final EngineRequest request)
             throws IOException {
         Reader in = null;
         Writer out = null;
         
         try {
             // Stream to read from the source
-            in = new InputStreamReader(source, charset);
+            in = new InputStreamReader(source, request.getCharset());
      
             // Create the compressor using the source stream
             final CssCompressor compressor = new CssCompressor(in);
@@ -118,7 +110,7 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
             in = null;
             
             // Stream to write into the target
-            out = new OutputStreamWriter(target, charset);
+            out = new OutputStreamWriter(target, request.getCharset());
             
             // Compress the script into the output target
             compressor.compress(out, lineBreakPos);
