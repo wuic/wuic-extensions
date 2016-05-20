@@ -143,16 +143,14 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * </p>
      *
      * @param path default the path
-     * @param basePathAsSysProp {@code true} if the base path is a system property
      * @param proxies proxy URIs serving the nut
      * @param pollingSeconds interval in seconds for polling feature (-1 to disable)
      */
     @Config
     public void init(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
-                     @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
                      @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxies,
                      @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingSeconds) {
-        super.init(path, basePathAsSysProp, proxies, pollingSeconds);
+        super.init(path, proxies, pollingSeconds);
     }
 
     /**

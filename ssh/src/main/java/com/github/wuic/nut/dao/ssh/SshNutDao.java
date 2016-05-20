@@ -119,10 +119,9 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      */
     @Config
     public void init(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = ".") final String path,
-                     @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
                      @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxyUris,
                      @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingInterval) {
-        super.init(path, basePathAsSysProp, proxyUris, pollingInterval);
+        super.init(path, proxyUris, pollingInterval);
     }
 
     /**

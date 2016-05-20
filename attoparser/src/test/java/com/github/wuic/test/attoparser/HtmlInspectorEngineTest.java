@@ -140,7 +140,7 @@ public class HtmlInspectorEngineTest {
     public void parseTest() throws Exception {
         final Context ctx = newContext();
         final DiskNutDao dao = new DiskNutDao();
-        dao.init(getClass().getResource("/html").getFile(), false, null, -1, false, false);
+        dao.init(getClass().getResource("/html").getFile(), null, -1, false, false);
         dao.init(false, true, null);
         final NutsHeap heap = new NutsHeap(this, Arrays.asList("index.html"), dao, "heap");
         heap.checkFiles(ProcessContext.DEFAULT);
@@ -190,7 +190,7 @@ public class HtmlInspectorEngineTest {
     public void imageSequenceTest() throws Exception {
         final Context ctx = newContext();
         final DiskNutDao dao = new DiskNutDao();
-        dao.init(getClass().getResource("/html").getFile(), false, null, -1, false, false);
+        dao.init(getClass().getResource("/html").getFile(), null, -1, false, false);
         dao.init(false, true, null);
         final NutsHeap heap = new NutsHeap(this, Arrays.asList("img-sequence.html"), dao, "heap");
         heap.checkFiles(ProcessContext.DEFAULT);

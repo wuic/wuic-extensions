@@ -38,14 +38,13 @@
 
 package com.github.wuic.ssh.test;
 
+import com.github.wuic.ApplicationConfig;
 import com.github.wuic.ProcessContext;
-import com.github.wuic.context.Context;
-import com.github.wuic.context.ContextBuilder;
+import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.IOUtils;
-import com.github.wuic.util.UrlUtils;
 import com.github.wuic.xml.FileXmlContextBuilderConfigurator;
 import com.jcraft.jsch.JSchException;
 import org.apache.sshd.SshServer;
@@ -131,7 +130,7 @@ public class SshTest {
 
         // Copy nuts
         final String basePath = SshTest.class.getResource("/chosen.css").getFile();
-        System.setProperty(SshTest.class.getName() + ".basePath", basePath.substring(0, basePath.lastIndexOf("/")));
+        System.setProperty(ApplicationConfig.BASE_PATH, basePath.substring(0, basePath.lastIndexOf("/")));
     }
 
     /**
@@ -159,10 +158,10 @@ public class SshTest {
      */
     @Test(timeout = 60000)
     public void sshTest() throws JSchException, IOException, InterruptedException, WuicException, JAXBException {
-        final ContextBuilder builder = new ContextBuilder().configureDefault();
-        new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")).configure(builder);
-        final Context facade = builder.build();
-        final List<ConvertibleNut> group = facade.process("", "css-imagecss-image", UrlUtils.urlProviderFactory(), ProcessContext.DEFAULT);
+        final List<ConvertibleNut> group = new WuicFacadeBuilder()
+                .contextBuilderConfigurators(new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")))
+                .build()
+                .runWorkflow("css-imagecss-image", ProcessContext.DEFAULT);
 
         Assert.assertFalse(group.isEmpty());
         InputStream is;

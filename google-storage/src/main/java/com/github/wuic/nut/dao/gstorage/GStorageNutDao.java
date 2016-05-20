@@ -122,20 +122,18 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * @param bucket                    the bucket name
      * @param accountId                 the Google user access ID
      * @param path                      the root path
-     * @param basePathAsSysProp         {@code true} if the base path is a system property
      * @param pollingInterval           the interval for polling operations in seconds (-1 to deactivate)
      * @param proxyUris                 the proxies URIs in front of the nut
      * @param keyFile                   the private key path location
      */
     @Config
     public void init(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
-                     @BooleanConfigParam(defaultValue = false, propertyKey = BASE_PATH_AS_SYS_PROP) final Boolean basePathAsSysProp,
                      @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxyUris,
                      @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingInterval,
                      @StringConfigParam(defaultValue = "", propertyKey = CLOUD_BUCKET) final String bucket,
                      @StringConfigParam(defaultValue = "", propertyKey = LOGIN) final String accountId,
                      @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String keyFile) {
-        init(path, basePathAsSysProp, proxyUris, pollingInterval);
+        init(path, proxyUris, pollingInterval);
         bucketName = bucket;
         privateKeyFile = keyFile;
         serviceAccountId = accountId;

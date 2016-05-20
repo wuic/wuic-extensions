@@ -131,7 +131,7 @@ public class S3Test {
     public void s3Test() throws Exception {
         final S3NutDao d = new S3NutDao();
         d.init("wuic", "login", "pwd", false);
-        d.init("/path", false, null, -1);
+        d.init("/path", null, -1);
         d.init(false, true, null);
 
         // Create a real object and mock its initClient method
