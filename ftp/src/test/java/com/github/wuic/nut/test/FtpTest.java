@@ -51,7 +51,7 @@ import com.github.wuic.nut.dao.ftp.FtpNutDao;
 import com.github.wuic.test.TestHelper;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.UrlUtils;
-import com.github.wuic.xml.FileXmlContextBuilderConfigurator;
+import com.github.wuic.config.bean.xml.FileXmlContextBuilderConfigurator;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.FtpException;

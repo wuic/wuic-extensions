@@ -83,7 +83,7 @@ public class SpringTutorial {
     public WuicFacade wuicFacade() throws WuicException {
         return new WuicFacadeBuilder()
                 .contextPath("/resources/")
-                .wuicXmlPath(getClass().getResource("/wuic.xml"))
+                .wuicConfigurationPath(getClass().getResource("/wuic.xml"))
                 .build();
     }
     // end::SpringWuicFacade[]

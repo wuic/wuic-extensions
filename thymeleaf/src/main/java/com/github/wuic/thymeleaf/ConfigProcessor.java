@@ -44,7 +44,7 @@ import com.github.wuic.WuicFacade;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.servlet.HttpUtil;
 import com.github.wuic.servlet.ServletProcessContext;
-import com.github.wuic.xml.ReaderXmlContextBuilderConfigurator;
+import com.github.wuic.config.bean.xml.ReaderXmlContextBuilderConfigurator;
 import org.thymeleaf.Arguments;
 import org.thymeleaf.context.IWebContext;
 import org.thymeleaf.dom.Element;
@@ -102,7 +102,7 @@ public class ConfigProcessor extends AbstractRemovalElementProcessor {
             final Reader reader = new StringReader(DOMUtils.getHtml5For(element.getFirstElementChild()));
             final HttpServletRequest req = IWebContext.class.cast(arguments.getContext()).getHttpServletRequest();
             final ProcessContext pc = new ServletProcessContext(req);
-            wuicFacade.configure(new ReaderXmlContextBuilderConfigurator(
+            wuicFacade.configure(new ReaderXmlContextBuilderConfigurator.Simple(
                     reader,
                     HttpUtil.INSTANCE.computeUniqueTag(req),
                     wuicFacade.allowsMultipleConfigInTagSupport(),

@@ -43,9 +43,8 @@ import net.sf.ehcache.Cache;
 
 /**
  * <p>
- * This interface defines an object which provides a {@code Cache} from EHCache
- * framework. Applications based on WUIC can defines through their wuic.xml
- * configuration path their own implementation of this interface.
+ * This interface defines an object which provides a {@code Cache} from EHCache framework.
+ * Applications based on WUIC can defines through their configuration path their own implementation of this interface.
  * </p>
  * 
  * <p>

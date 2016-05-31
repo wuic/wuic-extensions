@@ -45,7 +45,7 @@ import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.IOUtils;
-import com.github.wuic.xml.FileXmlContextBuilderConfigurator;
+import com.github.wuic.config.bean.xml.FileXmlContextBuilderConfigurator;
 import com.jcraft.jsch.JSchException;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
