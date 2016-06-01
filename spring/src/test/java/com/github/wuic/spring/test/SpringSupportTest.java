@@ -131,6 +131,18 @@ public class SpringSupportTest {
 
         /**
          * <p>
+         * Builds a new {@link ObjectBuilderInspector} to be injected.
+         * </p>
+         *
+         * @return the bean
+         */
+        @Bean
+        public ObjectBuilderInspector objectBuilderInspector() {
+            return new Inspector();
+        }
+
+        /**
+         * <p>
          * Creates a new {@link WuicFacadeBuilderFactory}.
          * </p>
          *
@@ -174,6 +186,31 @@ public class SpringSupportTest {
             });
 
             return super.internalConfigure(ctxBuilder);
+        }
+    }
+
+    /**
+     * <p>
+     * A inspector injected via spring support.
+     * </p>
+     *
+     * @author Guillaume DROUET
+     * @since 0.5.3
+     */
+    public static class Inspector implements ObjectBuilderInspector {
+
+        /**
+         * Number of inspection.
+         */
+        private int count;
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public <T> T inspect(final T object) {
+            count++;
+            return object;
         }
     }
 
@@ -232,6 +269,12 @@ public class SpringSupportTest {
      */
     @Autowired
     private Configurator configurator;
+
+    /**
+     * The inspector bean.
+     */
+    @Autowired
+    private Inspector inspector;
 
     /**
      * Creates facade and registry.
@@ -312,5 +355,6 @@ public class SpringSupportTest {
     public void beanSupportTest() throws WuicException {
         wuicFacadeBuilderFactory.create().build();
         Assert.assertNotEquals(0, configurator.count);
+        Assert.assertNotEquals(0, inspector.count);
     }
 }

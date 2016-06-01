@@ -39,6 +39,7 @@
 package com.github.wuic.spring;
 
 import com.github.wuic.WuicFacadeBuilder;
+import com.github.wuic.config.ObjectBuilderInspector;
 import com.github.wuic.context.ContextBuilderConfigurator;
 import com.github.wuic.servlet.WuicServletContextListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +67,12 @@ public class WuicFacadeBuilderFactory {
     private List<ContextBuilderConfigurator> configurators;
 
     /**
+     * The {@link ObjectBuilderInspector} declared as bean.
+     */
+    @Autowired(required = false)
+    private List<ObjectBuilderInspector> inspectors;
+
+    /**
      * The servlet context.
      */
     @Autowired
@@ -73,8 +80,8 @@ public class WuicFacadeBuilderFactory {
 
     /**
      * <p>
-     * Creates a new {@link WuicFacadeBuilder}.
-     * If any {@link ContextBuilderConfigurator} is detected in the spring application context, it's added to the created builder.
+     * Creates a new {@link WuicFacadeBuilder}. If any {@link ContextBuilderConfigurator} or {@link ObjectBuilderInspector}
+     * is detected in the spring application context, it's added to the created builder.
      * </p>
      *
      * @return the {@link WuicFacadeBuilder}
@@ -85,6 +92,11 @@ public class WuicFacadeBuilderFactory {
         // Additional configurators
         if (configurators != null) {
             retval.contextBuilderConfigurators(configurators.toArray(new ContextBuilderConfigurator[configurators.size()]));
+        }
+
+        // Additional inspectors
+        if (inspectors != null) {
+            retval.objectBuilderInspector(inspectors.toArray(new ObjectBuilderInspector[inspectors.size()]));
         }
 
         return retval;
