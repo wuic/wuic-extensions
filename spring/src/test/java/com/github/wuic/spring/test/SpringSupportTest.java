@@ -40,22 +40,33 @@ package com.github.wuic.spring.test;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.ProcessContext;
+import com.github.wuic.config.ObjectBuilderInspector;
 import com.github.wuic.context.ContextBuilder;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.WuicFacadeBuilder;
+import com.github.wuic.context.ContextBuilderConfigurator;
+import com.github.wuic.context.SimpleContextBuilderConfigurator;
+import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.dao.core.ClasspathNutDao;
+import com.github.wuic.servlet.WuicServletContextListener;
+import com.github.wuic.spring.WuicFacadeBuilderFactory;
 import com.github.wuic.spring.WuicPathResourceResolver;
 import com.github.wuic.spring.WuicVersionStrategy;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -66,6 +77,8 @@ import org.springframework.web.servlet.resource.ResourceResolver;
 import org.springframework.web.servlet.resource.ResourceResolverChain;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -77,8 +90,92 @@ import java.util.List;
  * @author Guillaume DROUET
  * @since 0.5.0
  */
-@RunWith(JUnit4.class)
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
 public class SpringSupportTest {
+
+    /**
+     * <p>
+     * Configuration class for test purpose.
+     * </p>
+     *
+     * @author Guillaume DROUET
+     * @since 0.5.3
+     */
+    @Configuration
+    public static class ConfigTest {
+
+        /**
+         * <p>
+         * Creates a mocked {@code ServletContext}.
+         * </p>
+         *
+         * @return the servlet context
+         */
+        @Bean
+        public ServletContext servletContext() {
+            return new MockServletContext();
+        }
+
+        /**
+         * <p>
+         * Builds a new {@link ContextBuilderConfigurator} to be injected.
+         * </p>
+         *
+         * @return the bean
+         */
+        @Bean
+        public ContextBuilderConfigurator contextBuilderConfigurator() {
+            return new Configurator();
+        }
+
+        /**
+         * <p>
+         * Creates a new {@link WuicFacadeBuilderFactory}.
+         * </p>
+         *
+         * @param servletContext the servlet context
+         * @return the bean
+         */
+        @Bean
+        public WuicFacadeBuilderFactory wuicFacadeBuilderFactory(final ServletContext servletContext) {
+            // Triggers manually context listener
+            new WuicServletContextListener().contextInitialized(new ServletContextEvent(servletContext));
+            return new WuicFacadeBuilderFactory();
+        }
+    }
+
+    /**
+     * <p>
+     * A configurator injected via spring support.
+     * </p>
+     *
+     * @author Guillaume DROUET
+     * @since 0.5.3
+     */
+    public static class Configurator extends SimpleContextBuilderConfigurator {
+
+        /**
+         * Number of inspection.
+         */
+        private int count;
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int internalConfigure(final ContextBuilder ctxBuilder) {
+            ctxBuilder.inspector(new ObjectBuilderInspector() {
+                @Override
+                public <T> T inspect(final T object) {
+                    count++;
+                    return object;
+                }
+            });
+
+            return super.internalConfigure(ctxBuilder);
+        }
+    }
 
     /**
      * Just expose the protected method.
@@ -123,6 +220,18 @@ public class SpringSupportTest {
      * Facade used during tests.
      */
     private WuicFacade wuicFacade;
+
+    /**
+     * The {@link WuicFacadeBuilderFactory}.
+     */
+    @Autowired
+    private WuicFacadeBuilderFactory wuicFacadeBuilderFactory;
+
+    /**
+     * The configurator bean.
+     */
+    @Autowired
+    private Configurator configurator;
 
     /**
      * Creates facade and registry.
@@ -190,5 +299,18 @@ public class SpringSupportTest {
 
         Assert.assertEquals("Expects four resolvers: cache, version, mocked path and path", 4, resolvers.size());
         Assert.assertEquals("foo/" + resource.lastModified() + "/aggregate.js", resolvers.get(1).resolveUrlPath("/foo/aggregate.js", null, chain));
+    }
+
+    /**
+     * <p>
+     * Tests that {@link ContextBuilderConfigurator} beans have been installed.
+     * </p>
+     *
+     * @throws WuicException if test fails
+     */
+    @Test
+    public void beanSupportTest() throws WuicException {
+        wuicFacadeBuilderFactory.create().build();
+        Assert.assertNotEquals(0, configurator.count);
     }
 }

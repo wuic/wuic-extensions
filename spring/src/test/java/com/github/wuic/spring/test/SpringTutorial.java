@@ -39,8 +39,8 @@
 package com.github.wuic.spring.test;
 
 import com.github.wuic.WuicFacade;
-import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.exception.WuicException;
+import com.github.wuic.spring.WuicFacadeBuilderFactory;
 import com.github.wuic.spring.WuicHandlerMapping;
 import com.github.wuic.spring.WuicPathResourceResolver;
 import com.github.wuic.spring.WuicVersionStrategy;
@@ -80,10 +80,15 @@ public class SpringTutorial {
     private ApplicationContext applicationContext;
 
     @Bean
+    public WuicFacadeBuilderFactory wuicFacadeBuilderFactory() {
+        return new WuicFacadeBuilderFactory();
+    }
+
+    @Bean
     public WuicFacade wuicFacade() throws WuicException {
-        return new WuicFacadeBuilder()
+        return wuicFacadeBuilderFactory()
+                .create()
                 .contextPath("/resources/")
-                .wuicConfigurationPath(getClass().getResource("/wuic.xml"))
                 .build();
     }
     // end::SpringWuicFacade[]
