@@ -65,7 +65,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
@@ -81,6 +81,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <p>
@@ -91,6 +92,7 @@ import java.util.List;
  * @since 0.5.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
+@TestPropertySource(properties = ApplicationConfig.INSPECT + "=false")
 @ContextConfiguration
 public class SpringSupportTest {
 
@@ -277,6 +279,12 @@ public class SpringSupportTest {
     private Inspector inspector;
 
     /**
+     * The servlet context.
+     */
+    @Autowired
+    private ServletContext servletContext;
+
+    /**
      * Creates facade and registry.
      *
      * @throws Exception if test fails
@@ -356,5 +364,44 @@ public class SpringSupportTest {
         wuicFacadeBuilderFactory.create().build();
         Assert.assertNotEquals(0, configurator.count);
         Assert.assertNotEquals(0, inspector.count);
+    }
+
+    /**
+     * <p>
+     * Tests that spring property sources are used.
+     * </p>
+     *
+     * @throws WuicException if test fails
+     */
+    @Test
+    public void propertySupportTest() throws WuicException  {
+        final AtomicInteger countInspect = new AtomicInteger();
+        final AtomicInteger countAggregate = new AtomicInteger();
+
+        // We add this custom resolver after the spring resolver so if a supplied property is resolved from spring resolver, this instance is never called
+        WuicServletContextListener.getWuicFacadeBuilder(servletContext).addPropertyResolver(new com.github.wuic.util.PropertyResolver() {
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public String resolveProperty(final String key) {
+                if (ApplicationConfig.AGGREGATE.equals(key)) {
+                    countAggregate.incrementAndGet();
+                } else if (ApplicationConfig.INSPECT.equals(key)) {
+                    countInspect.incrementAndGet();
+                }
+
+                return null;
+            }
+        });
+
+        wuicFacadeBuilderFactory.create().build();
+
+        // inspect property is defined in spring properties
+        Assert.assertEquals(0, countInspect.get());
+
+        // aggregate property is not defined in spring properties
+        Assert.assertNotEquals(0, countAggregate.get());
     }
 }

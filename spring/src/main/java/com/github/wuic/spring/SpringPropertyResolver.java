@@ -38,63 +38,40 @@
 
 package com.github.wuic.spring;
 
-import com.github.wuic.WuicFacadeBuilder;
-import com.github.wuic.config.ObjectBuilderInspector;
-import com.github.wuic.context.ContextBuilderConfigurator;
-import com.github.wuic.servlet.WuicServletContextListener;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
-
-import javax.servlet.ServletContext;
-import java.util.Map;
+import com.github.wuic.util.PropertyResolver;
+import org.springframework.core.env.Environment;
 
 /**
  * <p>
- * This class creates a {@link WuicFacadeBuilder} based on the instance created by {@link WuicServletContextListener}
- * and makes additional configuration according to components discovered in spring context.
+ * This {@link PropertyResolver} relies on a spring {@code Environment} to retrieve a property.
  * </p>
  *
  * @author Guillaume DROUET
  * @since 0.5.3
  */
-@Component
-public class WuicFacadeBuilderFactory {
+public class SpringPropertyResolver implements PropertyResolver {
 
     /**
-     * The servlet context.
+     * The environment.
      */
-    @Autowired
-    private ServletContext servletContext;
-
-    /**
-     * Application context.
-     */
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final Environment environment;
 
     /**
      * <p>
-     * Creates a new {@link WuicFacadeBuilder}. If any {@link ContextBuilderConfigurator} or {@link ObjectBuilderInspector}
-     * is detected in the spring application context, it's added to the created builder.
+     * Builds a new instance.
      * </p>
      *
-     * @return the {@link WuicFacadeBuilder}
+     * @param environment the environment
      */
-    public WuicFacadeBuilder create() {
-        final WuicFacadeBuilder retval = new WuicFacadeBuilder(WuicServletContextListener.getWuicFacadeBuilder(servletContext));
+    public SpringPropertyResolver(final Environment environment) {
+        this.environment = environment;
+    }
 
-        // Additional configurators
-        final Map<String, ContextBuilderConfigurator> configurators = applicationContext.getBeansOfType(ContextBuilderConfigurator.class);
-        retval.contextBuilderConfigurators(configurators.values().toArray(new ContextBuilderConfigurator[configurators.size()]));
-
-        // Additional inspectors
-        final Map<String, ObjectBuilderInspector> inspectors = applicationContext.getBeansOfType(ObjectBuilderInspector.class);
-        retval.objectBuilderInspector(inspectors.values().toArray(new ObjectBuilderInspector[inspectors.size()]));
-
-        // Inject properties
-        retval.addPropertyResolver(new SpringPropertyResolver(applicationContext.getEnvironment()));
-
-        return retval;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String resolveProperty(final String key) {
+        return environment.getProperty(key);
     }
 }
