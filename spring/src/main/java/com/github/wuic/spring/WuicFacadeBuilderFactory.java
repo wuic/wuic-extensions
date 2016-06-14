@@ -95,6 +95,9 @@ public class WuicFacadeBuilderFactory {
         // Inject properties
         retval.addPropertyResolver(new SpringPropertyResolver(applicationContext.getEnvironment()));
 
+        // Additional profiles
+        retval.contextBuilder().enableProfile(applicationContext.getEnvironment().getActiveProfiles()).toFacade();
+
         return retval;
     }
 }
