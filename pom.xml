@@ -25,6 +25,7 @@
         <module>http2-jetty</module>
         <module>nodejs</module>
         <module>attoparser</module>
+        <module>webjars</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -101,6 +102,13 @@
                 <groupId>com.github.wuic</groupId>
                 <artifactId>wuic-servlet</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <!-- webjars -->
+            <dependency>
+                <groupId>org.webjars</groupId>
+                <artifactId>webjars-locator</artifactId>
+                <version>${webjars.version}</version>
             </dependency>
 
             <!-- For engine and samples using YUICompressor -->
@@ -262,5 +270,6 @@
         <trireme.version>0.8.5</trireme.version>
         <jetty.version>9.3.0.M2</jetty.version>
         <frontend-plugin-core.version>0.0.26</frontend-plugin-core.version>
+        <webjars.version>0.31</webjars.version>
     </properties>
 </project>
