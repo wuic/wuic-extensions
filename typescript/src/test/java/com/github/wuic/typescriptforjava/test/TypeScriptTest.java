@@ -61,6 +61,7 @@ import com.github.wuic.util.FutureLong;
 import com.github.wuic.util.Pipe;
 import org.junit.Assert;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.slf4j.Logger;
@@ -92,6 +93,12 @@ public class TypeScriptTest {
      */
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     /**
      * Logger.
@@ -131,7 +138,7 @@ public class TypeScriptTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void compileTest() throws Exception {
         final File parent = temporaryFolder.newFolder("parent");
         NutsHeap heap = mockHeap(parent);
@@ -170,7 +177,7 @@ public class TypeScriptTest {
      * @throws IOException if test succeed
      * @throws com.github.wuic.exception.WuicException if test fails
      */
-    @Test(timeout = 60000, expected = IOException.class)
+    @Test(expected = IOException.class)
     public void compileErrorTest() throws IOException, WuicException {
         final Nut nut = mock(Nut.class);
         when(nut.getInitialName()).thenReturn("foo.ts");

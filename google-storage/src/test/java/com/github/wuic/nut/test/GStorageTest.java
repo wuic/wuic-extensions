@@ -54,7 +54,9 @@ import com.github.wuic.nut.dao.gstorage.GStorageNutDao;
 import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.util.IOUtils;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -80,13 +82,19 @@ import static org.mockito.Mockito.when;
 public class GStorageTest {
 
     /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+    
+    /**
      * <p>
      * Test builder.
      * </p>
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void builderTest() throws Exception {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, NutDaoService.DEFAULT_SCAN_PACKAGE);
         final ObjectBuilder<NutDao> builder = factory.create("GStorageNutDaoBuilder");
@@ -104,7 +112,7 @@ public class GStorageTest {
      * </p>
      *
      */
-    @Test(timeout = 60000, expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void builderWithBadPropertyTest() {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, GStorageNutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create("GStorageNutDaoBuilder");
@@ -117,7 +125,7 @@ public class GStorageTest {
      * Tests the Google Storage access.
      * </p>
      */
-    @Test(timeout = 60000)
+    @Test
     public void gStorageTest() throws Exception {
         final NutsHeap nutsHeap = mock(NutsHeap.class);
         final byte[] array = ".cloud { text-align : justify;}".getBytes();

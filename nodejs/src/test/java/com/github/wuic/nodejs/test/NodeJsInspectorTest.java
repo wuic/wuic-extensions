@@ -48,7 +48,9 @@ import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.core.CommandLineConverterEngine;
 import com.github.wuic.nodejs.NodeJsInspector;
 import com.github.wuic.nut.dao.core.ClasspathNutDao;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -59,13 +61,19 @@ import org.junit.runners.JUnit4;
 public class NodeJsInspectorTest {
 
     /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+
+    /**
      * <p>
      * Nominal test.
      * </p>
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void nodeJsInspectorTest() throws Exception {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class,
                 CommandLineConverterEngine.class,

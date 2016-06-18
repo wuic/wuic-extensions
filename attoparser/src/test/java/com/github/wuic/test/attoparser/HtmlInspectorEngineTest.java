@@ -64,7 +64,9 @@ import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.NutUtils;
 import com.github.wuic.util.Pipe;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
@@ -104,6 +106,11 @@ public class HtmlInspectorEngineTest {
             "<link type=\"text/css\" rel=\"stylesheet\" href=\"/.*?aggregate.css\" />.*?" +
             "<script type=\"text/javascript\" src=\"/.*?aggregate.js\"></script>.*?";
 
+    /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     /**
      * <p>
@@ -136,7 +143,7 @@ public class HtmlInspectorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void parseTest() throws Exception {
         final Context ctx = newContext();
         final DiskNutDao dao = new DiskNutDao();
@@ -186,7 +193,7 @@ public class HtmlInspectorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void imageSequenceTest() throws Exception {
         final Context ctx = newContext();
         final DiskNutDao dao = new DiskNutDao();
@@ -225,7 +232,7 @@ public class HtmlInspectorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void checkInlineScript() throws Exception {
         final String script = "var j; for (j = 0; < 100; j++) { console.log(j);}";
         final byte[] bytes = ("<script>" + script + "</script>").getBytes();

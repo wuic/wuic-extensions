@@ -54,7 +54,9 @@ import com.github.wuic.spring.WuicPathResourceResolver;
 import com.github.wuic.spring.WuicVersionStrategy;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -285,6 +287,12 @@ public class SpringSupportTest {
     private ServletContext servletContext;
 
     /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+
+    /**
      * Creates facade and registry.
      *
      * @throws Exception if test fails
@@ -312,7 +320,7 @@ public class SpringSupportTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void resolverTest() throws Exception {
         registration.resourceChain(true).addResolver(new WuicPathResourceResolver(wuicFacade));
         final SimpleUrlHandlerMapping handlerMapping = (SimpleUrlHandlerMapping) this.registry.getHandlerMapping();
@@ -330,7 +338,7 @@ public class SpringSupportTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void versionTest() throws Exception {
         final ResourceResolver mock = Mockito.mock(ResourceResolver.class);
         final Resource resource = new FileSystemResource(getClass().getResource("/statics/foo.js").getFile());

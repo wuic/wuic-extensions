@@ -52,7 +52,9 @@ import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.util.FutureLong;
 import com.github.wuic.util.Pipe;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
@@ -75,11 +77,17 @@ import java.util.List;
 public class YuiCompressorEngineTest {
 
     /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+
+    /**
      * Javascript compression test.
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void javascriptTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialName()).thenReturn("foo.js");
@@ -105,7 +113,7 @@ public class YuiCompressorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void cssTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialName()).thenReturn("foo.js");

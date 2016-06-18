@@ -55,7 +55,9 @@ import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -83,6 +85,12 @@ public class SshTest {
      * SSH server.
      */
     private static SshServer sshdServer;
+
+    /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     /**
      * <p>
@@ -156,7 +164,7 @@ public class SshTest {
      * @throws IOException if any I/O error occurs
      * @throws JAXBException if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void sshTest() throws JSchException, IOException, InterruptedException, WuicException, JAXBException {
         final List<ConvertibleNut> group = new WuicFacadeBuilder()
                 .contextBuilderConfigurators(new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")))

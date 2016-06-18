@@ -63,7 +63,9 @@ import org.apache.ftpserver.usermanager.impl.BaseUser;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -90,6 +92,12 @@ public class FtpTest {
      * The FTP server.
      */
     private static FtpServer server;
+
+    /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     /**
      * <p>
@@ -143,7 +151,7 @@ public class FtpTest {
      * Tests the FTP access nuts with an embedded server.
      * </p>
      */
-    @Test(timeout = 60000)
+    @Test
     public void ftpTest() throws Exception {
         final ContextBuilder builder = new ContextBuilder().configureDefault();
         new FileXmlContextBuilderConfigurator(getClass().getResource("/wuic.xml")).configure(builder);
@@ -166,7 +174,7 @@ public class FtpTest {
      *
      * @throws IOException if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void ftpExistsTest() throws IOException {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, FtpNutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create(FtpNutDao.class.getSimpleName() + "Builder");
@@ -186,7 +194,7 @@ public class FtpTest {
      *
      * @throws IOException if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void ftpReadTest() throws IOException {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, FtpNutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create(FtpNutDao.class.getSimpleName() + "Builder");
@@ -207,7 +215,7 @@ public class FtpTest {
      *
      * @throws IOException if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void ftpReadDiskTest() throws IOException {
         final String tmp = System.getProperty("java.io.tmpdir");
         final String tmpTest = IOUtils.mergePath(tmp, "ftptest");

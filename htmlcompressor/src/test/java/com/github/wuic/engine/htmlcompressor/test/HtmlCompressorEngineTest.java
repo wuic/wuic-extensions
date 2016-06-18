@@ -53,7 +53,9 @@ import com.github.wuic.util.FutureLong;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.NutUtils;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
@@ -74,13 +76,19 @@ import java.util.List;
 public class HtmlCompressorEngineTest {
 
     /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+
+    /**
      * <p>
      * Test when compressor is enabled.
      * </p>
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void htmlCompressTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialNutType()).thenReturn(NutType.HTML);
@@ -106,7 +114,7 @@ public class HtmlCompressorEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void disableHtmlCompressTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialNutType()).thenReturn(NutType.HTML);

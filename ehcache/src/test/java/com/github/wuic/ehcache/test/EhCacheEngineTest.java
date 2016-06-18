@@ -59,7 +59,9 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
@@ -107,6 +109,12 @@ public class EhCacheEngineTest {
     }
 
     /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+
+    /**
      * Counter.
      */
     private AtomicInteger count;
@@ -150,7 +158,7 @@ public class EhCacheEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void cacheTest() throws Exception {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EhCacheEngine.class);
         final ObjectBuilder<Engine> builder = factory.create("EhCacheEngineBuilder");
@@ -177,7 +185,7 @@ public class EhCacheEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void noCacheTest() throws Exception {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EhCacheEngine.class);
         final ObjectBuilder<Engine> builder = factory.create("EhCacheEngineBuilder");
@@ -196,7 +204,7 @@ public class EhCacheEngineTest {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void invalidateCacheTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialNutType()).thenReturn(NutType.JAVASCRIPT);

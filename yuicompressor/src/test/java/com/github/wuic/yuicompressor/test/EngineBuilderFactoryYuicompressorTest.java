@@ -42,7 +42,9 @@ import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.Engine;
 import com.github.wuic.engine.EngineService;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -59,9 +61,15 @@ import org.junit.runners.JUnit4;
 public class EngineBuilderFactoryYuicompressorTest {
 
     /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+    
+    /**
      * Test for CSS YUICompressor.
      */
-    @Test(timeout = 60000)
+    @Test
     public void testCreateCssYuiCompressorBuilder() {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EngineService.DEFAULT_SCAN_PACKAGE);
         Assert.assertNotNull(factory.create("YuiCompressorCssEngineBuilder"));
@@ -70,7 +78,7 @@ public class EngineBuilderFactoryYuicompressorTest {
     /**
      * Test for Javascript YUICompressor.
      */
-    @Test(timeout = 60000)
+    @Test
     public void testCreateJavascriptYuiCompressorBuilder() {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, EngineService.DEFAULT_SCAN_PACKAGE);
         Assert.assertNotNull(factory.create("YuiCompressorJavascriptEngineBuilder"));

@@ -59,7 +59,9 @@ import com.github.wuic.nut.dao.s3.S3NutDao;
 import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.util.IOUtils;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -88,13 +90,19 @@ import static org.mockito.Mockito.when;
 public class S3Test {
 
     /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+
+    /**
      * <p>
      * Test builder.
      * </p>
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void builderTest() throws Exception {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, NutDaoService.DEFAULT_SCAN_PACKAGE);
         final ObjectBuilder<NutDao> builder = factory.create("S3NutDaoBuilder");
@@ -112,7 +120,7 @@ public class S3Test {
      * </p>
      *
      */
-    @Test(timeout = 60000, expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void builderWithBadPropertyTest() {
         final ObjectBuilderFactory<NutDao> factory = new ObjectBuilderFactory<NutDao>(NutDaoService.class, S3NutDao.class);
         final ObjectBuilder<NutDao> builder = factory.create("S3NutDaoBuilder");
@@ -127,7 +135,7 @@ public class S3Test {
      *
      * @throws Exception if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void s3Test() throws Exception {
         final S3NutDao d = new S3NutDao();
         d.init("wuic", "login", "pwd", false);
