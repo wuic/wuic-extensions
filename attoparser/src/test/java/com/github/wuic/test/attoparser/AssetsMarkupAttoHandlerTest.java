@@ -881,7 +881,8 @@ public class AssetsMarkupAttoHandlerTest {
      */
     @Test
     public void testBalancedCss() {
-        testCss("><img>", "");
+        // img is the CDATA of <style>
+        testCss("><img>", "<img>");
     }
 
     /**
@@ -937,26 +938,6 @@ public class AssetsMarkupAttoHandlerTest {
     @Test
     public void testSrcStandaloneJs() {
         testSrcJs("/>");
-    }
-
-    /**
-     * <p>
-     * Tests standard JS.
-     * </p>
-     */
-    @Test
-    public void testSrcJs() {
-        testSrcJs("></script>");
-    }
-
-    /**
-     * <p>
-     * Tests auto close.
-     * </p>
-     */
-    @Test
-    public void testSrcBalancedJs() {
-        testSrcJs("><style>");
     }
 
     /**
@@ -1045,7 +1026,8 @@ public class AssetsMarkupAttoHandlerTest {
      */
     @Test
     public void testBalancedJs() {
-        testJs("><style>", "");
+        // <style> is the CDATA of <script>
+        testJs("><style>", "<style>");
     }
 
     /**

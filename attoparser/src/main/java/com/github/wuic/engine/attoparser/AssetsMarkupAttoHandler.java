@@ -40,9 +40,7 @@ package com.github.wuic.engine.attoparser;
 
 import com.github.wuic.engine.core.AssetsMarkupHandler;
 import com.github.wuic.util.NumberUtils;
-import org.attoparser.AttoParseException;
-import org.attoparser.markup.AbstractDetailedMarkupAttoHandler;
-import org.attoparser.markup.MarkupParsingConfiguration;
+import org.attoparser.AbstractMarkupHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +75,7 @@ import java.util.Map;
  * @author Guillaume DROUET
  * @since 0.5.3
  */
-public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler implements Comparator<String> {
+public class AssetsMarkupAttoHandler extends AbstractMarkupHandler implements Comparator<String> {
 
     /**
      * <p>
@@ -167,21 +165,7 @@ public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler i
      * @param h the handler
      */
     public AssetsMarkupAttoHandler(final AssetsMarkupHandler h) {
-        super(newConfiguration());
         this.handler = h;
-    }
-
-    /**
-     * <p>
-     * Builds a configuration that requires auto close event for unclosed tags.
-     * </p>
-     *
-     * @return the configuration
-     */
-    private static MarkupParsingConfiguration newConfiguration() {
-        final MarkupParsingConfiguration retval = new MarkupParsingConfiguration();
-        retval.setElementBalancing(MarkupParsingConfiguration.ElementBalancing.AUTO_CLOSE);
-        return retval;
     }
 
     /**
@@ -200,7 +184,6 @@ public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler i
             // Link asset
             case LINK_GROUP:
                 fireLinkGroup();
-
                 break;
 
             // CSS asset
@@ -387,7 +370,7 @@ public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler i
                               final int outerOffset,
                               final int outerLen,
                               final int line,
-                              final int col) throws AttoParseException {
+                              final int col) {
         final char[] content = new char[contentLen];
         System.arraycopy(buffer, contentOffset, content, 0, contentLen);
         int len = outerLen;
@@ -419,16 +402,16 @@ public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler i
                                        final int nameOffset,
                                        final int nameLen,
                                        final int line,
-                                       final int col)
-            throws AttoParseException {
+                                       final int col) {
         start(buffer, nameOffset, nameLen, line, col);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void handleOpenElementEnd(final int line, final int col) throws AttoParseException {
+    public void handleOpenElementEnd(final char[] buffer,
+                                     final int nameOffset,
+                                     final int nameLen,
+                                     final int line,
+                                     final int col) {
         if (current != null) {
             current.endLine = line;
             current.endColumn = col + 1;
@@ -442,9 +425,9 @@ public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler i
     public void handleStandaloneElementStart(final char[] buffer,
                                              final int nameOffset,
                                              final int nameLen,
+                                             final boolean minimized,
                                              final int line,
-                                             final int col)
-            throws AttoParseException {
+                                             final int col) {
         start(buffer, nameOffset, nameLen, line, col);
     }
 
@@ -452,7 +435,11 @@ public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler i
      * {@inheritDoc}
      */
     @Override
-    public void handleCloseElementEnd(final int line, final int col) throws AttoParseException {
+    public void handleCloseElementEnd(final char[] buffer,
+                                      final int nameOffset,
+                                      final int nameLen,
+                                      final int line,
+                                      final int col) {
         end(line, col + 1);
     }
 
@@ -460,7 +447,11 @@ public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler i
      * {@inheritDoc}
      */
     @Override
-    public void handleAutoCloseElementEnd(final int line, final int col) throws AttoParseException {
+    public void handleAutoCloseElementEnd(final char[] buffer,
+                                          final int nameOffset,
+                                          final int nameLen,
+                                          final int line,
+                                          final int col) {
         if (autoClose != null) {
             current = autoClose;
             autoClose = null;
@@ -473,15 +464,24 @@ public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler i
      * {@inheritDoc}
      */
     @Override
-    public void handleStandaloneElementEnd(final int line, final int col) throws AttoParseException {
-        end(line, col + NumberUtils.TWO);
+    public void handleStandaloneElementEnd(final char[] buffer,
+                                           final int nameOffset,
+                                           final int nameLen,
+                                           final boolean minimized,
+                                           final int line,
+                                           final int col) {
+        end(line, col + (minimized ? NumberUtils.TWO : 1));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void handleUnmatchedCloseElementEnd(final int line, final int col) throws AttoParseException {
+    public void handleUnmatchedCloseElementEnd(final char[] buffer,
+                                               final int nameOffset,
+                                               final int nameLen,
+                                               final int line,
+                                               final int col) {
         clear();
     }
 
@@ -503,8 +503,7 @@ public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler i
                                 final int valueOuterOffset,
                                 final int valueOuterLen,
                                 final int valueLine,
-                                final int valueCol)
-            throws AttoParseException {
+                                final int valueCol) {
         if (current != null) {
             final String name = new String(buffer, nameOffset, nameLen);
             final String value = new String(buffer, valueContentOffset, valueContentLen);
@@ -521,8 +520,7 @@ public class AssetsMarkupAttoHandler extends AbstractDetailedMarkupAttoHandler i
      * {@inheritDoc}
      */
     @Override
-    public void handleText(final char[] buffer, final int offset, final int len, final int line, final int col)
-            throws AttoParseException {
+    public void handleText(final char[] buffer, final int offset, final int len, final int line, final int col) {
         if (current != null) {
             current.content = new char[len];
             System.arraycopy(buffer, offset, current.content, 0, len);

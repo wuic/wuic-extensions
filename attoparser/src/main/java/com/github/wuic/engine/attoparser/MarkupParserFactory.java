@@ -38,39 +38,31 @@
 
 package com.github.wuic.engine.attoparser;
 
-import com.github.wuic.engine.core.AssetsMarkupHandler;
-import com.github.wuic.engine.core.AssetsMarkupParser;
-import com.github.wuic.exception.WuicException;
 import org.attoparser.IMarkupParser;
-import org.attoparser.ParseException;
-
-import java.io.Reader;
+import org.attoparser.MarkupParser;
+import org.attoparser.config.ParseConfiguration;
 
 /**
- * <p>
- * This {@link AssetsMarkupParser} implementation relies on {@code AttoParser} API.
- * </p>
+ * This factory produced {@code MarkupParser} with {@code HTML} configuration.
  *
  * @author Guillaume DROUET
  * @since 0.5.3
  */
-public class AssetsMarkupAttoParser implements AssetsMarkupParser {
+enum MarkupParserFactory {
 
     /**
-     * Reused parser each time {@link #parse(java.io.Reader, AssetsMarkupHandler)} is invoked.
+     * Singleton.
      */
-    public static final IMarkupParser PARSER = MarkupParserFactory.INSTANCE.newMarkupParser();
+    INSTANCE;
 
     /**
-     * {@inheritDoc}
+     * <p>
+     * Returns a new parser.
+     * </p>
+     *
+     * @return the parser
      */
-    @Override
-    public void parse(final Reader reader, final AssetsMarkupHandler handler) {
-        try {
-            // Parse the document
-            PARSER.parse(reader, new AssetsMarkupAttoHandler(handler));
-        } catch (ParseException pe) {
-            WuicException.throwBadArgumentException(pe);
-        }
+    IMarkupParser newMarkupParser() {
+        return new MarkupParser(ParseConfiguration.htmlConfiguration());
     }
 }
