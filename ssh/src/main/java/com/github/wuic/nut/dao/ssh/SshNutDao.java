@@ -76,6 +76,7 @@ import org.slf4j.LoggerFactory;
  * @since 0.3.1
  */
 @NutDaoService
+@Alias("ssh")
 public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
 
     /**

@@ -40,6 +40,7 @@ package com.github.wuic.engine.yuicompressor;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
+import com.github.wuic.config.Alias;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.Config;
 import com.github.wuic.config.IntegerConfigParam;
@@ -73,6 +74,7 @@ import java.util.List;
  * @since 0.1.0
  */
 @EngineService(injectDefaultToWorkflow = true)
+@Alias("yuicompressorJavascript")
 public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
     
     /**

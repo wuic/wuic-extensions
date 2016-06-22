@@ -82,6 +82,7 @@ import java.util.regex.Pattern;
  * @since 0.3.3
  */
 @NutDaoService
+@Alias("s3")
 public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
 
     /**

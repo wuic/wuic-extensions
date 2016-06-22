@@ -39,6 +39,7 @@
 package com.github.wuic.engine.typescript;
 
 import com.github.wuic.NutType;
+import com.github.wuic.config.Alias;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.Config;
 import com.github.wuic.config.StringConfigParam;
@@ -80,6 +81,7 @@ import static com.github.wuic.ApplicationConfig.USE_NODE_JS;
  * @since 0.5.1
  */
 @EngineService(injectDefaultToWorkflow = true)
+@Alias("typescript")
 public class TypeScriptConverterEngine extends AbstractConverterEngine
         implements BiFunction<CommandLineConverterEngine.CommandLineInfo, EngineRequest, Boolean> {
 

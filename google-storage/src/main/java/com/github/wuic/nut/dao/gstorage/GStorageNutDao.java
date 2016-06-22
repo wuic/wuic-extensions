@@ -82,6 +82,7 @@ import java.util.regex.Pattern;
  * @since 0.3.3
  */
 @NutDaoService
+@Alias("gstorage")
 public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig {
 
     /**

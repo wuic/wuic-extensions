@@ -39,6 +39,7 @@
 package com.github.wuic.engine.ehcache;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.config.Alias;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.Config;
 import com.github.wuic.config.ObjectConfigParam;
@@ -59,6 +60,7 @@ import net.sf.ehcache.Element;
  * @since 0.1.1
  */
 @EngineService(injectDefaultToWorkflow = true)
+@Alias("ehcache")
 public class EhCacheEngine extends AbstractCacheEngine implements ApplicationConfig {
 
     /**

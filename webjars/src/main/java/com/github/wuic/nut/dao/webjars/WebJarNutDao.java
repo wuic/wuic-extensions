@@ -38,6 +38,7 @@
 
 package com.github.wuic.nut.dao.webjars;
 
+import com.github.wuic.config.Alias;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.Config;
 import com.github.wuic.config.ObjectConfigParam;
@@ -68,6 +69,7 @@ import static com.github.wuic.ApplicationConfig.WILDCARD;
  * @since 0.5.3
  */
 @NutDaoService
+@Alias("webjar")
 public class WebJarNutDao extends PathNutDao {
 
     /**

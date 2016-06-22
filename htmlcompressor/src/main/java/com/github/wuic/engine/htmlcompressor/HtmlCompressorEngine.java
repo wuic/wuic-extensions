@@ -39,6 +39,7 @@
 package com.github.wuic.engine.htmlcompressor;
 
 import com.github.wuic.NutType;
+import com.github.wuic.config.Alias;
 import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.Config;
 import com.github.wuic.engine.EngineRequest;
@@ -67,6 +68,7 @@ import static com.github.wuic.ApplicationConfig.PRESERVE_LINE_BREAK;
  * @since 0.5.0
  */
 @EngineService(injectDefaultToWorkflow = true)
+@Alias("htmlcompressor")
 public class HtmlCompressorEngine extends AbstractCompressorEngine {
 
     /**

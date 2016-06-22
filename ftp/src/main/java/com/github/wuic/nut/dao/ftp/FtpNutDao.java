@@ -85,6 +85,7 @@ import java.util.regex.Pattern;
  * @since 0.3.1
  */
 @NutDaoService
+@Alias("ftp")
 public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
 
     /**

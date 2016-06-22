@@ -19,7 +19,7 @@
     <workflow-templates>
         <workflow-template id="tpl">
             <engine-chain>
-                <engine-builder-id>wuicDefaultTextAggregatorEngineBuilder</engine-builder-id>
+                <engine-builder-id>textAggregator</engine-builder-id>
             </engine-chain>
         </workflow-template>
     </workflow-templates>

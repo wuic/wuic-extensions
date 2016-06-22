@@ -2,7 +2,7 @@
 <wuic:config>
     <wuic>
         <nut-dao-builders>
-            <nut-dao-builder id="wuicDefaultClasspathNutDaoBuilder" type="ClasspathNutDaoBuilder">
+            <nut-dao-builder id="classpath" type="ClasspathNutDaoBuilder">
                 <properties>
                     <property key="c.g.wuic.dao.basePath">/thymeleaf</property>
                 </properties>
@@ -13,7 +13,7 @@
 <wuic:config>
     <wuic>
         <heaps>
-            <heap id="thymeleaf" dao-builder-id="wuicDefaultClasspathNutDaoBuilder">
+            <heap id="thymeleaf" dao-builder-id="classpath">
                 <nut-path>foo.js</nut-path>
                 <nut-path>foo.css</nut-path>
             </heap>
