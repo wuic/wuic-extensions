@@ -47,11 +47,14 @@ import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.context.ContextBuilderConfigurator;
 import com.github.wuic.context.SimpleContextBuilderConfigurator;
 import com.github.wuic.exception.WuicException;
+import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.core.ClasspathNutDao;
+import com.github.wuic.nut.dao.spring.SpringNutDao;
 import com.github.wuic.servlet.WuicServletContextListener;
 import com.github.wuic.spring.WuicFacadeBuilderFactory;
 import com.github.wuic.spring.WuicPathResourceResolver;
 import com.github.wuic.spring.WuicVersionStrategy;
+import com.github.wuic.util.NutUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -82,6 +85,7 @@ import org.springframework.web.servlet.resource.VersionResourceResolver;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -313,6 +317,30 @@ public class SpringSupportTest {
 
         registry = new ExposedResourceHandlerRegistry();
         registration = registry.addResourceHandler(PATTERN);
+    }
+
+    /**
+     * <p>
+     * Tests for {@link SpringNutDao}.
+     * </p>
+     *
+     * @throws IOException if any I/O error occurs
+     */
+    @Test
+    public void daoTest() throws IOException {
+        final SpringNutDao dao = new SpringNutDao();
+        dao.basePath("/statics");
+        dao.init(false, false, null);
+        final List<Nut> nuts = dao.create("*.js", ProcessContext.DEFAULT);
+        Assert.assertEquals(1, nuts.size());
+
+        for (final Nut nut : nuts) {
+            Assert.assertNotNull(nut.getParentFile());
+            Assert.assertNotEquals(0L, (long) NutUtils.getVersionNumber(nut));
+            dao.newInputStream(nut.getInitialName(), ProcessContext.DEFAULT).close();
+            Assert.assertTrue(dao.exists(nut.getInitialName(), ProcessContext.DEFAULT));
+        }
+
     }
 
     /**

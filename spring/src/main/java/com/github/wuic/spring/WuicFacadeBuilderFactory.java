@@ -41,6 +41,7 @@ package com.github.wuic.spring;
 import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.config.ObjectBuilderInspector;
 import com.github.wuic.context.ContextBuilderConfigurator;
+import com.github.wuic.nut.dao.spring.SpringNutDao;
 import com.github.wuic.servlet.WuicServletContextListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -97,6 +98,9 @@ public class WuicFacadeBuilderFactory {
 
         // Additional profiles
         retval.contextBuilder().enableProfile(applicationContext.getEnvironment().getActiveProfiles()).toFacade();
+
+        // Adjust default DAO
+        retval.contextBuilder().defaultNutDaoClass(SpringNutDao.class);
 
         return retval;
     }
