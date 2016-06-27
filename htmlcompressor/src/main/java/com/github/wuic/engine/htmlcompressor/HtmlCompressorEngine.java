@@ -109,7 +109,8 @@ public class HtmlCompressorEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public void transform(final InputStream is, final OutputStream os, final ConvertibleNut convertible, final EngineRequest request) throws IOException {
+    public boolean transform(final InputStream is, final OutputStream os, final ConvertibleNut convertible, final EngineRequest request) throws IOException {
         os.write(compressor.compress(IOUtils.readString(new InputStreamReader(is, request.getCharset()))).getBytes());
+        return true;
     }
 }

@@ -114,10 +114,10 @@ public class AttoParserHtmlMinimizerEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public void transform(final InputStream is,
-                          final OutputStream os,
-                          final ConvertibleNut nut,
-                          final EngineRequest request)
+    public boolean transform(final InputStream is,
+                             final OutputStream os,
+                             final ConvertibleNut nut,
+                             final EngineRequest request)
             throws IOException {
         // The output handler will be the last in the handler chain
         final OutputStreamWriter osw = new OutputStreamWriter(os);
@@ -132,5 +132,7 @@ public class AttoParserHtmlMinimizerEngine extends AbstractCompressorEngine {
         } catch (ParseException pe) {
             WuicException.throwBadArgumentException(pe);
         }
+
+        return true;
     }
 }

@@ -95,7 +95,7 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public void transform(final InputStream source, final OutputStream target, final ConvertibleNut convertibleNut, final EngineRequest request)
+    public boolean transform(final InputStream source, final OutputStream target, final ConvertibleNut convertibleNut, final EngineRequest request)
             throws IOException {
         Reader in = null;
         Writer out = null;
@@ -120,6 +120,8 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
             IOUtils.close(in);
             IOUtils.close(out);
         }
+
+        return true;
     }
 
     /**
