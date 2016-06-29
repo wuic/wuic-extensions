@@ -331,6 +331,7 @@ public class SpringSupportTest {
         final SpringNutDao dao = new SpringNutDao();
         dao.basePath("/statics");
         dao.init(false, false, null);
+        dao.setServletContext(servletContext);
         final List<Nut> nuts = dao.create("*.js", ProcessContext.DEFAULT);
         Assert.assertEquals(1, nuts.size());
 
