@@ -48,6 +48,7 @@ import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
+import com.github.wuic.engine.core.SourceMapLineInspector;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.ConvertibleNut;
@@ -152,11 +153,7 @@ public class ClosureCompilerEngine extends AbstractCompressorEngine {
             WuicException.throwStreamException(new IOException(we));
         }
 
-        // Add source map comment
-        if (!request.isStaticsServedByWuicServlet()) {
-            final String comment = String.format("%s//# sourceMappingURL=%s%s", IOUtils.NEW_LINE, sourceMapName, IOUtils.NEW_LINE);
-            target.write(comment.getBytes(request.getCharset()));
-        }
+        SourceMapLineInspector.writeSourceMapComment(request, target, sourceMapName);
 
         return true;
     }
