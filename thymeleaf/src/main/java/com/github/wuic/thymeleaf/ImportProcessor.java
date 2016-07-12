@@ -115,12 +115,16 @@ public class ImportProcessor extends AbstractAttrProcessor {
         request.setAttribute(HtmlParserFilter.FORCE_DYNAMIC_CONTENT, "");
 
         final String workflow = element.getAttributeValue(attributeName);
+        final String breakAggregation = element.getAttributeValue("data-wuic-break");
 
         if (wuicFacade.allowsMultipleConfigInTagSupport()) {
             wuicFacade.clearTag(workflow);
         }
 
         if (request.getAttribute(HtmlParserFilter.class.getName()) == null) {
+            log.warn("data-wuic-break attribute has bean specified for the import of workflow {} but will be ignored because the page is not filtered by",
+                    workflow, HtmlParserFilter.class.getName());
+
             final UrlProvider urlProvider = urlProviderFactory.create(IOUtils.mergePath(wuicFacade.getContextPath(), workflow));
 
             try {
@@ -139,7 +143,11 @@ public class ImportProcessor extends AbstractAttrProcessor {
                 log.error("WUIC import processor has failed", ioe);
             }
         } else {
-            element.insertChild(0, new Macro("<wuic:html-import workflowId='" + workflow + "' />"));
+            element.insertChild(0, new Macro("<wuic:html-import workflowId='"
+                    + workflow
+                    + "'"
+                    + (breakAggregation == null ? " " : " data-wuic-break ")
+                    + "/>"));
         }
 
         // Not lenient
