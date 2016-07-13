@@ -362,24 +362,6 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public void save(final Nut nut) {
-        // TODO : implement FTP upload
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Boolean saveSupported() {
-        // TODO : return true once save() is implemented
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
         // Connect if necessary
         connect();

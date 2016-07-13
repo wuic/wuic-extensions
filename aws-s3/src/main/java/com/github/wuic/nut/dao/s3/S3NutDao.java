@@ -259,24 +259,6 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public void save(final Nut nut) {
-        // TODO : implement S3 upload
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Boolean saveSupported() {
-        // TODO : return true once save() is implemented
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
         try {
             connect();
