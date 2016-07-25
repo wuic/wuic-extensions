@@ -39,6 +39,7 @@
 package com.github.wuic.spring.test;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.NutTypeFactory;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.config.ObjectBuilderInspector;
 import com.github.wuic.context.ContextBuilder;
@@ -86,6 +87,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -332,6 +334,7 @@ public class SpringSupportTest {
         dao.basePath("/statics");
         dao.init(false, false, null);
         dao.setServletContext(servletContext);
+        dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         final List<Nut> nuts = dao.create("*.js", ProcessContext.DEFAULT);
         Assert.assertEquals(1, nuts.size());
 

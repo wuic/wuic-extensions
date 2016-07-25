@@ -39,7 +39,10 @@
 package com.github.wuic.test.closure;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.EnumNutType;
 import com.github.wuic.NutType;
+import com.github.wuic.NutTypeFactory;
+import com.github.wuic.NutTypeFactoryHolder;
 import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.Engine;
@@ -51,6 +54,8 @@ import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.util.FutureLong;
+import com.github.wuic.util.InMemoryInput;
+import com.github.wuic.util.InMemoryOutput;
 import com.github.wuic.util.Pipe;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -60,9 +65,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -95,9 +99,9 @@ public class ClosureTest {
     public void compilationTest() throws IOException, WuicException {
         final Nut nut = Mockito.mock(Nut.class);
         Mockito.when(nut.getInitialName()).thenReturn("foo.js");
-        Mockito.when(nut.openStream()).thenReturn(new ByteArrayInputStream("var foo = 0; // some comments".getBytes()));
+        Mockito.when(nut.openStream()).thenReturn(new InMemoryInput("var foo = 0; // some comments", Charset.defaultCharset().displayName()));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
-        Mockito.when(nut.getInitialNutType()).thenReturn(NutType.JAVASCRIPT);
+        Mockito.when(nut.getInitialNutType()).thenReturn(new NutType(EnumNutType.JAVASCRIPT, Charset.defaultCharset().displayName()));
 
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
         Mockito.when(heap.getNuts()).thenReturn(Arrays.asList(nut));
@@ -105,10 +109,12 @@ public class ClosureTest {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, ClosureCompilerEngine.class);
         final ObjectBuilder<Engine> builder = factory.create("closure");
         final Engine engine = builder.property(ApplicationConfig.DEBUG_COMPILATION, "true").build();
+        NutTypeFactoryHolder.class.cast(engine).setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).contextPath("cp").build());
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null, new NutTypeFactory(Charset.defaultCharset().displayName()))
+                .contextPath("cp").build());
+        final InMemoryOutput bos = new InMemoryOutput(Charset.defaultCharset().displayName());
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
-        Assert.assertEquals("var foo=0;\n//# sourceMappingURL=foo.min.js.map\n", new String(bos.toByteArray()));
+        Assert.assertEquals("var foo=0;\n//# sourceMappingURL=foo.min.js.map\n", bos.execution().toString());
     }
 }

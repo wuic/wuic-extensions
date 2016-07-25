@@ -146,13 +146,15 @@ public class WebJarDirectoryPath extends AbstractDirectoryPath {
      * @param name the name
      * @param parent the parent
      * @param wjal the
+     * @param charset the charset
      * @param locations all locations associated to their version
      */
     public WebJarDirectoryPath(final String name,
                                final DirectoryPath parent,
                                final WebJarAssetLocator wjal,
-                               final Map<String, String> locations) {
-        super(name, parent);
+                               final Map<String, String> locations,
+                               final String charset) {
+        super(name, parent, charset);
         this.webJarAssetLocator = wjal;
         this.subPaths = new HashMap<String, SubPath>();
         this.locations = locations;
@@ -202,7 +204,7 @@ public class WebJarDirectoryPath extends AbstractDirectoryPath {
             throw new FileNotFoundException();
         } else if (!subPath.isDirectory()) {
             // Single path
-            return new WebJarFilePath(child, computeVersion(subPath.getVersion()), this, webJarAssetLocator);
+            return new WebJarFilePath(child, computeVersion(subPath.getVersion()), this, webJarAssetLocator, getCharset());
         } else {
             // Compute all the paths inside this directory
             final Map<String, String> paths = new HashMap<String, String>();
@@ -213,7 +215,7 @@ public class WebJarDirectoryPath extends AbstractDirectoryPath {
                 }
             }
 
-            return new WebJarDirectoryPath(child, this, webJarAssetLocator, paths);
+            return new WebJarDirectoryPath(child, this, webJarAssetLocator, paths, getCharset());
         }
     }
 

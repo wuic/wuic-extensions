@@ -39,6 +39,8 @@
 package com.github.wuic.nut.test;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.NutTypeFactory;
+import com.github.wuic.NutTypeFactoryHolder;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.context.ContextBuilder;
 import com.github.wuic.config.ObjectBuilder;
@@ -50,6 +52,7 @@ import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.dao.ftp.FtpNutDao;
 import com.github.wuic.test.TestHelper;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
 import com.github.wuic.util.UrlUtils;
 import com.github.wuic.config.bean.xml.FileXmlContextBuilderConfigurator;
 import org.apache.ftpserver.FtpServer;
@@ -72,9 +75,8 @@ import org.junit.runners.JUnit4;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -158,12 +160,9 @@ public class FtpTest {
         final List<ConvertibleNut> group = builder.build().process("", "css-imagecss-image", UrlUtils.urlProviderFactory(), ProcessContext.DEFAULT);
 
         Assert.assertFalse(group.isEmpty());
-        InputStream is;
 
         for (Nut res : group) {
-            is = res.openStream();
-            Assert.assertTrue(IOUtils.readString(new InputStreamReader(is)).length() > 0);
-            is.close();
+            Assert.assertTrue(res.openStream().execution().toString().length() > 0);
         }
     }
 
@@ -183,6 +182,7 @@ public class FtpTest {
                 .property(ApplicationConfig.LOGIN, "wuicuser")
                 .property(ApplicationConfig.PASSWORD, "wuicpassword")
                 .build();
+        NutTypeFactoryHolder.class.cast(dao).setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         Assert.assertTrue(dao.exists("style.css", ProcessContext.DEFAULT));
         Assert.assertFalse(dao.exists("unknw.css", ProcessContext.DEFAULT));
     }
@@ -203,8 +203,9 @@ public class FtpTest {
                 .property(ApplicationConfig.LOGIN, "wuicuser")
                 .property(ApplicationConfig.PASSWORD, "wuicpassword")
                 .build();
-        final InputStream is = dao.create("style.css", ProcessContext.DEFAULT).get(0).openStream();
-        IOUtils.copyStream(is, new ByteArrayOutputStream());
+        NutTypeFactoryHolder.class.cast(dao).setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
+        final Input is = dao.create("style.css", ProcessContext.DEFAULT).get(0).openStream();
+        IOUtils.copyStream(is.inputStream(), new ByteArrayOutputStream());
         is.close();
     }
 
@@ -231,12 +232,13 @@ public class FtpTest {
                 .property(ApplicationConfig.PASSWORD, "wuicpassword")
                 .property(ApplicationConfig.DOWNLOAD_TO_DISK, "true")
                 .build();
+        NutTypeFactoryHolder.class.cast(dao).setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
 
         // Raed existing file
         final Nut nut = dao.create("style.css", ProcessContext.DEFAULT).get(0);
-        InputStream is = nut.openStream();
+        Input is = nut.openStream();
         OutputStream bos = new ByteArrayOutputStream();
-        IOUtils.copyStream(is, bos);
+        IOUtils.copyStream(is.inputStream(), bos);
         is.close();
         bos.close();
 
@@ -245,7 +247,7 @@ public class FtpTest {
         tmpDir.mkdir();
         is = nut.openStream();
         bos = new ByteArrayOutputStream();
-        IOUtils.copyStream(is, bos);
+        IOUtils.copyStream(is.inputStream(), bos);
         is.close();
         bos.close();
     }

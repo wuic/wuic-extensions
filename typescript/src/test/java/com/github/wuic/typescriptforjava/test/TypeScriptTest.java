@@ -38,16 +38,21 @@
 
 package com.github.wuic.typescriptforjava.test;
 
+import com.github.wuic.EnumNutType;
+import com.github.wuic.NutTypeFactory;
+import com.github.wuic.NutTypeFactoryHolder;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.InMemoryInput;
+import com.github.wuic.util.InMemoryOutput;
+import com.github.wuic.util.Output;
 import org.junit.Rule;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.github.wuic.NutType;
 import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.Engine;
@@ -69,11 +74,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -145,21 +150,24 @@ public class TypeScriptTest {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, TypeScriptConverterEngine.class);
         final ObjectBuilder<Engine> builder = factory.create("TypeScriptConverterEngineBuilder");
         final Engine engine = builder.build();
+        NutTypeFactoryHolder.class.cast(engine).setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
 
         long start = System.currentTimeMillis();
-        List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).processContext(ProcessContext.DEFAULT).contextPath("cp").build());
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null, new NutTypeFactory(Charset.defaultCharset().displayName()))
+                .processContext(ProcessContext.DEFAULT).contextPath("cp").build());
+        Output bos = new InMemoryOutput(Charset.defaultCharset().displayName());
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
         logger.info("First compilation run in {}ms", System.currentTimeMillis() - start);
         start = System.currentTimeMillis();
 
         heap = mockHeap(parent);
-        res = engine.parse(new EngineRequestBuilder("wid", heap, null).processContext(ProcessContext.DEFAULT).contextPath("cp").build());
-        bos = new ByteArrayOutputStream();
+        res = engine.parse(new EngineRequestBuilder("wid", heap, null, new NutTypeFactory(Charset.defaultCharset().displayName()))
+                .processContext(ProcessContext.DEFAULT).contextPath("cp").build());
+        bos = new InMemoryOutput(Charset.defaultCharset().displayName());
         res.get(0).transform(new Pipe.DefaultOnReady(bos));
         logger.info("Second compilation run in {}ms", System.currentTimeMillis() - start);
 
-        final BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bos.toByteArray())));
+        final BufferedReader br = new BufferedReader(new StringReader(bos.execution().toString()));
         String s;
         StringBuilder sb = new StringBuilder();
 
@@ -181,11 +189,11 @@ public class TypeScriptTest {
     public void compileErrorTest() throws IOException, WuicException {
         final Nut nut = mock(Nut.class);
         when(nut.getInitialName()).thenReturn("foo.ts");
-        when(nut.openStream()).thenReturn(new ByteArrayInputStream(TS1.replace("{", "").getBytes()));
+        when(nut.openStream()).thenReturn(new InMemoryInput(TS1.replace("{", ""), Charset.defaultCharset().displayName()));
 
         // Value must be different for each test
         when(nut.getVersionNumber()).thenReturn(new FutureLong(1L));
-        when(nut.getInitialNutType()).thenReturn(NutType.TYPESCRIPT);
+        when(nut.getInitialNutType()).thenReturn(new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.TYPESCRIPT));
 
         final NutsHeap heap = mock(NutsHeap.class);
         when(heap.getNuts()).thenReturn(Arrays.asList(nut));
@@ -193,10 +201,11 @@ public class TypeScriptTest {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, TypeScriptConverterEngine.class);
         final ObjectBuilder<Engine> builder = factory.create("TypeScriptConverterEngineBuilder");
         final Engine engine = builder.build();
+        NutTypeFactoryHolder.class.cast(engine).setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
 
-        List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).processContext(ProcessContext.DEFAULT).contextPath("cp").build());
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        res.get(0).transform(new Pipe.DefaultOnReady(bos));
+        List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null, new NutTypeFactory(Charset.defaultCharset().displayName()))
+                .processContext(ProcessContext.DEFAULT).contextPath("cp").build());
+        res.get(0).transform(new Pipe.DefaultOnReady(new InMemoryOutput(Charset.defaultCharset().displayName())));
     }
 
     /**
@@ -211,19 +220,19 @@ public class TypeScriptTest {
     private NutsHeap mockHeap(final File parent) throws Exception {
         final Nut nut1 = mock(Nut.class);
         when(nut1.getInitialName()).thenReturn("foo.ts");
-        when(nut1.openStream()).thenReturn(new ByteArrayInputStream(TS1.getBytes()));
+        when(nut1.openStream()).thenReturn(new InMemoryInput(TS1, Charset.defaultCharset().displayName()));
 
         // Value must be different for each test
         when(nut1.getVersionNumber()).thenReturn(new FutureLong(0L));
-        when(nut1.getInitialNutType()).thenReturn(NutType.TYPESCRIPT);
+        when(nut1.getInitialNutType()).thenReturn(new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.TYPESCRIPT));
 
         IOUtils.copyStream(new ByteArrayInputStream(TS2.getBytes()), new FileOutputStream(new File(parent, "bar.ts")));
         final Nut nut2 = mock(Nut.class);
         when(nut2.getParentFile()).thenReturn(parent.getAbsolutePath());
         when(nut2.getInitialName()).thenReturn("bar.ts");
-        when(nut2.openStream()).thenReturn(new ByteArrayInputStream(TS2.getBytes()));
+        when(nut2.openStream()).thenReturn(new InMemoryInput(TS2, Charset.defaultCharset().displayName()));
         when(nut2.getVersionNumber()).thenReturn(new FutureLong(0L));
-        when(nut2.getInitialNutType()).thenReturn(NutType.TYPESCRIPT);
+        when(nut2.getInitialNutType()).thenReturn(new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.TYPESCRIPT));
 
         final NutsHeap heap = mock(NutsHeap.class);
         when(heap.getNuts()).thenReturn(Arrays.asList(nut1, nut2));

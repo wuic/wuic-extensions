@@ -38,10 +38,11 @@
 
 package com.github.wuic.engine.htmlcompressor.test;
 
+import com.github.wuic.EnumNutType;
+import com.github.wuic.NutTypeFactory;
 import com.github.wuic.engine.EngineRequestBuilder;
 import com.github.wuic.engine.htmlcompressor.HtmlCompressorEngine;
 import com.github.wuic.ApplicationConfig;
-import com.github.wuic.NutType;
 import com.github.wuic.config.ObjectBuilder;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.Engine;
@@ -49,8 +50,8 @@ import com.github.wuic.engine.EngineService;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.NutsHeap;
+import com.github.wuic.util.DefaultInput;
 import com.github.wuic.util.FutureLong;
-import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.NutUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -60,7 +61,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
-import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -91,9 +92,9 @@ public class HtmlCompressorEngineTest {
     @Test
     public void htmlCompressTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
-        Mockito.when(nut.getInitialNutType()).thenReturn(NutType.HTML);
+        Mockito.when(nut.getInitialNutType()).thenReturn(new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.HTML));
         Mockito.when(nut.getInitialName()).thenReturn("index.html");
-        Mockito.when(nut.openStream()).thenReturn(HtmlCompressorEngineTest.class.getResourceAsStream("/htmlcompressor/index.html"));
+        Mockito.when(nut.openStream()).thenReturn(new DefaultInput(HtmlCompressorEngineTest.class.getResourceAsStream("/htmlcompressor/index.html"), Charset.defaultCharset().displayName()));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
 
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
@@ -103,7 +104,7 @@ public class HtmlCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("HtmlCompressorEngineBuilder");
         final Engine engine = builder.build();
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).contextPath("cp").build());
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null, new NutTypeFactory(Charset.defaultCharset().displayName())).contextPath("cp").build());
         Assert.assertEquals(-1, NutUtils.readTransform(res.get(0)).indexOf('\n'));
     }
 
@@ -117,9 +118,9 @@ public class HtmlCompressorEngineTest {
     @Test
     public void disableHtmlCompressTest() throws Exception {
         final Nut nut = Mockito.mock(Nut.class);
-        Mockito.when(nut.getInitialNutType()).thenReturn(NutType.HTML);
+        Mockito.when(nut.getInitialNutType()).thenReturn(new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.HTML));
         Mockito.when(nut.getInitialName()).thenReturn("index.html");
-        Mockito.when(nut.openStream()).thenReturn(HtmlCompressorEngineTest.class.getResourceAsStream("/htmlcompressor/index.html"));
+        Mockito.when(nut.openStream()).thenReturn(new DefaultInput(HtmlCompressorEngineTest.class.getResourceAsStream("/htmlcompressor/index.html"), Charset.defaultCharset().displayName()));
         Mockito.when(nut.getVersionNumber()).thenReturn(new FutureLong(0L));
 
         final NutsHeap heap = Mockito.mock(NutsHeap.class);
@@ -129,7 +130,7 @@ public class HtmlCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("HtmlCompressorEngineBuilder");
         final Engine engine = builder.property(ApplicationConfig.COMPRESS, false).build();
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null).contextPath("cp").build());
-        Assert.assertNotSame(-1, IOUtils.readString(new InputStreamReader(res.get(0).openStream())).indexOf('\n'));
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null, new NutTypeFactory(Charset.defaultCharset().displayName())).contextPath("cp").build());
+        Assert.assertNotSame(-1, res.get(0).openStream().execution().toString().indexOf('\n'));
     }
 }

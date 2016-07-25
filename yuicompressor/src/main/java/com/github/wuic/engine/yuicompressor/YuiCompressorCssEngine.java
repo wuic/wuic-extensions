@@ -39,6 +39,7 @@
 package com.github.wuic.engine.yuicompressor;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.EnumNutType;
 import com.github.wuic.NutType;
 import com.github.wuic.config.Alias;
 import com.github.wuic.config.Config;
@@ -49,13 +50,11 @@ import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
+import com.github.wuic.util.Output;
 import com.yahoo.platform.yui.compressor.CssCompressor;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Arrays;
@@ -95,14 +94,14 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public boolean transform(final InputStream source, final OutputStream target, final ConvertibleNut convertibleNut, final EngineRequest request)
+    public boolean transform(final Input source, final Output target, final ConvertibleNut convertibleNut, final EngineRequest request)
             throws IOException {
         Reader in = null;
         Writer out = null;
         
         try {
             // Stream to read from the source
-            in = new InputStreamReader(source, request.getCharset());
+            in = source.reader();
      
             // Create the compressor using the source stream
             final CssCompressor compressor = new CssCompressor(in);
@@ -112,7 +111,7 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
             in = null;
             
             // Stream to write into the target
-            out = new OutputStreamWriter(target, request.getCharset());
+            out = target.writer();
             
             // Compress the script into the output target
             compressor.compress(out, lineBreakPos);
@@ -129,7 +128,7 @@ public class YuiCompressorCssEngine extends AbstractCompressorEngine {
      */
     @Override
     public List<NutType> getNutTypes() {
-        return Arrays.asList(NutType.CSS);
+        return Arrays.asList(getNutTypeFactory().getNutType(EnumNutType.CSS));
     }
 
     /**

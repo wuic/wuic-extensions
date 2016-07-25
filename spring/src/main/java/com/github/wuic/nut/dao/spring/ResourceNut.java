@@ -40,12 +40,13 @@ package com.github.wuic.nut.dao.spring;
 
 import com.github.wuic.NutType;
 import com.github.wuic.nut.AbstractNut;
+import com.github.wuic.util.DefaultInput;
 import com.github.wuic.util.FutureLong;
+import com.github.wuic.util.Input;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.slf4j.Logger;
 
@@ -75,6 +76,11 @@ public class ResourceNut extends AbstractNut {
     private final String parent;
 
     /**
+     * The charset.
+     */
+    private final String charset;
+
+    /**
      * <p>
      * Builds a new instance.
      * </p>
@@ -82,11 +88,13 @@ public class ResourceNut extends AbstractNut {
      * @param name the resource name
      * @param ft the file type
      * @param resource the resource
+     * @param cs the charset
      */
-    public ResourceNut(final NutType ft, final String name, final Resource resource) {
+    public ResourceNut(final NutType ft, final String name, final Resource resource, final String cs) {
         super(name, ft, new FutureLong(getVersionNumber(resource)));
         this.resource = resource;
         parent = getParent(resource);
+        charset = cs;
     }
 
     /**
@@ -129,8 +137,8 @@ public class ResourceNut extends AbstractNut {
      * {@inheritDoc}
      */
     @Override
-    public InputStream openStream() throws IOException {
-        return resource.getInputStream();
+    public Input openStream() throws IOException {
+        return new DefaultInput(resource.getInputStream(), charset);
     }
 
     /**

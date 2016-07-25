@@ -41,10 +41,11 @@ package com.github.wuic.webjars.path;
 import com.github.wuic.path.DirectoryPath;
 import com.github.wuic.path.FilePath;
 import com.github.wuic.path.core.SimplePath;
+import com.github.wuic.util.DefaultInput;
+import com.github.wuic.util.Input;
 import org.webjars.WebJarAssetLocator;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * <p>
@@ -75,9 +76,10 @@ public class WebJarFilePath extends SimplePath implements FilePath {
      * @param version the version of this resource
      * @param dp the parent
      * @param wasl the asset locator
+     * @param cs the charset
      */
-    public WebJarFilePath(final String n, final long version, final DirectoryPath dp, final WebJarAssetLocator wasl) {
-        super(n, dp);
+    public WebJarFilePath(final String n, final long version, final DirectoryPath dp, final WebJarAssetLocator wasl, final String cs) {
+        super(n, dp, cs);
         this.webJarAssetLocator = wasl;
         this.version = version;
     }
@@ -94,7 +96,7 @@ public class WebJarFilePath extends SimplePath implements FilePath {
      * {@inheritDoc}
      */
     @Override
-    public InputStream openStream() throws IOException {
-        return getClass().getResourceAsStream('/' + webJarAssetLocator.getFullPath(getAbsolutePath()));
+    public Input openStream() throws IOException {
+        return new DefaultInput(getClass().getResourceAsStream('/' + webJarAssetLocator.getFullPath(getAbsolutePath())), getCharset());
     }
 }

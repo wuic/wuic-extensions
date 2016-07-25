@@ -39,20 +39,21 @@
 package com.github.wuic.nut.test;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.EnumNutType;
 import com.github.wuic.NutType;
+import com.github.wuic.NutTypeFactory;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.EngineRequestBuilder;
 import com.github.wuic.engine.core.TextAggregatorEngine;
 import com.github.wuic.nut.ConvertibleNut;
+import com.github.wuic.nut.InMemoryNut;
 import com.github.wuic.nut.dao.NutDao;
 import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.nut.Nut;
-import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.dao.gstorage.GStorageNutDao;
 import com.github.wuic.config.ObjectBuilder;
-import com.github.wuic.util.IOUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,8 +61,7 @@ import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -129,24 +129,23 @@ public class GStorageTest {
     public void gStorageTest() throws Exception {
         final NutsHeap nutsHeap = mock(NutsHeap.class);
         final byte[] array = ".cloud { text-align : justify;}".getBytes();
-        when(nutsHeap.getNutTypes()).thenReturn(new HashSet<NutType>(Arrays.asList(NutType.CSS)));
+        when(nutsHeap.getNutTypes()).thenReturn(new HashSet<NutType>(Arrays.asList(new NutType(EnumNutType.CSS, Charset.defaultCharset().displayName()))));
         final List<Nut> nuts = new ArrayList<Nut>();
-        nuts.add(new ByteArrayNut(array, "cloud.css", NutType.CSS, 1L, false));
+        nuts.add(new InMemoryNut(array, "cloud.css", new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.CSS), 1L, false));
         when(nutsHeap.getNuts()).thenReturn(nuts);
 
         final TextAggregatorEngine aggregator = new TextAggregatorEngine();
         aggregator.init(true);
         aggregator.async(true);
+        aggregator.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
 
-        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null).processContext(ProcessContext.DEFAULT).build());
+        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null, new NutTypeFactory(Charset.defaultCharset().displayName()))
+                .processContext(ProcessContext.DEFAULT).build());
 
         Assert.assertFalse(group.isEmpty());
-        InputStream is;
 
         for (final Nut res : group) {
-            is = res.openStream();
-            Assert.assertTrue(IOUtils.readString(new InputStreamReader(is)).length() > 0);
-            is.close();
+            Assert.assertTrue(res.openStream().execution().toString().length() > 0);
         }
     }
 }

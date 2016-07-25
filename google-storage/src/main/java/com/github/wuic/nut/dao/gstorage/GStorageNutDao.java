@@ -49,7 +49,9 @@ import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
+import com.github.wuic.util.DefaultInput;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -63,7 +65,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -286,9 +287,9 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
+    public Input newInputStream(final String path, final ProcessContext processContext) throws IOException {
         // Try to get a Storage object
-        return storage.objects().get(bucketName, path).executeMediaAsInputStream();
+        return newInput(storage.objects().get(bucketName, path).executeMediaAsInputStream());
     }
 
     /**
@@ -332,12 +333,12 @@ public class GStorageNutDao extends AbstractNutDao implements ApplicationConfig 
          * {@inheritDoc}
          */
         @Override
-        public InputStream openStream() throws IOException {
+        public Input openStream() throws IOException {
             // Try to get a Storage object
             final Storage.Objects.Get storageObject = storage.objects().get(bucketName, getInitialName());
 
             // Download path
-            return storageObject.executeMediaAsInputStream();
+            return new DefaultInput(storageObject.executeMediaAsInputStream(), getCharset());
         }
     }
 }

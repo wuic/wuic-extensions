@@ -39,7 +39,8 @@
 package com.github.wuic.nodejs.test;
 
 import com.github.wuic.ApplicationConfig;
-import com.github.wuic.NutType;
+import com.github.wuic.EnumNutType;
+import com.github.wuic.NutTypeFactory;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.context.ContextBuilder;
@@ -53,6 +54,8 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.nio.charset.Charset;
 
 /**
  * Tests that {@link com.github.wuic.nodejs.NodeJsInspector} is correctly installed.
@@ -93,23 +96,23 @@ public class NodeJsInspectorTest {
         ctx.configureDefault().tag(this)
                 .processContext(ProcessContext.DEFAULT)
                 .contextEngineBuilder(CommandLineConverterEngine.class)
-                .property(ApplicationConfig.INPUT_NUT_TYPE, NutType.LESS.name())
-                .property(ApplicationConfig.OUTPUT_NUT_TYPE, NutType.CSS.name())
+                .property(ApplicationConfig.INPUT_NUT_TYPE, EnumNutType.LESS.name())
+                .property(ApplicationConfig.OUTPUT_NUT_TYPE, new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.CSS).name())
                 .property(ApplicationConfig.COMMAND, command)
                 .toContext()
                 .contextEngineBuilder(BazCommandLineConverterEngine.class)
-                .property(ApplicationConfig.INPUT_NUT_TYPE, NutType.LESS.name())
-                .property(ApplicationConfig.OUTPUT_NUT_TYPE, NutType.CSS.name())
+                .property(ApplicationConfig.INPUT_NUT_TYPE, EnumNutType.LESS.name())
+                .property(ApplicationConfig.OUTPUT_NUT_TYPE, new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.CSS).name())
                 .property(ApplicationConfig.COMMAND, command)
                 .toContext()
                 .contextEngineBuilder(BarCommandLineConverterEngine.class)
-                .property(ApplicationConfig.INPUT_NUT_TYPE, NutType.LESS.name())
-                .property(ApplicationConfig.OUTPUT_NUT_TYPE, NutType.CSS.name())
+                .property(ApplicationConfig.INPUT_NUT_TYPE, EnumNutType.LESS.name())
+                .property(ApplicationConfig.OUTPUT_NUT_TYPE, new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.CSS).name())
                 .property(ApplicationConfig.COMMAND, command)
                 .toContext()
                 .contextEngineBuilder(FooCommandLineConverterEngine.class)
-                .property(ApplicationConfig.INPUT_NUT_TYPE, NutType.LESS.name())
-                .property(ApplicationConfig.OUTPUT_NUT_TYPE, NutType.CSS.name())
+                .property(ApplicationConfig.INPUT_NUT_TYPE, EnumNutType.LESS.name())
+                .property(ApplicationConfig.OUTPUT_NUT_TYPE, new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.CSS).name())
                 .property(ApplicationConfig.COMMAND, command)
                 .toContext()
                 .heap("heap", ContextBuilder.getDefaultBuilderId(ClasspathNutDao.class), new String[] { "foo.js" })

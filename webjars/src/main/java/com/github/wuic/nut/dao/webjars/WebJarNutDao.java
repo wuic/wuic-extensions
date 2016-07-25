@@ -110,7 +110,7 @@ public class WebJarNutDao extends PathNutDao {
      */
     @Override
     protected DirectoryPath createBaseDirectory() throws IOException {
-        final Path file = IOUtils.buildPath(getBasePath(), new WebJarDirectoryPathFactory(webJarAssetLocator));
+        final Path file = IOUtils.buildPath(getBasePath(), new WebJarDirectoryPathFactory(webJarAssetLocator, getCharset()));
 
         if (!(file instanceof DirectoryPath)) {
             WuicException.throwBadStateException(

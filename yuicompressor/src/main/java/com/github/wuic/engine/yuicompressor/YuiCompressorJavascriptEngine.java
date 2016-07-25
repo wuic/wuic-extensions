@@ -39,6 +39,7 @@
 package com.github.wuic.engine.yuicompressor;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.EnumNutType;
 import com.github.wuic.NutType;
 import com.github.wuic.config.Alias;
 import com.github.wuic.config.BooleanConfigParam;
@@ -50,17 +51,15 @@ import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
+import com.github.wuic.util.Output;
 import com.yahoo.platform.yui.compressor.JavaScriptCompressor;
 
+import java.io.CharArrayReader;
+import java.io.CharArrayWriter;
 import java.io.Reader;
-import java.io.Writer;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
@@ -141,15 +140,14 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public boolean transform(final InputStream source, final OutputStream target, final ConvertibleNut convertibleNut, final EngineRequest request)
+    public boolean transform(final Input source, final Output target, final ConvertibleNut convertibleNut, final EngineRequest request)
             throws IOException {
         Reader in = null;
         StringWriter out = null;
-        Writer targetOut = null;
-        
+
         try {
             // Stream to read from the source
-            in = new InputStreamReader(switchSpecialChars(source, Boolean.FALSE, request.getCharset()), request.getCharset());
+            in = switchSpecialChars(source.reader(), Boolean.FALSE);
             
             // Create the compressor using the source stream
             final JavaScriptCompressor compressor =
@@ -171,15 +169,11 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
                     disableOptimization);
             
             // Stream to write into the target with backed special characters
-            final InputStream bis = new ByteArrayInputStream(out.getBuffer().toString().getBytes());
-            final InputStream restore = switchSpecialChars(bis, Boolean.TRUE, request.getCharset());
-            targetOut = new OutputStreamWriter(target);
-
-            IOUtils.copyStreamToWriterIoe(restore, targetOut, request.getCharset());
+            final Reader restore = switchSpecialChars(new StringReader(out.getBuffer().toString()), Boolean.TRUE);
+            IOUtils.copyStream(restore, target.writer());
         } finally {
             IOUtils.close(in);
             IOUtils.close(out);
-            IOUtils.close(targetOut);
         }
 
         return true;
@@ -192,18 +186,16 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
      * YUICompressor. 
      * </p>
      * 
-     * @param source the source to escape
+     * @param parser the source to escape
      * @param restore flag that indicates if we escape or restore
-     * @param charset the charset
      * @return the result
      * @throws IOException if an I/O error occurs
      */
-    private InputStream switchSpecialChars(final InputStream source, final Boolean restore, final String charset) throws IOException {
-        final Reader parser = new InputStreamReader(source, charset);
-        ByteArrayOutputStream streamParser = null;
+    private Reader switchSpecialChars(final Reader parser, final Boolean restore) throws IOException {
+        CharArrayWriter streamParser = null;
         
         try {
-            streamParser = new ByteArrayOutputStream();
+            streamParser = new CharArrayWriter();
             final char[] buffer = new char[com.github.wuic.util.IOUtils.WUIC_BUFFER_LEN];
             int offset;
             
@@ -218,13 +210,13 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
                     }
                 }
                 
-                streamParser.write(read.getBytes());
+                streamParser.write(read);
             }
         } finally {
             IOUtils.close(streamParser);
         }
         
-        return new ByteArrayInputStream(streamParser.toByteArray());
+        return new CharArrayReader(streamParser.toCharArray());
     }
 
     /**
@@ -232,7 +224,7 @@ public class YuiCompressorJavascriptEngine extends AbstractCompressorEngine {
      */
     @Override
     public List<NutType> getNutTypes() {
-        return Arrays.asList(NutType.JAVASCRIPT);
+        return Arrays.asList(getNutTypeFactory().getNutType(EnumNutType.JAVASCRIPT));
     }
 
     /**

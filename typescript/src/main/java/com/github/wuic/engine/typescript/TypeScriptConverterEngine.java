@@ -38,6 +38,7 @@
 
 package com.github.wuic.engine.typescript;
 
+import com.github.wuic.EnumNutType;
 import com.github.wuic.NutType;
 import com.github.wuic.config.Alias;
 import com.github.wuic.config.BooleanConfigParam;
@@ -51,6 +52,7 @@ import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.BiFunction;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
 import io.apigee.trireme.core.NodeEnvironment;
 import io.apigee.trireme.core.NodeException;
 import io.apigee.trireme.core.NodeScript;
@@ -144,7 +146,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine
      */
     @Override
     protected NutType targetNutType() {
-        return NutType.JAVASCRIPT;
+        return getNutTypeFactory().getNutType(EnumNutType.JAVASCRIPT);
     }
 
     /**
@@ -152,16 +154,16 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine
      */
     @Override
     public List<NutType> getNutTypes() {
-        return Arrays.asList(NutType.TYPESCRIPT);
+        return Arrays.asList(getNutTypeFactory().getNutType(EnumNutType.TYPESCRIPT));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public InputStream transform(final InputStream is, final ConvertibleNut nut, final EngineRequest request)
+    public Input transform(final Input is, final ConvertibleNut nut, final EngineRequest request)
             throws IOException {
-        return CommandLineConverterEngine.execute(is, nut, request, this, resolvedFileDirectoryAsWorkingDirectory);
+        return CommandLineConverterEngine.execute(is, nut, request, getNutTypeFactory(), this, resolvedFileDirectoryAsWorkingDirectory);
     }
 
     /**

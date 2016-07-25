@@ -46,6 +46,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.NutTypeFactory;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.EngineRequestBuilder;
@@ -57,7 +58,7 @@ import com.github.wuic.nut.NutsHeap;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.s3.S3NutDao;
 import com.github.wuic.config.ObjectBuilder;
-import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,8 +67,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -141,6 +141,7 @@ public class S3Test {
         d.init("wuic", "login", "pwd", false);
         d.init("/path", null, -1);
         d.init(false, true, null);
+        d.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
 
         // Create a real object and mock its initClient method
         final S3NutDao dao = spy(d);
@@ -167,8 +168,8 @@ public class S3Test {
         when(object.getObjectContent()).thenReturn(new S3ObjectInputStream(new ByteArrayInputStream(array), null));
         when(client.getObject(anyString(), anyString())).thenReturn(object);
 
-        // TODO : problem here : we specify '[cloud.css]' but getNuts() returns 'cloud.css' because regex are always activated !
-        final NutsHeap nutsHeap = new NutsHeap(this, Arrays.asList("[cloud].css"), dao, "heap");
+        // TODO : problem here : we specify '[cloud.css]' but getNuts() returns 'cloud.css' because regex are always activated!
+        final NutsHeap nutsHeap = new NutsHeap(this, Arrays.asList("[cloud].css"), dao, "heap", new NutTypeFactory(Charset.defaultCharset().displayName()));
         nutsHeap.checkFiles(ProcessContext.DEFAULT);
         Assert.assertEquals(nutsHeap.getNuts().size(), 1);
 
@@ -176,14 +177,15 @@ public class S3Test {
         aggregator.init(true);
         aggregator.async(true);
 
-        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null).processContext(ProcessContext.DEFAULT).build());
+        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null, new NutTypeFactory(Charset.defaultCharset().displayName()))
+                .processContext(ProcessContext.DEFAULT).build());
 
         Assert.assertFalse(group.isEmpty());
-        InputStream is;
+        Input is;
 
         for (final Nut res : group) {
             is = res.openStream();
-            Assert.assertTrue(IOUtils.readString(new InputStreamReader(is)).length() > 0);
+            Assert.assertTrue(is.execution().toString().length() > 0);
             is.close();
         }
     }

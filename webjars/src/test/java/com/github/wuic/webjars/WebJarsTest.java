@@ -38,6 +38,7 @@
 
 package com.github.wuic.webjars;
 
+import com.github.wuic.NutTypeFactory;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.webjars.WebJarNutDao;
@@ -50,6 +51,7 @@ import org.junit.runners.JUnit4;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -73,6 +75,7 @@ public class WebJarsTest {
         final WebJarNutDao dao = new WebJarNutDao();
         dao.init("/", null, false, false);
         dao.init(false, true, "");
+        dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         Assert.assertEquals(1, assertOpenStream(dao.create("angular.js", ProcessContext.DEFAULT)).size());
     }
 
@@ -86,12 +89,15 @@ public class WebJarsTest {
         WebJarNutDao dao = new WebJarNutDao();
         dao.init("/", null, true, false);
         dao.init(false, true, "");
+        dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
+
         Assert.assertEquals(306, assertOpenStream(dao.create(".*.js", ProcessContext.DEFAULT)).size());
         Assert.assertEquals(279, assertOpenStream(dao.create("i18n/.*.js", ProcessContext.DEFAULT)).size());
 
         dao = new WebJarNutDao();
         dao.init("/i18n", null, true, false);
         dao.init(false, true, "");
+        dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         Assert.assertEquals(279, assertOpenStream(dao.create(".*.js", ProcessContext.DEFAULT)).size());
     }
 
@@ -105,12 +111,14 @@ public class WebJarsTest {
         WebJarNutDao dao = new WebJarNutDao();
         dao.init("/", null, false, true);
         dao.init(false, true, "");
+        dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         Assert.assertEquals(306, assertOpenStream(dao.create("*.js", ProcessContext.DEFAULT)).size());
         Assert.assertEquals(279, assertOpenStream(dao.create("i18n/*.js", ProcessContext.DEFAULT)).size());
 
         dao = new WebJarNutDao();
         dao.init("/i18n", null, false, true);
         dao.init(false, true, "");
+        dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         Assert.assertEquals(279, assertOpenStream(dao.create("*.js", ProcessContext.DEFAULT)).size());
     }
 
@@ -128,7 +136,7 @@ public class WebJarsTest {
             InputStream is = null;
 
             try {
-                is = cn.openStream();
+                is = cn.openStream().inputStream();
                 Assert.assertNotNull(is);
                 Assert.assertNotEquals(0, IOUtils.copyStream(is, new ByteArrayOutputStream()));
             } finally {

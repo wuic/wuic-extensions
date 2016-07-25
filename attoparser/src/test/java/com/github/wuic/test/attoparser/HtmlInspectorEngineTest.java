@@ -38,7 +38,9 @@
 
 package com.github.wuic.test.attoparser;
 
+import com.github.wuic.EnumNutType;
 import com.github.wuic.NutType;
+import com.github.wuic.NutTypeFactory;
 import com.github.wuic.ProcessContext;
 import com.github.wuic.Workflow;
 import com.github.wuic.context.Context;
@@ -54,13 +56,14 @@ import com.github.wuic.engine.core.TextAggregatorEngine;
 import com.github.wuic.engine.core.HtmlInspectorEngine;
 import com.github.wuic.exception.WorkflowNotFoundException;
 import com.github.wuic.nut.ConvertibleNut;
+import com.github.wuic.nut.InMemoryNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.NutDao;
 import com.github.wuic.nut.NutsHeap;
-import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.dao.core.DiskNutDao;
 import com.github.wuic.util.FutureLong;
-import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.InMemoryInput;
+import com.github.wuic.util.InMemoryOutput;
 import com.github.wuic.util.NutUtils;
 import com.github.wuic.util.Pipe;
 import org.junit.Assert;
@@ -73,10 +76,8 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -125,8 +126,8 @@ public class HtmlInspectorEngineTest {
         final Context ctx = Mockito.mock(Context.class);
         final NutsHeap h = Mockito.mock(NutsHeap.class);
         final Nut n = Mockito.mock(Nut.class);
-        Mockito.when(n.openStream()).thenReturn(new ByteArrayInputStream("var workflow = '';".getBytes()));
-        Mockito.when(n.getInitialNutType()).thenReturn(NutType.JAVASCRIPT);
+        Mockito.when(n.openStream()).thenReturn(new InMemoryInput("var workflow = '';", Charset.defaultCharset().displayName()));
+        Mockito.when(n.getInitialNutType()).thenReturn(new NutType(EnumNutType.JAVASCRIPT, Charset.defaultCharset().displayName()));
         Mockito.when(n.getInitialName()).thenReturn("workflow.js");
         Mockito.when(n.getVersionNumber()).thenReturn(new FutureLong(1L));
         Mockito.when(h.getNuts()).thenReturn(Arrays.asList(n));
@@ -149,37 +150,39 @@ public class HtmlInspectorEngineTest {
         final DiskNutDao dao = new DiskNutDao();
         dao.init(getClass().getResource("/html").getFile(), null, -1, false, false);
         dao.init(false, true, null);
-        final NutsHeap heap = new NutsHeap(this, Arrays.asList("index.html"), dao, "heap");
+        dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
+        final NutsHeap heap = new NutsHeap(this, Arrays.asList("index.html"), dao, "heap", new NutTypeFactory(Charset.defaultCharset().displayName()));
         heap.checkFiles(ProcessContext.DEFAULT);
         final Map<NutType, NodeEngine> chains = new HashMap<NutType, NodeEngine>();
 
         final TextAggregatorEngine css = new TextAggregatorEngine();
         css.init(true);
         css.async(true);
-        chains.put(NutType.CSS, css);
+        chains.put(new NutType(EnumNutType.CSS, Charset.defaultCharset().displayName()), css);
 
         final TextAggregatorEngine jse = new TextAggregatorEngine();
         jse.init(true);
         jse.async(true);
-        chains.put(NutType.JAVASCRIPT, jse);
+        chains.put(new NutType(EnumNutType.JAVASCRIPT, Charset.defaultCharset().displayName()), jse);
 
-        final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx).chains(chains).processContext(ProcessContext.DEFAULT).build();
+        final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx, new NutTypeFactory(Charset.defaultCharset().displayName()))
+                .chains(chains).processContext(ProcessContext.DEFAULT).build();
         final HtmlInspectorEngine h = new HtmlInspectorEngine();
         h.init(true, true);
         final List<ConvertibleNut> nuts = h.parse(request);
 
         Assert.assertEquals(1, nuts.size());
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final InMemoryOutput os = new InMemoryOutput(Charset.defaultCharset().displayName());
         final ConvertibleNut nut = nuts.get(0);
         nut.transform(new Pipe.DefaultOnReady(os));
-        final String content = new String(os.toByteArray());
+        final String content = os.execution().toString();
         Assert.assertTrue(content, Pattern.compile(REGEX, Pattern.DOTALL).matcher(content).matches());
         Assert.assertNotNull(nut.getReferencedNuts());
         Assert.assertEquals(13, nut.getReferencedNuts().size());
 
         final ConvertibleNut js = nut.getReferencedNuts().get(11);
-        Assert.assertEquals(js.getInitialNutType(), NutType.JAVASCRIPT);
-        final String script = IOUtils.readString(new InputStreamReader(js.openStream()));
+        Assert.assertTrue(js.getInitialNutType().isBasedOn(EnumNutType.JAVASCRIPT));
+        final String script = js.openStream().execution().toString();
 
         Assert.assertTrue(script, script.contains("console.log(i);"));
         Assert.assertTrue(script, script.contains("i+=3"));
@@ -199,7 +202,8 @@ public class HtmlInspectorEngineTest {
         final DiskNutDao dao = new DiskNutDao();
         dao.init(getClass().getResource("/html").getFile(), null, -1, false, false);
         dao.init(false, true, null);
-        final NutsHeap heap = new NutsHeap(this, Arrays.asList("img-sequence.html"), dao, "heap");
+        dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
+        final NutsHeap heap = new NutsHeap(this, Arrays.asList("img-sequence.html"), dao, "heap", new NutTypeFactory(Charset.defaultCharset().displayName()));
         heap.checkFiles(ProcessContext.DEFAULT);
         final Map<NutType, NodeEngine> chains = new HashMap<NutType, NodeEngine>();
         final SpriteInspectorEngine e = new SpriteInspectorEngine();
@@ -208,8 +212,8 @@ public class HtmlInspectorEngineTest {
         i.init(true);
         i.init(new BinPacker<ConvertibleNut>());
         e.setNext(i);
-        chains.put(NutType.PNG, e);
-        final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx).chains(chains).processContext(ProcessContext.DEFAULT).build();
+        chains.put(new NutType(EnumNutType.PNG, Charset.defaultCharset().displayName()), e);
+        final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx, new NutTypeFactory(Charset.defaultCharset().displayName())).chains(chains).processContext(ProcessContext.DEFAULT).build();
         final HtmlInspectorEngine h = new HtmlInspectorEngine();
         h.init(true, true);
         final List<ConvertibleNut> nuts = h.parse(request);
@@ -238,7 +242,7 @@ public class HtmlInspectorEngineTest {
         final byte[] bytes = ("<script>" + script + "</script>").getBytes();
         final HtmlInspectorEngine engine = new HtmlInspectorEngine();
         engine.init(true, true);
-        ConvertibleNut nut = new ByteArrayNut(bytes, "index.html", NutType.HTML, 1L, true);
+        ConvertibleNut nut = new InMemoryNut(bytes, "index.html", new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.HTML), 1L, true);
         final ConvertibleNut finalNut = nut;
         final NutDao dao = Mockito.mock(NutDao.class);
         Mockito.when(dao.create(Mockito.anyString(), Mockito.any(ProcessContext.class))).thenAnswer(new Answer<Object>() {
@@ -252,20 +256,20 @@ public class HtmlInspectorEngineTest {
 
                 final Nut n = Mockito.mock(Nut.class);
                 Mockito.when(n.getVersionNumber()).thenReturn(new FutureLong(1L));
-                Mockito.when(n.getInitialNutType()).thenReturn(NutType.JAVASCRIPT);
+                Mockito.when(n.getInitialNutType()).thenReturn(new NutType(EnumNutType.JAVASCRIPT, Charset.defaultCharset().displayName()));
                 Mockito.when(n.getInitialName()).thenReturn(name);
-                Mockito.when(n.openStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+                Mockito.when(n.openStream()).thenReturn(new InMemoryInput(new byte[0], Charset.defaultCharset().displayName()));
                 return Arrays.asList(n);
             }
         });
 
-        final NutsHeap heap = new NutsHeap(this, Arrays.asList("index.html"), dao, "heap");
+        final NutsHeap heap = new NutsHeap(this, Arrays.asList("index.html"), dao, "heap", new NutTypeFactory(Charset.defaultCharset().displayName()));
         heap.checkFiles(ProcessContext.DEFAULT);
 
-        List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("", heap, null).build());
+        List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("", heap, null, new NutTypeFactory(Charset.defaultCharset().displayName())).build());
         Assert.assertEquals(1, res.size());
         final ConvertibleNut n = res.get(0);
-        n.transform(new Pipe.DefaultOnReady(Mockito.mock(ByteArrayOutputStream.class)));
+        n.transform(new Pipe.DefaultOnReady(new InMemoryOutput(Charset.defaultCharset().displayName())));
         Assert.assertNotNull(n.getReferencedNuts());
         Assert.assertEquals(1, n.getReferencedNuts().size());
         String content = NutUtils.readTransform(n.getReferencedNuts().get(0));

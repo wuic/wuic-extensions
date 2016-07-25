@@ -38,6 +38,7 @@
 
 package com.github.wuic.engine.htmlcompressor;
 
+import com.github.wuic.EnumNutType;
 import com.github.wuic.NutType;
 import com.github.wuic.config.Alias;
 import com.github.wuic.config.BooleanConfigParam;
@@ -47,13 +48,11 @@ import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
 import com.github.wuic.nut.ConvertibleNut;
-import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
+import com.github.wuic.util.Output;
 import com.googlecode.htmlcompressor.compressor.HtmlCompressor;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -94,7 +93,7 @@ public class HtmlCompressorEngine extends AbstractCompressorEngine {
      */
     @Override
     public List<NutType> getNutTypes() {
-        return Arrays.asList(NutType.HTML);
+        return Arrays.asList(getNutTypeFactory().getNutType(EnumNutType.HTML));
     }
 
     /**
@@ -109,8 +108,8 @@ public class HtmlCompressorEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public boolean transform(final InputStream is, final OutputStream os, final ConvertibleNut convertible, final EngineRequest request) throws IOException {
-        os.write(compressor.compress(IOUtils.readString(new InputStreamReader(is, request.getCharset()))).getBytes());
+    public boolean transform(final Input is, final Output os, final ConvertibleNut convertible, final EngineRequest request) throws IOException {
+        os.writer().write(compressor.compress(is.execution().toString()));
         return true;
     }
 }

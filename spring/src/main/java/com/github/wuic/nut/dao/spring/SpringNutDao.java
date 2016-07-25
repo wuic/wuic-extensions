@@ -50,6 +50,7 @@ import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.dao.servlet.ServletContextHandler;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -57,7 +58,6 @@ import org.springframework.web.context.support.ServletContextResourcePatternReso
 
 import javax.servlet.ServletContext;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -127,16 +127,16 @@ public class SpringNutDao extends AbstractNutDao implements ServletContextHandle
     @Override
     protected Nut accessFor(final String realPath, final NutType type, final ProcessContext processContext) throws IOException {
         checkBasePath();
-        return new ResourceNut(type, realPath, resolver.getResource(IOUtils.mergePath(getBasePath(), realPath)));
+        return new ResourceNut(type, realPath, resolver.getResource(IOUtils.mergePath(getBasePath(), realPath)), getCharset());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
+    public Input newInputStream(final String path, final ProcessContext processContext) throws IOException {
         checkBasePath();
-        return resolver.getResource(IOUtils.mergePath(getBasePath(), path)).getInputStream();
+        return newInput(resolver.getResource(IOUtils.mergePath(getBasePath(), path)).getInputStream());
     }
 
     /**

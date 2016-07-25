@@ -52,8 +52,12 @@ import com.amazonaws.services.sns.model.NotFoundException;
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.NutType;
 import com.github.wuic.ProcessContext;
-import com.github.wuic.config.*;
+import com.github.wuic.config.Alias;
+import com.github.wuic.config.BooleanConfigParam;
 import com.github.wuic.config.Config;
+import com.github.wuic.config.IntegerConfigParam;
+import com.github.wuic.config.ObjectConfigParam;
+import com.github.wuic.config.StringConfigParam;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.AbstractNut;
 import com.github.wuic.nut.AbstractNutDao;
@@ -61,11 +65,11 @@ import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -259,10 +263,10 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
+    public Input newInputStream(final String path, final ProcessContext processContext) throws IOException {
         try {
             connect();
-            return amazonS3Client.getObject(bucketName, path).getObjectContent();
+            return newInput(amazonS3Client.getObject(bucketName, path).getObjectContent());
         } catch (AmazonServiceException ase) {
             WuicException.throwStreamException(new IOException(String.format("Can't get S3Object on bucket %s  for nut key : %s", bucketName, path), ase));
             return null;
@@ -331,7 +335,7 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
          * {@inheritDoc}
          */
         @Override
-        public InputStream openStream() throws IOException {
+        public Input openStream() throws IOException {
             // Try to get S3 object
             S3Object s3Object;
 
@@ -346,7 +350,7 @@ public class S3NutDao extends AbstractNutDao implements ApplicationConfig {
             S3ObjectInputStream s3ObjectInputStream = null;
             try {
                 // Get S3Object content
-                return s3Object.getObjectContent();
+                return newInput(s3Object.getObjectContent());
             } finally {
                 // Close S3Object stream
                 IOUtils.close(s3ObjectInputStream);

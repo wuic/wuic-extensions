@@ -46,13 +46,14 @@ import com.github.wuic.config.Config;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.AbstractNutDao;
 import com.github.wuic.nut.FilePathNut;
+import com.github.wuic.nut.InMemoryNut;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.nut.dao.NutDaoService;
-import com.github.wuic.nut.ByteArrayNut;
 import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
 import com.github.wuic.path.DirectoryPath;
 import com.github.wuic.path.FilePath;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -300,7 +301,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
                 }
 
                 // Create nut
-                return new ByteArrayNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath, processContext).get(), false);
+                return new InMemoryNut(baos.toByteArray(), realPath, type, getVersionNumber(realPath, processContext).get(), false);
             }
         } catch (IOException ioe) {
             WuicException.throwStreamException(ioe);
@@ -362,14 +363,15 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
+    public Input newInputStream(final String path, final ProcessContext processContext) throws IOException {
         // Connect if necessary
         connect();
 
         ftpClient.changeWorkingDirectory(getBasePath());
 
         // Download path
-        return ftpClient.retrieveFileStream(path);
+        final InputStream is = ftpClient.retrieveFileStream(path);
+        return newInput(is);
     }
 
     /**
@@ -382,7 +384,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
 
         ftpClient.changeWorkingDirectory(getBasePath());
 
-        InputStream inputStream = newInputStream(path, processContext);
+        final Input inputStream = newInputStream(path, processContext);
         return inputStream != null && ftpClient.getReplyCode() != FILE_UNAVAILABLE_CODE;
     }
 
@@ -435,7 +437,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
                 throws IOException {
             super(FilePath.class.cast(
                     DirectoryPath.class.cast(
-                            IOUtils.buildPath(parent.getAbsolutePath())).getChild(name)), name, ft, versionNumber);
+                            IOUtils.buildPath(parent.getAbsolutePath(), getCharset())).getChild(name)), name, ft, versionNumber);
             file = new File(parent, name);
             processContext = pc;
         }
@@ -444,7 +446,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
          * {@inheritDoc}
          */
         @Override
-        public InputStream openStream() throws IOException {
+        public Input openStream() throws IOException {
             if (!file.exists()) {
                 final DownloadNut dn = DownloadNut.class.cast(accessFor(getInitialName(), getInitialNutType(), processContext));
                 file = dn.file;

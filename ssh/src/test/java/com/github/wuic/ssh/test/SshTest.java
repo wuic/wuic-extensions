@@ -44,7 +44,6 @@ import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
-import com.github.wuic.util.IOUtils;
 import com.github.wuic.config.bean.xml.FileXmlContextBuilderConfigurator;
 import com.jcraft.jsch.JSchException;
 import org.apache.sshd.SshServer;
@@ -64,8 +63,6 @@ import org.junit.runners.JUnit4;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -172,12 +169,9 @@ public class SshTest {
                 .runWorkflow("css-imagecss-image", ProcessContext.DEFAULT);
 
         Assert.assertFalse(group.isEmpty());
-        InputStream is;
 
         for (final Nut res : group) {
-            is = res.openStream();
-            Assert.assertTrue(IOUtils.readString(new InputStreamReader(is)).length() > 0);
-            is.close();
+            Assert.assertTrue(res.openStream().execution().toString().length() > 0);
         }
     }
 }

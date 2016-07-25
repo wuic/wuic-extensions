@@ -39,6 +39,7 @@
 package com.github.wuic.engine.closure;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.EnumNutType;
 import com.github.wuic.NutType;
 import com.github.wuic.config.Alias;
 import com.github.wuic.config.BooleanConfigParam;
@@ -50,23 +51,21 @@ import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
 import com.github.wuic.engine.core.SourceMapLineInspector;
 import com.github.wuic.exception.WuicException;
-import com.github.wuic.nut.ByteArrayNut;
+import com.github.wuic.nut.InMemoryNut;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.SourceMapNutImpl;
-import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.Input;
+import com.github.wuic.util.Output;
 import com.google.javascript.jscomp.AbstractCommandLineRunner;
 import com.google.javascript.jscomp.CompilationLevel;
 import com.google.javascript.jscomp.CompilerOptions;
 import com.google.javascript.jscomp.SourceFile;
 
+import java.io.CharArrayWriter;
 import java.io.PrintStream;
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.nio.charset.Charset;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
 
@@ -112,7 +111,7 @@ public class ClosureCompilerEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public boolean transform(final InputStream source, final OutputStream target, final ConvertibleNut convertibleNut, final EngineRequest request)
+    public boolean transform(final Input source, final Output output, final ConvertibleNut convertibleNut, final EngineRequest request)
             throws IOException {
 
         // Configures options
@@ -131,24 +130,27 @@ public class ClosureCompilerEngine extends AbstractCompressorEngine {
         final com.google.javascript.jscomp.Compiler compiler = new com.google.javascript.jscomp.Compiler(errorPs);
 
         // The nut name is used here so that any warnings or errors will cite line numbers in terms of input.
-        SourceFile input = SourceFile.fromInputStream(inputSource, source, Charset.forName(request.getCharset()));
+        SourceFile input = SourceFile.fromReader(inputSource, source.reader());
 
         // Compress the script into the temporary buffer
         compiler.compile(AbstractCommandLineRunner.getBuiltinExterns(CompilerOptions.Environment.BROWSER), Arrays.asList(input), options);
         errorPs.flush();
 
-        IOUtils.copyStream(new ByteArrayInputStream(compiler.toSource().getBytes(request.getCharset())), target);
+        final Writer target = output.writer();
+        target.write(compiler.toSource());
 
         // Create source map
-        final StringWriter sw = new StringWriter();
+        final CharArrayWriter caw = new CharArrayWriter();
         final String sourceMapName = convertibleNut.getName() + ".map";
 
-        compiler.getSourceMap().appendTo(sw, sourceMapName);
-        sw.flush();
-        final ConvertibleNut sourceMapNut = new ByteArrayNut(sw.toString().getBytes(request.getCharset()), sourceMapName, NutType.MAP, 0L, false);
+        compiler.getSourceMap().appendTo(caw, sourceMapName);
+        caw.flush();
+        final ConvertibleNut sourceMapNut =
+                new InMemoryNut(caw.toCharArray(), sourceMapName, getNutTypeFactory().getNutType(EnumNutType.MAP), 0L, false);
 
         try {
-            convertibleNut.setSource(new SourceMapNutImpl(request.getHeap(), convertibleNut, sourceMapNut, request.getProcessContext(), false));
+            convertibleNut.setSource(new SourceMapNutImpl(
+                    request.getHeap(), convertibleNut, sourceMapNut, request.getProcessContext(), false, getNutTypeFactory().getCharset()));
         } catch (WuicException we) {
             WuicException.throwStreamException(new IOException(we));
         }
@@ -163,7 +165,7 @@ public class ClosureCompilerEngine extends AbstractCompressorEngine {
      */
     @Override
     public List<NutType> getNutTypes() {
-        return Arrays.asList(NutType.JAVASCRIPT);
+        return Arrays.asList(getNutTypeFactory().getNutType(EnumNutType.JAVASCRIPT));
     }
 
     /**

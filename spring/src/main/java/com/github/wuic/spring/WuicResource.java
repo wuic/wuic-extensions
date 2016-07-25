@@ -84,7 +84,7 @@ public class WuicResource extends AbstractResource {
      */
     @Override
     public InputStream getInputStream() throws IOException {
-        return nut.openStream();
+        return nut.openStream().inputStream();
     }
 
     /**

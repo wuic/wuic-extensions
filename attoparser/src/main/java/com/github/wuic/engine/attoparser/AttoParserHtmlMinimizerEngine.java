@@ -39,6 +39,7 @@
 package com.github.wuic.engine.attoparser;
 
 import com.github.wuic.ApplicationConfig;
+import com.github.wuic.EnumNutType;
 import com.github.wuic.NutType;
 import com.github.wuic.config.Alias;
 import com.github.wuic.config.BooleanConfigParam;
@@ -49,16 +50,15 @@ import com.github.wuic.engine.EngineType;
 import com.github.wuic.engine.core.AbstractCompressorEngine;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ConvertibleNut;
+import com.github.wuic.util.Input;
+import com.github.wuic.util.Output;
 import org.attoparser.IMarkupHandler;
 import org.attoparser.ParseException;
 import org.attoparser.minimize.MinimizeHtmlMarkupHandler;
 import org.attoparser.output.OutputMarkupHandler;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
 
@@ -99,7 +99,7 @@ public class AttoParserHtmlMinimizerEngine extends AbstractCompressorEngine {
      */
     @Override
     public List<NutType> getNutTypes() {
-        return Arrays.asList(NutType.HTML);
+        return Arrays.asList(getNutTypeFactory().getNutType(EnumNutType.HTML));
     }
 
     /**
@@ -114,20 +114,20 @@ public class AttoParserHtmlMinimizerEngine extends AbstractCompressorEngine {
      * {@inheritDoc}
      */
     @Override
-    public boolean transform(final InputStream is,
-                             final OutputStream os,
+    public boolean transform(final Input is,
+                             final Output os,
                              final ConvertibleNut nut,
                              final EngineRequest request)
             throws IOException {
         // The output handler will be the last in the handler chain
-        final OutputStreamWriter osw = new OutputStreamWriter(os);
+        final Writer osw = os.writer();
         final IMarkupHandler outputHandler = new OutputMarkupHandler(osw);
 
         // The minimizer handler will do its job before events reach output handler
         final IMarkupHandler handler = new MinimizeHtmlMarkupHandler(minimizeMode, outputHandler);
 
         try {
-            AssetsMarkupAttoParser.PARSER.parse(new InputStreamReader(is, request.getCharset()), handler);
+            AssetsMarkupAttoParser.PARSER.parse(is.reader(), handler);
             osw.flush();
         } catch (ParseException pe) {
             WuicException.throwBadArgumentException(pe);

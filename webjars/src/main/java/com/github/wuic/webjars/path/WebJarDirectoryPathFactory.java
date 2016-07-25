@@ -74,14 +74,21 @@ public class WebJarDirectoryPathFactory implements DirectoryPathFactory {
     private final Map<String, String> locations;
 
     /**
+     * Charset to use.
+     */
+    private final String charset;
+
+    /**
      * <p>
      * Creates a new instance.
      * </p>
      *
+     * @param cs the charset
      * @param wjal the asset locator
      */
-    public WebJarDirectoryPathFactory(final WebJarAssetLocator wjal) {
+    public WebJarDirectoryPathFactory(final WebJarAssetLocator wjal, final String cs) {
         webJarAssetLocator = wjal;
+        charset = cs;
         locations = new HashMap<String, String>();
 
         for (final String location : webJarAssetLocator.listAssets(WebJarAssetLocator.WEBJARS_PATH_PREFIX)) {
@@ -98,6 +105,6 @@ public class WebJarDirectoryPathFactory implements DirectoryPathFactory {
      */
     @Override
     public DirectoryPath create(final String path) {
-        return new WebJarDirectoryPath(path, null, webJarAssetLocator, locations);
+        return new WebJarDirectoryPath(path, null, webJarAssetLocator, locations, charset);
     }
 }

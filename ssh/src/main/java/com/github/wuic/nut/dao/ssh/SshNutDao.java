@@ -52,13 +52,14 @@ import com.github.wuic.nut.setter.ProxyUrisPropertySetter;
 
 import java.io.IOException;
 
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
+import com.github.wuic.util.DefaultInput;
+import com.github.wuic.util.Input;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.ChannelSftp;
@@ -153,7 +154,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
             config.put("StrictHostKeyChecking", "no");
             session.setConfig(config);
         } catch (JSchException je) {
-            throw new IllegalStateException("Can't open SSH session", je);
+            WuicException.throwBadStateException(new IllegalStateException("Can't open SSH session", je));
         }
     }
 
@@ -267,12 +268,12 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      * {@inheritDoc}
      */
     @Override
-    public InputStream newInputStream(final String path, final ProcessContext processContext) throws IOException {
+    public Input newInputStream(final String path, final ProcessContext processContext) throws IOException {
         ChannelSftp channel = null;
 
         try {
             channel = open();
-            return channel.get(path);
+            return newInput(channel.get(path));
         } catch (SftpException se) {
             WuicException.throwStreamException(new IOException("An SSH FTP error prevent remote file loading", se));
             return null;
@@ -288,18 +289,13 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
      */
     @Override
     public Boolean exists(final String path, final ProcessContext processContext) throws IOException {
-        ChannelSftp channel = null;
-        boolean exception = false;
+        ChannelSftp channel;
+
         try {
             channel = open();
         } catch (SftpException se) {
-            exception = true;
             WuicException.throwStreamException(new IOException("An SSH FTP error prevent remote file loading", se));
             return false;
-        } finally {
-            if (exception) {
-                channel.disconnect();
-            }
         }
 
         try {
@@ -373,7 +369,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
          * {@inheritDoc}
          */
         @Override
-        public InputStream openStream() throws IOException {
+        public Input openStream() throws IOException {
             ChannelSftp channel;
 
             try {
@@ -382,7 +378,7 @@ public class SshNutDao extends AbstractNutDao implements ApplicationConfig {
                 channel = (ChannelSftp) session.openChannel(SFTP_CHANNEL);
                 channel.connect();
                 channel.cd(getBasePath());
-                return channel.get(getInitialName());
+                return newInput(channel.get(getInitialName()));
             } catch (JSchException je) {
                 WuicException.throwStreamException(new IOException(CANNOT_LOAD_MESSAGE, je));
                 return null;
