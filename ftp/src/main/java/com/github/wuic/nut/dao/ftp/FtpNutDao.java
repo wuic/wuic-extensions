@@ -54,6 +54,8 @@ import com.github.wuic.path.DirectoryPath;
 import com.github.wuic.path.FilePath;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.Input;
+import com.github.wuic.util.TemporaryFileManager;
+import com.github.wuic.util.TemporaryFileManagerHolder;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -87,7 +89,7 @@ import java.util.regex.Pattern;
  */
 @NutDaoService
 @Alias("ftp")
-public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
+public class FtpNutDao extends AbstractNutDao implements TemporaryFileManagerHolder {
 
     /**
      * Reply code that indicates the file is unavailable.
@@ -140,6 +142,11 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
     private Boolean downloadToDisk;
 
     /**
+     * The temporary file manager.
+     */
+    private TemporaryFileManager temporaryFileManager;
+
+    /**
      * <p>
      * Initializes a new instance.
      * </p>
@@ -149,9 +156,9 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * @param pollingSeconds interval in seconds for polling feature (-1 to disable)
      */
     @Config
-    public void init(@StringConfigParam(propertyKey = BASE_PATH, defaultValue = "") final String path,
-                     @ObjectConfigParam(defaultValue = "", propertyKey = PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxies,
-                     @IntegerConfigParam(defaultValue = -1, propertyKey = POLLING_INTERVAL) final int pollingSeconds) {
+    public void init(@StringConfigParam(propertyKey = ApplicationConfig.BASE_PATH, defaultValue = "") final String path,
+                     @ObjectConfigParam(defaultValue = "", propertyKey = ApplicationConfig.PROXY_URIS, setter = ProxyUrisPropertySetter.class) final String[] proxies,
+                     @IntegerConfigParam(defaultValue = -1, propertyKey = ApplicationConfig.POLLING_INTERVAL) final int pollingSeconds) {
         super.init(path, proxies, pollingSeconds);
     }
 
@@ -169,13 +176,13 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
      * @param dtd {@code true} if the resources should be download from the FTP to the disk and not stored in memory
      */
     @Config
-    public void init(@BooleanConfigParam(defaultValue = false, propertyKey = SECRET_PROTOCOL) final Boolean ftps,
-                     @StringConfigParam(defaultValue = "localhost", propertyKey = SERVER_DOMAIN) final String host,
-                     @IntegerConfigParam(defaultValue = FTPClient.DEFAULT_PORT, propertyKey = SERVER_PORT) final int p,
-                     @StringConfigParam(defaultValue = "", propertyKey = LOGIN) final String user,
-                     @StringConfigParam(defaultValue = "", propertyKey = PASSWORD) final String pwd,
-                     @BooleanConfigParam(defaultValue = false, propertyKey = REGEX) final Boolean regex,
-                     @BooleanConfigParam(defaultValue = false, propertyKey = DOWNLOAD_TO_DISK) final Boolean dtd) {
+    public void init(@BooleanConfigParam(defaultValue = false, propertyKey = ApplicationConfig.SECRET_PROTOCOL) final Boolean ftps,
+                     @StringConfigParam(defaultValue = "localhost", propertyKey = ApplicationConfig.SERVER_DOMAIN) final String host,
+                     @IntegerConfigParam(defaultValue = FTPClient.DEFAULT_PORT, propertyKey = ApplicationConfig.SERVER_PORT) final int p,
+                     @StringConfigParam(defaultValue = "", propertyKey = ApplicationConfig.LOGIN) final String user,
+                     @StringConfigParam(defaultValue = "", propertyKey = ApplicationConfig.PASSWORD) final String pwd,
+                     @BooleanConfigParam(defaultValue = false, propertyKey = ApplicationConfig.REGEX) final Boolean regex,
+                     @BooleanConfigParam(defaultValue = false, propertyKey = ApplicationConfig.DOWNLOAD_TO_DISK) final Boolean dtd) {
         ftpClient = ftps ? new FTPSClient(Boolean.TRUE) : new FTPClient();
         hostName = host;
         userName = user;
@@ -257,6 +264,13 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
 
             return retval;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setTemporaryFileManager(final TemporaryFileManager temporaryFileManager) {
+        this.temporaryFileManager = temporaryFileManager;
     }
 
     /**
@@ -437,7 +451,7 @@ public class FtpNutDao extends AbstractNutDao implements ApplicationConfig {
                 throws IOException {
             super(FilePath.class.cast(
                     DirectoryPath.class.cast(
-                            IOUtils.buildPath(parent.getAbsolutePath(), getCharset())).getChild(name)), name, ft, versionNumber);
+                            IOUtils.buildPath(parent.getAbsolutePath(), getCharset(), temporaryFileManager)).getChild(name)), name, ft, versionNumber);
             file = new File(parent, name);
             processContext = pc;
         }
