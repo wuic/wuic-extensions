@@ -149,8 +149,8 @@ public class ClosureCompilerEngine extends AbstractCompressorEngine {
                 new InMemoryNut(caw.toCharArray(), sourceMapName, getNutTypeFactory().getNutType(EnumNutType.MAP), 0L, false);
 
         try {
-            convertibleNut.setSource(new SourceMapNutImpl(
-                    request.getHeap(), convertibleNut, sourceMapNut, request.getProcessContext(), false, getNutTypeFactory().getCharset()));
+            convertibleNut.setSource(
+                    new SourceMapNutImpl(request.getHeap(), convertibleNut, sourceMapNut, request.getProcessContext(), false));
         } catch (WuicException we) {
             WuicException.throwStreamException(new IOException(we));
         }
