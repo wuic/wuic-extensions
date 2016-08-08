@@ -84,8 +84,7 @@ import static com.github.wuic.ApplicationConfig.USE_NODE_JS;
  */
 @EngineService(injectDefaultToWorkflow = true)
 @Alias("typescript")
-public class TypeScriptConverterEngine extends AbstractConverterEngine
-        implements BiFunction<CommandLineConverterEngine.CommandLineInfo, EngineRequest, Boolean> {
+public class TypeScriptConverterEngine extends AbstractConverterEngine {
 
     /**
      * ARGS file name.
@@ -116,6 +115,11 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine
      * Try to use the directory containing source files as parent directory for generated content.
      */
     private Boolean resolvedFileDirectoryAsWorkingDirectory;
+
+    /**
+     * Internal executor.
+     */
+    private BiFunction<CommandLineConverterEngine.CommandLineInfo, EngineRequest, Boolean> executor = new Executor();
 
     /**
      * <p>
@@ -163,62 +167,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine
     @Override
     public Input transform(final Input is, final ConvertibleNut nut, final EngineRequest request)
             throws IOException {
-        return CommandLineConverterEngine.execute(is, nut, request, getNutTypeFactory(), this, resolvedFileDirectoryAsWorkingDirectory);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Boolean apply(final CommandLineConverterEngine.CommandLineInfo commandLineInfo, final EngineRequest request) {
-        final File compilationResult = commandLineInfo.getCompilationResult();
-        final List<String> pathsToCompile = commandLineInfo.getPathsToCompile();
-        OutputStream argsOutputStream = null;
-        Boolean retval = Boolean.TRUE;
-        final File workingDir = compilationResult.getParentFile();
-
-        try {
-            log.debug("absolute path: {}", workingDir.getAbsolutePath());
-
-            final File argsFile = new File(workingDir, ARGS_FILE);
-            argsOutputStream = new FileOutputStream(argsFile);
-
-            for (final String pathToCompile : pathsToCompile) {
-                argsOutputStream.write((pathToCompile + " ").getBytes());
-            }
-
-            // Do not generate source map in best effort
-            if (!request.isBestEffort()) {
-                argsOutputStream.write(" --sourcemap".getBytes());
-            }
-
-            argsOutputStream.write((" -t " + ecmaScriptVersion + " --out ").getBytes());
-            argsOutputStream.write(compilationResult.getAbsolutePath().getBytes());
-            IOUtils.close(argsOutputStream);
-
-            if (env == null) {
-                retval = node(workingDir, compilationResult);
-            } else {
-                retval = rhino(workingDir.getAbsolutePath());
-            }
-
-            if (!compilationResult.exists()) {
-                log.error("{} does not exists, which means that some errors break compilation. Check log above to see them.");
-                retval = Boolean.FALSE;
-            }
-        } catch (IOException ioe) {
-            WuicException.throwBadStateException(ioe);
-        } catch (InterruptedException ie) {
-            WuicException.throwBadStateException(ie);
-        } catch (NodeException ne) {
-            WuicException.throwBadStateException(ne);
-        } catch (ExecutionException ee) {
-            WuicException.throwBadStateException(ee);
-        } finally {
-            IOUtils.close(argsOutputStream);
-        }
-
-        return retval;
+        return CommandLineConverterEngine.execute(is, nut, request, getNutTypeFactory(), executor, resolvedFileDirectoryAsWorkingDirectory);
     }
 
     /**
@@ -297,5 +246,71 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine
         final ScriptFuture f = script.execute();
         f.get();
         return Boolean.TRUE;
+    }
+
+    /**
+     * <p>
+     * Internal executor.
+     * </p>
+     *
+     * @author Guillaume DROUET
+     * @since 0.5.3
+     */
+    private class Executor implements BiFunction<CommandLineConverterEngine.CommandLineInfo, EngineRequest, Boolean> {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Boolean apply(final CommandLineConverterEngine.CommandLineInfo commandLineInfo, final EngineRequest request) {
+            final File compilationResult = commandLineInfo.getCompilationResult();
+            final List<String> pathsToCompile = commandLineInfo.getPathsToCompile();
+            OutputStream argsOutputStream = null;
+            Boolean retval = Boolean.TRUE;
+            final File workingDir = compilationResult.getParentFile();
+
+            try {
+                log.debug("absolute path: {}", workingDir.getAbsolutePath());
+
+                final File argsFile = new File(workingDir, ARGS_FILE);
+                argsOutputStream = new FileOutputStream(argsFile);
+
+                for (final String pathToCompile : pathsToCompile) {
+                    argsOutputStream.write((pathToCompile + " ").getBytes());
+                }
+
+                // Do not generate source map in best effort
+                if (!request.isBestEffort()) {
+                    argsOutputStream.write(" --sourcemap".getBytes());
+                }
+
+                argsOutputStream.write((" -t " + ecmaScriptVersion + " --out ").getBytes());
+                argsOutputStream.write(compilationResult.getAbsolutePath().getBytes());
+                IOUtils.close(argsOutputStream);
+
+                if (env == null) {
+                    retval = node(workingDir, compilationResult);
+                } else {
+                    retval = rhino(workingDir.getAbsolutePath());
+                }
+
+                if (!compilationResult.exists()) {
+                    log.error("{} does not exists, which means that some errors break compilation. Check log above to see them.");
+                    retval = Boolean.FALSE;
+                }
+            } catch (IOException ioe) {
+                WuicException.throwBadStateException(ioe);
+            } catch (InterruptedException ie) {
+                WuicException.throwBadStateException(ie);
+            } catch (NodeException ne) {
+                WuicException.throwBadStateException(ne);
+            } catch (ExecutionException ee) {
+                WuicException.throwBadStateException(ee);
+            } finally {
+                IOUtils.close(argsOutputStream);
+            }
+
+            return retval;
+        }
     }
 }
