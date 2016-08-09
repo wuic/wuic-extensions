@@ -47,6 +47,7 @@ import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.core.AbstractCacheEngine;
 
+import com.github.wuic.engine.setter.CacheProviderClassPropertySetter;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 
