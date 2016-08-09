@@ -72,6 +72,15 @@ dependencies. What you have simply to do is to include the extension's maven dep
         </td>
     </tr>
     <tr>
+        <td>wuic-hazelcast</td>
+        <td>
+            Reduce response time by caching on server side with Hazelcast framework.
+        </td>
+        <td>
+            Engine
+        </td>
+    </tr>
+    <tr>
         <td>wuic-yuicompressor</td>
         <td>
             Minify Javascript and CSS files with YUICompressor.
