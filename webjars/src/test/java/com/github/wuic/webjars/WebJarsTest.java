@@ -38,20 +38,35 @@
 
 package com.github.wuic.webjars;
 
+import com.github.wuic.ApplicationConfig;
+import com.github.wuic.EnumNutType;
 import com.github.wuic.NutTypeFactory;
 import com.github.wuic.ProcessContext;
+import com.github.wuic.config.ObjectBuilderFactory;
+import com.github.wuic.context.Context;
+import com.github.wuic.context.ContextBuilder;
+import com.github.wuic.engine.Engine;
+import com.github.wuic.engine.EngineService;
+import com.github.wuic.engine.core.CommandLineConverterEngine;
+import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.dao.core.ClasspathNutDao;
 import com.github.wuic.nut.dao.webjars.WebJarNutDao;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.NutUtils;
+import com.github.wuic.util.UrlUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.webjars.WebJarAssetLocator;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -76,6 +91,7 @@ public class WebJarsTest {
         dao.init("/", null, false, false);
         dao.init(false, true, "");
         dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
+        dao.setWebJarAssetLocator(new WebJarAssetLocator());
         Assert.assertEquals(1, assertOpenStream(dao.create("angular.js", ProcessContext.DEFAULT)).size());
     }
 
@@ -89,14 +105,16 @@ public class WebJarsTest {
         WebJarNutDao dao = new WebJarNutDao();
         dao.init("/", null, true, false);
         dao.init(false, true, "");
+        dao.setWebJarAssetLocator(new WebJarAssetLocator());
         dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
 
-        Assert.assertEquals(306, assertOpenStream(dao.create(".*.js", ProcessContext.DEFAULT)).size());
+        Assert.assertEquals(442, assertOpenStream(dao.create(".*.js", ProcessContext.DEFAULT)).size());
         Assert.assertEquals(279, assertOpenStream(dao.create("i18n/.*.js", ProcessContext.DEFAULT)).size());
 
         dao = new WebJarNutDao();
         dao.init("/i18n", null, true, false);
         dao.init(false, true, "");
+        dao.setWebJarAssetLocator(new WebJarAssetLocator());
         dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         Assert.assertEquals(279, assertOpenStream(dao.create(".*.js", ProcessContext.DEFAULT)).size());
     }
@@ -111,15 +129,96 @@ public class WebJarsTest {
         WebJarNutDao dao = new WebJarNutDao();
         dao.init("/", null, false, true);
         dao.init(false, true, "");
+        dao.setWebJarAssetLocator(new WebJarAssetLocator());
         dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
-        Assert.assertEquals(306, assertOpenStream(dao.create("*.js", ProcessContext.DEFAULT)).size());
+        Assert.assertEquals(442, assertOpenStream(dao.create("*.js", ProcessContext.DEFAULT)).size());
         Assert.assertEquals(279, assertOpenStream(dao.create("i18n/*.js", ProcessContext.DEFAULT)).size());
 
         dao = new WebJarNutDao();
         dao.init("/i18n", null, false, true);
         dao.init(false, true, "");
+        dao.setWebJarAssetLocator(new WebJarAssetLocator());
         dao.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         Assert.assertEquals(279, assertOpenStream(dao.create("*.js", ProcessContext.DEFAULT)).size());
+    }
+
+    /**
+     * <p>
+     * Tests the command execution with node_modules.
+     * </p>
+     *
+     * @throws Exception if test fails
+     */
+    @Test
+    public void commandTest() throws Exception {
+        final ObjectBuilderFactory<Engine> factory =
+                new ObjectBuilderFactory<Engine>(EngineService.class, CommandLineConverterEngine.class);
+
+        final WebJarInspector inspector = new WebJarInspector();
+        ContextBuilder ctx = new ContextBuilder(factory, null, null, false, inspector);
+        final String sourceMap = "{"
+                + "  \"version\": 3,"
+                + "  \"file\": \"testcode.js\","
+                + "  \"sections\": ["
+                + "    {"
+                + "      \"map\": {"
+                + "         \"version\": 3,"
+                + "         \"mappings\": \"AAAAA,QAASA,UAAS,EAAG;\","
+                + "         \"sources\": [\"testcode.js\"],"
+                + "         \"names\": [\"foo\"]"
+                + "      },"
+                + "      \"offset\": {"
+                + "        \"line\": 1,"
+                + "        \"column\": 1"
+                + "      }"
+                + "    }"
+                + "  ]"
+                + "}";
+
+        final String command = String.format("echo %s > %s | echo %s > %s",
+                CommandLineConverterEngine.PATH_TOKEN,
+                CommandLineConverterEngine.OUT_PATH_TOKEN,
+                sourceMap,
+                CommandLineConverterEngine.SOURCE_MAP_TOKEN);
+
+        final Context c = ctx.configureDefault().tag(this)
+                .processContext(ProcessContext.DEFAULT)
+                .contextEngineBuilder(CommandLineConverterEngine.class)
+                .property(ApplicationConfig.INPUT_NUT_TYPE, EnumNutType.JAVASCRIPT.name())
+                .property(ApplicationConfig.OUTPUT_NUT_TYPE, new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.JSX).name())
+                .property(ApplicationConfig.COMMAND, command)
+                .toContext()
+                .heap("heap", ContextBuilder.getDefaultBuilderId(ClasspathNutDao.class), new String[] { "foo.js" })
+                .template("tpl", new String[]{
+                        ContextBuilder.getDefaultBuilderId(CommandLineConverterEngine.class)
+                }).workflow("workflow", true, ".*", "tpl").releaseTag()
+                .build();
+
+        final List<ConvertibleNut> r = c.process("", "workflowheap", UrlUtils.urlProviderFactory(), ProcessContext.DEFAULT);
+        Assert.assertNotNull(r);
+        Assert.assertEquals(1, r.size());
+        final String str = NutUtils.readTransform(r.get(0));
+        final File file = new File(new File(str.substring(0, str.indexOf(" "))).getParentFile(), "node_modules");
+        Assert.assertTrue(file.getAbsolutePath(), file.exists());
+        final List<String> assets = new ArrayList<String>();
+        final WebJarAssetLocator locator = new WebJarAssetLocator();
+
+        for (final String asset : locator.listAssets("angular-dynamic-locale")) {
+            assets.add(asset.substring(WebJarInspector.PREFIX.length())
+                    .replace("/0.1.32/", "/"));
+        }
+
+        // package.json available
+        for (final String asset : locator.listAssets("angular__common")) {
+            assets.add(asset.substring(WebJarInspector.PREFIX.length())
+                    .replace("angular__common", "@angular/common")
+                    .replace("/2.0.0-rc.5/", "/"));
+        }
+
+        for (final String asset : assets) {
+            final File f = new File(file, asset);
+            Assert.assertTrue(f.getAbsolutePath(), f.exists());
+        }
     }
 
     /**

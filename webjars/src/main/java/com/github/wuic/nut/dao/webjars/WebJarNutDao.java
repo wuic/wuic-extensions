@@ -79,15 +79,6 @@ public class WebJarNutDao extends PathNutDao {
 
     /**
      * <p>
-     * Builds a new instance.
-     * </p>
-     */
-    public WebJarNutDao() {
-        webJarAssetLocator = new WebJarAssetLocator();
-    }
-
-    /**
-     * <p>
      * Initializes a new instance.
      * </p>
      *
@@ -118,5 +109,16 @@ public class WebJarNutDao extends PathNutDao {
         }
 
         return DirectoryPath.class.cast(file);
+    }
+
+    /**
+     * <p>
+     * Sets the asset locator.
+     * </p>
+     *
+     * @param webJarAssetLocator the asset locator
+     */
+    public void setWebJarAssetLocator(final WebJarAssetLocator webJarAssetLocator) {
+        this.webJarAssetLocator = webJarAssetLocator;
     }
 }
