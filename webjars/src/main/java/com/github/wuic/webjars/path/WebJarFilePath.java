@@ -43,6 +43,7 @@ import com.github.wuic.path.FilePath;
 import com.github.wuic.path.core.SimplePath;
 import com.github.wuic.util.DefaultInput;
 import com.github.wuic.util.Input;
+import com.github.wuic.util.NumberUtils;
 import org.webjars.WebJarAssetLocator;
 
 import java.io.IOException;
@@ -68,6 +69,11 @@ public class WebJarFilePath extends SimplePath implements FilePath {
     private final long version;
 
     /**
+     * The version in the WebJar path.
+     */
+    private final String pathVersion;
+
+    /**
      * <p>
      * Creates a new instance.
      * </p>
@@ -78,10 +84,34 @@ public class WebJarFilePath extends SimplePath implements FilePath {
      * @param wasl the asset locator
      * @param cs the charset
      */
-    public WebJarFilePath(final String n, final long version, final DirectoryPath dp, final WebJarAssetLocator wasl, final String cs) {
+    public WebJarFilePath(final String n,
+                          final String version,
+                          final DirectoryPath dp,
+                          final WebJarAssetLocator wasl,
+                          final String cs) {
         super(n, dp, cs);
         this.webJarAssetLocator = wasl;
-        this.version = version;
+        this.version = computeVersion(version);
+        this.pathVersion = version;
+    }
+
+    /**
+     * <p>
+     * Compute a {@code String} representation of the version number. All dot (in case of float value) are removed and
+     * then the resulting {@code String} is simply parsed to a {@code long}.
+     * </p>
+     *
+     * @param version the version
+     * @return the version
+     */
+    private static long computeVersion(final String version) {
+        final String integer = version.replaceAll("[^\\d]", "");
+
+        if (!NumberUtils.isNumber(integer)) {
+            throw new IllegalStateException(String.format("Bad number format: %s", version));
+        }
+
+        return Long.parseLong(integer);
     }
 
     /**
@@ -97,6 +127,7 @@ public class WebJarFilePath extends SimplePath implements FilePath {
      */
     @Override
     public Input openStream() throws IOException {
-        return new DefaultInput(getClass().getResourceAsStream('/' + webJarAssetLocator.getFullPath(getAbsolutePath())), getCharset());
+        final String path = pathVersion + getAbsolutePath();
+        return new DefaultInput(getClass().getResourceAsStream('/' + webJarAssetLocator.getFullPath(path)), getCharset());
     }
 }

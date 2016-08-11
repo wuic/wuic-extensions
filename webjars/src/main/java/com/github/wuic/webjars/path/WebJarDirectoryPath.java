@@ -42,7 +42,6 @@ import com.github.wuic.path.AbstractDirectoryPath;
 import com.github.wuic.path.DirectoryPath;
 import com.github.wuic.path.Path;
 import com.github.wuic.util.IOUtils;
-import com.github.wuic.util.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webjars.WebJarAssetLocator;
@@ -145,7 +144,7 @@ public class WebJarDirectoryPath extends AbstractDirectoryPath {
      *
      * @param name the name
      * @param parent the parent
-     * @param wjal the
+     * @param wjal the asset locator
      * @param charset the charset
      * @param locations all locations associated to their version
      */
@@ -171,25 +170,6 @@ public class WebJarDirectoryPath extends AbstractDirectoryPath {
     }
 
     /**
-     * <p>
-     * Compute a {@code String} representation of the version number. All dot (in case of float value) are removed and
-     * then the resulting {@code String} is simply parsed to a {@code long}.
-     * </p>
-     *
-     * @param version the version
-     * @return the version
-     */
-    private static long computeVersion(final String version) {
-        final String integer = version.replaceAll("\\.", "");
-
-        if (!NumberUtils.isNumber(integer)) {
-            throw new IllegalStateException(String.format("Bad number format: %s", version));
-        }
-
-        return Long.parseLong(integer);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -204,7 +184,7 @@ public class WebJarDirectoryPath extends AbstractDirectoryPath {
             throw new FileNotFoundException();
         } else if (!subPath.isDirectory()) {
             // Single path
-            return new WebJarFilePath(child, computeVersion(subPath.getVersion()), this, webJarAssetLocator, getCharset());
+            return new WebJarFilePath(child, subPath.getVersion(), this, webJarAssetLocator, getCharset());
         } else {
             // Compute all the paths inside this directory
             final Map<String, String> paths = new HashMap<String, String>();
