@@ -41,6 +41,7 @@ package com.github.wuic.webjars;
 import com.github.wuic.config.ObjectBuilderInspector;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.core.CommandLineConverterEngine;
+import com.github.wuic.engine.core.ExecutorHolder;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.dao.webjars.WebJarNutDao;
 import com.github.wuic.util.BiFunction;
@@ -62,9 +63,9 @@ import java.util.Set;
 
 /**
  * <p>
- * This inspector decorates any created {@link CommandLineConverterEngine} with an executor that installs WebJars
+ * This inspector decorates any created {@link ExecutorHolder} with an executor that installs WebJars
  * available in the classpath to the parent of given {@link CommandLineConverterEngine.CommandLineInfo#compilationResult}
- * in the than NPM. This guarantee to any {@link CommandLineConverterEngine} that any command will be executed in a context
+ * in the than NPM. This guarantee to any {@link ExecutorHolder} that any command will be executed in a context
  * where 'node_modules' are available.
  * </p>
  *
@@ -75,7 +76,7 @@ import java.util.Set;
  * @author Guillaume DROUET
  * @since 0.5.3
  */
-@ObjectBuilderInspector.InspectedType({ WebJarNutDao.class, CommandLineConverterEngine.class })
+@ObjectBuilderInspector.InspectedType({ WebJarNutDao.class, ExecutorHolder.class })
 public class WebJarInspector implements ObjectBuilderInspector {
 
     /**
@@ -116,8 +117,8 @@ public class WebJarInspector implements ObjectBuilderInspector {
         if (object instanceof WebJarNutDao) {
             WebJarNutDao.class.cast(object).setWebJarAssetLocator(webJarAssetLocator);
         } else {
-            final CommandLineConverterEngine engine = CommandLineConverterEngine.class.cast(object);
-            engine.setExecutor(new WebJarExecutor(engine.getExecutor()));
+            final ExecutorHolder executorHolder = ExecutorHolder.class.cast(object);
+            executorHolder.setExecutor(new WebJarExecutor(executorHolder.getExecutor()));
         }
 
         return object;

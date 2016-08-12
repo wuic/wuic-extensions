@@ -48,6 +48,7 @@ import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.engine.core.AbstractConverterEngine;
 import com.github.wuic.engine.core.CommandLineConverterEngine;
+import com.github.wuic.engine.core.ExecutorHolder;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.BiFunction;
@@ -84,7 +85,7 @@ import static com.github.wuic.ApplicationConfig.USE_NODE_JS;
  */
 @EngineService(injectDefaultToWorkflow = true)
 @Alias("typescript")
-public class TypeScriptConverterEngine extends AbstractConverterEngine {
+public class TypeScriptConverterEngine extends AbstractConverterEngine implements ExecutorHolder {
 
     /**
      * ARGS file name.
@@ -168,6 +169,22 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine {
     public Input transform(final Input is, final ConvertibleNut nut, final EngineRequest request)
             throws IOException {
         return CommandLineConverterEngine.execute(is, nut, request, getNutTypeFactory(), executor, resolvedFileDirectoryAsWorkingDirectory);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setExecutor(final BiFunction<CommandLineConverterEngine.CommandLineInfo, EngineRequest, Boolean> executor) {
+        this.executor = executor;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BiFunction<CommandLineConverterEngine.CommandLineInfo, EngineRequest, Boolean> getExecutor() {
+        return executor;
     }
 
     /**

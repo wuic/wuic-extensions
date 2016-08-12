@@ -45,6 +45,7 @@ import com.github.wuic.config.ObjectBuilderInspector;
 import com.github.wuic.engine.EngineRequest;
 import com.github.wuic.engine.core.CommandLineConverterEngine;
 import com.github.wuic.engine.core.CommandLineConverterEngine.CommandLineInfo;
+import com.github.wuic.engine.core.ExecutorHolder;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.util.BiFunction;
 import com.github.wuic.util.IOUtils;
@@ -70,15 +71,15 @@ import java.util.Set;
 
 /**
  * <p>
- * This inspector decorates any created {@link CommandLineConverterEngine} with an executor that installs {@code Node.JS}
+ * This inspector decorates any created {@link ExecutorHolder} with an executor that installs {@code Node.JS}
  * and {@code NPM} in the parent of given {@link CommandLineInfo#compilationResult}. This guarantee to any
- * {@link CommandLineConverterEngine} that any command will be executed in a context where 'npm' command is available.
+ * {@link ExecutorHolder} that any command will be executed in a context where 'npm' command is available.
  * </p>
  *
  * @author Guillaume DROUET
  * @since 0.5.3
  */
-@ObjectBuilderInspector.InspectedType(CommandLineConverterEngine.class)
+@ObjectBuilderInspector.InspectedType(ExecutorHolder.class)
 public class NodeJsInspector implements ObjectBuilderInspector, Runnable {
 
     /**
@@ -264,8 +265,8 @@ public class NodeJsInspector implements ObjectBuilderInspector, Runnable {
      */
     @Override
     public <T> T inspect(final T object) {
-        final CommandLineConverterEngine engine = CommandLineConverterEngine.class.cast(object);
-        engine.setExecutor(new NodeJsExecutor(engine.getExecutor()));
+        final ExecutorHolder executorHolder = ExecutorHolder.class.cast(object);
+        executorHolder.setExecutor(new NodeJsExecutor(executorHolder.getExecutor()));
         return object;
     }
 
@@ -279,7 +280,7 @@ public class NodeJsInspector implements ObjectBuilderInspector, Runnable {
 
     /**
      * <p>
-     * This executor wraps any new {@link CommandLineConverterEngine} executor to make sure NodeJS is installed before
+     * This executor wraps any new {@link ExecutorHolder} executor to make sure NodeJS is installed before
      * a command is executed.
      * </p>
      *
