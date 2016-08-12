@@ -20,7 +20,6 @@
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>webjars-locator</artifactId>
-            <version>${webjars.version}</version>
         </dependency>
 
         <dependency>
