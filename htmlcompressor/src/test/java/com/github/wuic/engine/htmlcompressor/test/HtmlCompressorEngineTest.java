@@ -40,6 +40,7 @@ package com.github.wuic.engine.htmlcompressor.test;
 
 import com.github.wuic.EnumNutType;
 import com.github.wuic.NutTypeFactory;
+import com.github.wuic.NutTypeFactoryHolder;
 import com.github.wuic.engine.EngineRequestBuilder;
 import com.github.wuic.engine.htmlcompressor.HtmlCompressorEngine;
 import com.github.wuic.ApplicationConfig;
@@ -103,8 +104,10 @@ public class HtmlCompressorEngineTest {
         final ObjectBuilderFactory<Engine> factory = new ObjectBuilderFactory<Engine>(EngineService.class, HtmlCompressorEngine.class);
         final ObjectBuilder<Engine> builder = factory.create("HtmlCompressorEngineBuilder");
         final Engine engine = builder.build();
+        final NutTypeFactory nutTypeFactory = new NutTypeFactory(Charset.defaultCharset().displayName());
+        NutTypeFactoryHolder.class.cast(engine).setNutTypeFactory(nutTypeFactory);
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null, new NutTypeFactory(Charset.defaultCharset().displayName())).contextPath("cp").build());
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null, nutTypeFactory).contextPath("cp").build());
         Assert.assertEquals(-1, NutUtils.readTransform(res.get(0)).indexOf('\n'));
     }
 
@@ -130,7 +133,9 @@ public class HtmlCompressorEngineTest {
         final ObjectBuilder<Engine> builder = factory.create("HtmlCompressorEngineBuilder");
         final Engine engine = builder.property(ApplicationConfig.COMPRESS, false).build();
 
-        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null, new NutTypeFactory(Charset.defaultCharset().displayName())).contextPath("cp").build());
+        final NutTypeFactory nutTypeFactory = new NutTypeFactory(Charset.defaultCharset().displayName());
+        NutTypeFactoryHolder.class.cast(engine).setNutTypeFactory(nutTypeFactory);
+        final List<ConvertibleNut> res = engine.parse(new EngineRequestBuilder("wid", heap, null, nutTypeFactory).contextPath("cp").build());
         Assert.assertNotSame(-1, res.get(0).openStream().execution().toString().indexOf('\n'));
     }
 }

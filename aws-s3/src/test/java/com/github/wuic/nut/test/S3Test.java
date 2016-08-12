@@ -173,11 +173,13 @@ public class S3Test {
         nutsHeap.checkFiles(ProcessContext.DEFAULT);
         Assert.assertEquals(nutsHeap.getNuts().size(), 1);
 
+        final NutTypeFactory nutTypeFactory = new NutTypeFactory(Charset.defaultCharset().displayName());
         final TextAggregatorEngine aggregator = new TextAggregatorEngine();
         aggregator.init(true);
         aggregator.async(true);
+        aggregator.setNutTypeFactory(nutTypeFactory);
 
-        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null, new NutTypeFactory(Charset.defaultCharset().displayName()))
+        final List<ConvertibleNut> group = aggregator.parse(new EngineRequestBuilder("", nutsHeap, null, nutTypeFactory)
                 .processContext(ProcessContext.DEFAULT).build());
 
         Assert.assertFalse(group.isEmpty());

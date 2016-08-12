@@ -158,17 +158,20 @@ public class HtmlInspectorEngineTest {
         final TextAggregatorEngine css = new TextAggregatorEngine();
         css.init(true);
         css.async(true);
+        css.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         chains.put(new NutType(EnumNutType.CSS, Charset.defaultCharset().displayName()), css);
 
         final TextAggregatorEngine jse = new TextAggregatorEngine();
         jse.init(true);
         jse.async(true);
+        jse.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         chains.put(new NutType(EnumNutType.JAVASCRIPT, Charset.defaultCharset().displayName()), jse);
 
         final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx, new NutTypeFactory(Charset.defaultCharset().displayName()))
                 .chains(chains).processContext(ProcessContext.DEFAULT).build();
         final HtmlInspectorEngine h = new HtmlInspectorEngine();
         h.init(true, true);
+        h.setNutTypeFactory(request.getNutTypeFactory());
         final List<ConvertibleNut> nuts = h.parse(request);
 
         Assert.assertEquals(1, nuts.size());
@@ -208,14 +211,17 @@ public class HtmlInspectorEngineTest {
         final Map<NutType, NodeEngine> chains = new HashMap<NutType, NodeEngine>();
         final SpriteInspectorEngine e = new SpriteInspectorEngine();
         e.init(true, new SpriteProvider[] { new CssSpriteProvider() });
+        e.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         final ImageAggregatorEngine i = new ImageAggregatorEngine();
         i.init(true);
         i.init(new BinPacker<ConvertibleNut>());
+        i.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         e.setNext(i);
         chains.put(new NutType(EnumNutType.PNG, Charset.defaultCharset().displayName()), e);
         final EngineRequest request = new EngineRequestBuilder("workflow", heap, ctx, new NutTypeFactory(Charset.defaultCharset().displayName())).chains(chains).processContext(ProcessContext.DEFAULT).build();
         final HtmlInspectorEngine h = new HtmlInspectorEngine();
         h.init(true, true);
+        h.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         final List<ConvertibleNut> nuts = h.parse(request);
         Assert.assertEquals(1, nuts.size());
         final String html = NutUtils.readTransform(nuts.get(0));
@@ -242,6 +248,7 @@ public class HtmlInspectorEngineTest {
         final byte[] bytes = ("<script>" + script + "</script>").getBytes();
         final HtmlInspectorEngine engine = new HtmlInspectorEngine();
         engine.init(true, true);
+        engine.setNutTypeFactory(new NutTypeFactory(Charset.defaultCharset().displayName()));
         ConvertibleNut nut = new InMemoryNut(bytes, "index.html", new NutTypeFactory(Charset.defaultCharset().displayName()).getNutType(EnumNutType.HTML), 1L, true);
         final ConvertibleNut finalNut = nut;
         final NutDao dao = Mockito.mock(NutDao.class);
