@@ -204,13 +204,13 @@ public class WebJarsTest {
         final WebJarAssetLocator locator = new WebJarAssetLocator();
 
         for (final String asset : locator.listAssets("angular-dynamic-locale")) {
-            assets.add(asset.substring(WebJarInspector.PREFIX.length())
+            assets.add(asset.substring(NpmWebJarTranslator.PREFIX.length())
                     .replace("/0.1.32/", "/"));
         }
 
         // package.json available
         for (final String asset : locator.listAssets("angular__common")) {
-            assets.add(asset.substring(WebJarInspector.PREFIX.length())
+            assets.add(asset.substring(NpmWebJarTranslator.PREFIX.length())
                     .replace("angular__common", "@angular/common")
                     .replace("/2.0.0-rc.5/", "/"));
         }

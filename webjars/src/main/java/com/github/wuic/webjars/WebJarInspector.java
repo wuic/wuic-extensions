@@ -46,8 +46,6 @@ import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.dao.webjars.WebJarNutDao;
 import com.github.wuic.util.BiFunction;
 import com.github.wuic.util.IOUtils;
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webjars.WebJarAssetLocator;
@@ -56,17 +54,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * <p>
- * This inspector decorates any created {@link ExecutorHolder} with an executor that installs WebJars
- * available in the classpath to the parent of given {@link CommandLineConverterEngine.CommandLineInfo#compilationResult}
- * in the than NPM. This guarantee to any {@link ExecutorHolder} that any command will be executed in a context
- * where 'node_modules' are available.
+ * This inspector decorates any created {@link ExecutorHolder} with an executor that installs WebJars available in the
+ * classpath to the parent of given {@link CommandLineConverterEngine.CommandLineInfo#compilationResult} in the than NPM.
+ * This guarantee to any {@link ExecutorHolder} that any command will be executed in a context where 'node_modules' are
+ * available.
  * </p>
  *
  * <p>
@@ -80,19 +76,9 @@ import java.util.Set;
 public class WebJarInspector implements ObjectBuilderInspector {
 
     /**
-     * The prefix of WebJar assets.
-     */
-    public static final String PREFIX = "META-INF/resources/webjars/";
-
-    /**
      * The logger.
      */
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    /**
-     * Unmarshaller for {@code package.json}.
-     */
-    private final Gson gson;
 
     /**
      * The locator.
@@ -105,8 +91,7 @@ public class WebJarInspector implements ObjectBuilderInspector {
      * </p>
      */
     public WebJarInspector() {
-        this.webJarAssetLocator = new WebJarAssetLocator();
-        this.gson = new Gson();
+        this.webJarAssetLocator = NpmWebJarTranslator.INSTANCE.getWebJarAssetLocator();
     }
 
     /**
@@ -152,74 +137,28 @@ public class WebJarInspector implements ObjectBuilderInspector {
 
         /**
          * <p>
-         * Extracts the directory name for the WebJar identified by the given name.
-         * The directory will be the name located in the {@code package.json} at the root of module.
-         * If this file does not exists, the given WebJar name will be used.
-         * </p>
-         *
-         * @param webJarName the WebJar name
-         * @param version the WebJar version
-         * @return the name defined in {@code package.json}, the WebJar name if it does not exist
-         */
-        private String extractDirectory(final String webJarName, final String version) {
-            InputStream packageJson = null;
-            final String packageJsonPath = String.format("/%s%s/%s/package.json", PREFIX, webJarName, version);
-
-            try {
-                packageJson = getClass().getResourceAsStream(packageJsonPath);
-
-                // Load the package.json
-                if (packageJson != null) {
-                    final JsonReader reader = gson.newJsonReader(new InputStreamReader(packageJson));
-                    reader.beginObject();
-
-                    // Look for name property
-                    while (reader.hasNext()) {
-                        if ("name".equals(reader.nextName())) {
-                            // Name found
-                            return reader.nextString();
-                        } else {
-                            reader.skipValue();
-                        }
-                    }
-                }
-            } catch (IOException ioe) {
-                WuicException.throwBadStateException(new IllegalStateException(String.format("Unable to read %s", packageJson), ioe));
-            } finally {
-                IOUtils.close(packageJson);
-            }
-
-            // name not found in package.json, use WebJar name
-            return webJarName;
-        }
-
-        /**
-         * <p>
-         * Copy the given WebJar asset to the specified module and its sub directory.
+         * Copy the given WebJar asset to the specified {@code npmPath} under the specified module directory.
          * </p>
          *
          * @param modules the modules directory
-         * @param directory the sub directory
-         * @param asset the asset
-         * @param webJarVersion the WebJar version
+         * @param npmPath the path representation under {@code node_modules}
+         * @param webJarLocation the {@code WebJar} location in the classpath
          */
-        private void copyAsset(final File modules, final String directory, final String asset, final String webJarVersion) {
+        private void copyAsset(final File modules, final String npmPath, final String webJarLocation) {
             InputStream is = null;
             OutputStream os = null;
 
             try {
                 // Read the file from JAR file
-                is = getClass().getResourceAsStream("/" + asset);
+                is = getClass().getResourceAsStream(webJarLocation);
 
-                // Write it to node_module directory, skipping the version
-                final int versionIndex = asset.indexOf(webJarVersion) + webJarVersion.length();
-                final File file = new File(modules, directory + asset.substring(versionIndex));
+                final File file = new File(modules, npmPath);
 
                 if (file.getParentFile().mkdirs()) {
                     logger.info("Created directory {}", file.getParent());
                 }
 
-                if (file.createNewFile()) {
+                if (file.exists() || file.createNewFile()) {
                     os = new FileOutputStream(file);
                     IOUtils.copyStream(is, os);
                 } else {
@@ -241,15 +180,10 @@ public class WebJarInspector implements ObjectBuilderInspector {
 
             // Installs a "node_modules" directory if needed
             final File modules = new File(commandLineInfo.getCompilationResult().getParent(), "node_modules");
-            final Map<String, String> webJars = webJarAssetLocator.getWebJars();
+            final Map<String, String> webJars = NpmWebJarTranslator.INSTANCE.getNpmClasspathLocations();
 
             for (final Map.Entry<String, String> webJar : webJars.entrySet()) {
-                final Set<String> assets = webJarAssetLocator.listAssets(PREFIX + webJar.getKey());
-                final String directory = extractDirectory(webJar.getKey(), webJar.getValue());
-
-                for (final String asset : assets) {
-                    copyAsset(modules, directory, asset, webJar.getValue());
-                }
+                copyAsset(modules, webJar.getKey(), webJar.getValue());
             }
 
             return wrap.apply(commandLineInfo, engineRequest);
