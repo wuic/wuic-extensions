@@ -312,23 +312,50 @@ public class NodeJsInspector implements ObjectBuilderInspector, Runnable {
         public Boolean apply(final CommandLineInfo commandLineInfo, final EngineRequest engineRequest) {
             // Download and install npm
             final File workingDir = installNpm();
+            final File nodeDir = new File(workingDir, "node");
 
             // Installs an "npm" script if needed
-            final File bin = new File(commandLineInfo.getCompilationResult().getParent(), "npm");
+            final File npm = new File(commandLineInfo.getCompilationResult().getParent(),
+                    "npm" + (CommandLineConverterEngine.IS_WINDOWS ? ".cmd" : ""));
 
-            if (!bin.exists()) {
+            if (!npm.exists()) {
                 OutputStream outputStream = null;
 
                 try {
-                    outputStream = new FileOutputStream(bin);
+                    outputStream = new FileOutputStream(npm);
 
                     if (CommandLineConverterEngine.IS_WINDOWS) {
                         // Windows script
-                        outputStream.write((IOUtils.mergePath(workingDir.getAbsolutePath(), "node/npm.cmd") + " $@").getBytes());
+                        outputStream.write((new File(nodeDir, "npm.cmd").getAbsolutePath() + " %*").getBytes());
                     } else {
                         // Linux script
-                        outputStream.write((IOUtils.mergePath(workingDir.getAbsolutePath(), "node/npm") + " %*").getBytes());
+                        outputStream.write((new File(nodeDir, "npm").getAbsolutePath() + " $@").getBytes());
                     }
+                } catch (IOException ioe) {
+                    logger.error("Unable to create scripts for Node.JS", ioe);
+                } finally {
+                    IOUtils.close(outputStream);
+                }
+            }
+
+            // Installs a "node" script if needed
+            final File node = new File(commandLineInfo.getCompilationResult().getParent(),
+                    "node" + (CommandLineConverterEngine.IS_WINDOWS ? ".cmd" : ""));
+
+            if (!node.exists()) {
+                OutputStream outputStream = null;
+
+                try {
+                    outputStream = new FileOutputStream(node);
+                    final String param;
+
+                    if (CommandLineConverterEngine.IS_WINDOWS) {
+                        param = " %*";
+                    } else {
+                        param = " $@";
+                    }
+
+                    outputStream.write((new File(nodeDir, "node").getAbsolutePath() + param).getBytes());
                 } catch (IOException ioe) {
                     logger.error("Unable to create scripts for Node.JS", ioe);
                 } finally {
