@@ -14,8 +14,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.wuic</groupId>
-            <artifactId>wuic-core</artifactId>
+            <groupId>com.github.wuic.extensions</groupId>
+            <artifactId>wuic-webjars</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.wuic.extensions</groupId>
+            <artifactId>wuic-nodejs</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -31,6 +38,11 @@
         <dependency>
             <groupId>io.apigee.trireme</groupId>
             <artifactId>trireme-node10src</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>typescript</artifactId>
         </dependency>
     </dependencies>
 

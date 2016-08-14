@@ -189,7 +189,7 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine implement
 
     /**
      * <p>
-     * Runs tsc compiler command ('npm install -g typescript' is required).
+     * Runs tsc compiler command. Typescript is already installed under node_modules thanks to WebJar support.
      * </p>
      *
      * @param workingDir the working directory
@@ -201,8 +201,32 @@ public class TypeScriptConverterEngine extends AbstractConverterEngine implement
     private Boolean node(final File workingDir, final File compilationResult)
             throws IOException, InterruptedException {
 
+        // Installs a "tsc" script if needed
+        final File bin = new File(workingDir, "tsc");
+
+        if (!bin.exists()) {
+            OutputStream outputStream = null;
+
+            try {
+                final File tsc = new File(workingDir.getAbsolutePath(), "node_modules/typescript/bin/tsc");
+                outputStream = new FileOutputStream(bin);
+
+                // Windows script different from linux script
+                if (CommandLineConverterEngine.IS_WINDOWS) {
+                    outputStream.write(("node.cmd " + tsc.getAbsolutePath() + ".cmd %*").getBytes());
+                } else {
+                    outputStream.write(("node " + tsc.getAbsoluteFile() + " $@").getBytes());
+                }
+            } catch (IOException ioe) {
+                log.error("Unable to create scripts for typescript", ioe);
+            } finally {
+                IOUtils.close(outputStream);
+            }
+        }
+
         // Creates the command line to execute tsc tool
-        return CommandLineConverterEngine.process("tsc '@'" + ARGS_FILE, workingDir, compilationResult);
+        final String tsc = CommandLineConverterEngine.IS_WINDOWS ? "tsc.cmd" : "tsc";
+        return CommandLineConverterEngine.process(tsc + " @" + new File(workingDir, ARGS_FILE).getAbsolutePath(), workingDir, compilationResult);
     }
 
     /**

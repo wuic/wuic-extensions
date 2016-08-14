@@ -249,6 +249,11 @@
                 <version>${frontend-plugin-core.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.webjars.npm</groupId>
+                <artifactId>typescript</artifactId>
+                <version>${typescript.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.hazelcast</groupId>
@@ -289,6 +294,7 @@
         <frontend-plugin-core.version>0.0.26</frontend-plugin-core.version>
         <webjars.version>0.31</webjars.version>
         <closure-compiler.version>v20160517</closure-compiler.version>
+        <typescript.version>2.0.0</typescript.version>
         <hazelcast-client.version>3.6.4</hazelcast-client.version>
     </properties>
 </project>
