@@ -29,6 +29,7 @@
         <module>webjars</module>
         <module>google-closure</module>
         <module>hazelcast</module>
+        <module>systemjs</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -261,6 +262,12 @@
                 <version>${hazelcast-client.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.webjars.npm</groupId>
+                <artifactId>systemjs-builder</artifactId>
+                <version>${systemjs-builder.version}</version>
+            </dependency>
+
             <!-- Testing library -->
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -296,5 +303,6 @@
         <closure-compiler.version>v20160517</closure-compiler.version>
         <typescript.version>2.0.0</typescript.version>
         <hazelcast-client.version>3.6.4</hazelcast-client.version>
+        <systemjs-builder.version>0.15.20</systemjs-builder.version>
     </properties>
 </project>

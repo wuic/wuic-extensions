@@ -9,8 +9,7 @@
 * subject to the following mandatory conditions:
 *
 * -   The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
+* all copies or substantial portions of the Software.*
 * Any failure to comply with the above shall automatically terminate the license
 * and be construed as a breach of these Terms of Use causing significant harm to
 * Capgemini.
